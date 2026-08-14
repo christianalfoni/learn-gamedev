@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="color-scheme" content="light dark" />
+<meta name="description" content="Sketch A1 — build a 2D character that feels great to move in Godot 4: acceleration, friction, a computable jump, coyote time and input buffering." />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ctext y='26' font-size='26'%3E%F0%9F%8E%9B%EF%B8%8F%3C/text%3E%3C/svg%3E" />
+<link rel="stylesheet" href="../assets/guide.css" />
+<title>A1 · The good-movement character — The Gamedev Sketchbook</title>
+</head>
+
+<body data-guide="a1-good-movement" data-sketch="A1">
+
+<div class="rail">
+  <div class="rail-inner">
+    <a class="back" href="../">← Sketchbook</a>
+    <span class="bar"><i></i></span>
+    <span class="pct">0/8 steps</span>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <header class="head">
+    <span class="eyebrow">Sketch A1 · Module A — Godot game-feel</span>
+    <h1>The good-movement character</h1>
+    <p class="standfirst">A character that feels great to move, and nothing else. No goal, no enemies,
+      no score. By the end you'll have eight tuning knobs in the inspector and strong opinions about
+      where each one should sit.</p>
+    <div class="meta">
+      <span class="pill" style="--tone: var(--c-godot)">Godot 4.5+</span>
+      <span class="pill">45–90 min</span>
+      <span class="pill">8 steps</span>
+      <span class="pill">GDScript</span>
+    </div>
+
+    <div class="outcome">
+      <h2>What you'll have at the end</h2>
+      <ul>
+        <li>A <b>CharacterBody2D</b> that accelerates, coasts and stops on its own curve rather than snapping between 0 and full speed.</li>
+        <li>A jump defined in the units you actually think in — <b>"64 pixels high, 0.4 seconds up, 0.3 seconds down"</b> — instead of a magic gravity number.</li>
+        <li><b>Coyote time</b> and <b>jump buffering</b>: the two cheapest tricks in platforming, and the reason good games feel fair.</li>
+        <li>A short tuning session where you deliberately make it feel <em>bad</em>, so you can tell what each knob is doing.</li>
+      </ul>
+    </div>
+  </header>
+
+  <section class="prep">
+    <div class="prep-head">
+      <h2>Prep</h2>
+      <span>11 minutes of watching before you open Godot. Both are worth it.</span>
+    </div>
+
+    <a class="vid" href="https://www.youtube.com/watch?v=216_5nu4aVQ" target="_blank" rel="noopener noreferrer">
+      <span class="n">01</span>
+      <span class="t">Secrets of Game Feel and Juice</span>
+      <span class="len">5:19</span>
+      <span class="by">Game Maker's Toolkit · Feb 2015</span>
+      <span class="why">The vocabulary for everything below. Watch it for the idea that feel is made of
+        many small, individually invisible additions — not one big correct implementation.</span>
+    </a>
+
+    <a class="vid" href="https://www.youtube.com/watch?v=sojFWKrv5OM" target="_blank" rel="noopener noreferrer">
+      <span class="n">02</span>
+      <span class="t">How to implement coyote jump &amp; jump buffering in Godot 4</span>
+      <span class="len">6:23</span>
+      <span class="by">kahanscious · Dec 2024 · Godot 4</span>
+      <span class="why">Steps 6 and 7 in video form, current for Godot 4. Watch it once now without
+        typing along — you'll write your own version here, and it helps to have seen the shape first.</span>
+    </a>
+
+    <a class="vid optional" href="https://www.youtube.com/watch?v=AJdEqssNZ-U" target="_blank" rel="noopener noreferrer">
+      <span class="n">03</span>
+      <span class="t">Jan Willem Nijman — "The art of screenshake"</span>
+      <span class="len">44:09 · optional</span>
+      <span class="by">Dutch Game Garden · Dec 2013</span>
+      <span class="why">The foundational talk: one deliberately bad game improved by ~30 tweaks, live.
+        Long, and not needed for this sketch — but it's the talk that reframes everything, and sketch
+        A2 leans on it directly. Save it for a session when you don't feel like typing.</span>
+    </a>
+  </section>
+
+  <main class="steps">
+
+    <!-- ── 1 ────────────────────────────────────────────────── -->
+    <section class="step" id="s1">
+      <div class="step-head">
+        <button class="step-check" type="button"><i></i><i></i><i></i><i></i></button>
+        <div class="step-title"><span class="n">Step 1</span><h2>The input map</h2></div>
+        <span class="step-time">10 min</span>
+      </div>
+      <div class="step-body">
+        <p>New project, <b>2D</b>. Before any code: <b>Project → Project Settings → Input Map</b>. Add three
+          actions and bind them:</p>
+        <ul>
+          <li><code class="inline">move_left</code> — <kbd>A</kbd> and <kbd>←</kbd></li>
+          <li><code class="inline">move_right</code> — <kbd>D</kbd> and <kbd>→</kbd></li>
+          <li><code class="inline">jump</code> — <kbd>Space</kbd></li>
+        </ul>
+        <p>An action can hold as many bindings as you like, which is the whole point — add a gamepad
+          binding too if you have one plugged in. Click <b>+</b> next to the action, then press the key
+          or stick you want.</p>
+
+        <div class="why">
+          <h4>Why this comes first</h4>
+          <p>Reading <code class="inline">Input.is_key_pressed(KEY_SPACE)</code> works and will poison every
+            later sketch. Actions are the layer where rebinding, gamepads and accessibility live. Ten
+            minutes now, or a refactor in every project you ever start.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── 2 ────────────────────────────────────────────────── -->
+    <section class="step" id="s2">
+      <div class="step-head">
+        <button class="step-check" type="button"><i></i><i></i><i></i><i></i></button>
+        <div class="step-title"><span class="n">Step 2</span><h2>The player scene, and something to fall off</h2></div>
+        <span class="step-time">10 min</span>
+      </div>
+      <div class="step-body">
+        <p>Two scenes. First the player, on its own, because a scene is Godot's prefab:</p>
+        <ol>
+          <li><b>Scene → New Scene → Other Node → CharacterBody2D</b>. Rename the root to <code class="inline">Player</code>.</li>
+          <li>Add a <b>CollisionShape2D</b> child. In the inspector, Shape → <b>New RectangleShape2D</b>,
+            size roughly <code class="inline">16 × 24</code>.</li>
+          <li>Add a <b>Sprite2D</b> child and drag <code class="inline">icon.svg</code> from the FileSystem dock
+            onto its Texture. Scale it down to about <code class="inline">0.2</code> so it roughly matches the box.
+            Placeholder art is not cheating — this sketch is about movement.</li>
+          <li>Save as <code class="inline">player.tscn</code>.</li>
+        </ol>
+        <p>Then a world to move around in: <b>New Scene → 2D Scene</b>, save as <code class="inline">world.tscn</code>,
+          and set it as the main scene when Godot offers. Instance the player into it with the chain-link
+          <b>Instantiate Child Scene</b> button.</p>
+        <p>For the floor, add a <b>StaticBody2D</b> with a <b>CollisionShape2D</b> using a wide, flat
+          <b>RectangleShape2D</b>. Then — and this matters for step 6 — duplicate it into a
+          <b>raised ledge</b> with a clear edge to walk off. Without an edge you cannot feel coyote time.</p>
+
+        <div class="trap">
+          <h4>Easy to miss</h4>
+          <p>A <code class="inline">CollisionShape2D</code> with no shape assigned silently does nothing and
+            Godot only warns you with a small yellow triangle in the scene tree. If your player falls
+            through the world, check both shapes before you check your code.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── 3 ────────────────────────────────────────────────── -->
+    <section class="step" id="s3">
+      <div class="step-head">
+        <button class="step-check" type="button"><i></i><i></i><i></i><i></i></button>
+        <div class="step-title"><span class="n">Step 3</span><h2>Movement with no feel at all</h2></div>
+        <span class="step-time">5 min</span>
+      </div>
+      <div class="step-body">
+        <p>Attach a script to the Player root, save it as <code class="inline">player.gd</code>, and replace
+          everything Godot generated with this:</p>
+
+        <figure class="code">
+          <figcaption>player.gd<span class="sp"></span><button class="copy" type="button">copy</button></figcaption>
+          <pre><code>
+extends CharacterBody2D
+
+const SPEED := 300.0
+
+func _physics_process(_delta: float) -&gt; void:
+	velocity.x = Input.get_axis("move_left", "move_right") * SPEED
+	move_and_slide()
+</code></pre>
+        </figure>
+
+        <p><code class="inline">Input.get_axis(negative, positive)</code> returns a single float from -1 to 1,
+          which saves you writing two branches. <code class="inline">velocity</code> is a property that
+          <code class="inline">CharacterBody2D</code> already owns; <code class="inline">move_and_slide()</code> reads it,
+          moves the body, and resolves collisions. The parameter is <code class="inline">_delta</code> with an
+          underscore because we don't use it yet — that's how you tell Godot to stop warning about it.</p>
+
+        <div class="feel">
+          <h4>Run it — F5 — and feel this</h4>
+          <p>Full speed on the exact frame you press, zero on the exact frame you release. It handles like
+            dragging a window, not like moving a body. Hold that feeling in mind; everything from here is
+            a reaction to it.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── 4 ────────────────────────────────────────────────── -->
+    <section class="step" id="s4">
+      <div class="step-head">
+        <button class="step-check" type="button"><i></i><i></i><i></i><i></i></button>
+        <div class="step-title"><span class="n">Step 4</span><h2>Acceleration and friction</h2></div>
+        <span class="step-time">12 min</span>
+      </div>
+      <div class="step-body">
+        <p>Instead of assigning speed, move <em>toward</em> it at a limited rate:</p>
+
+        <figure class="code">
+          <figcaption>player.gd<span class="sp"></span><button class="copy" type="button">copy</button></figcaption>
+          <pre><code>
+extends CharacterBody2D
+
+@export var max_speed := 300.0
+@export var acceleration := 2000.0
+@export var friction := 2400.0
+
+func _physics_process(delta: float) -&gt; void:
+	var direction := Input.get_axis("move_left", "move_right")
+	if direction != 0.0:
+		velocity.x = move_toward(velocity.x, direction * max_speed, acceleration * delta)
+	else:
+		velocity.x = move_toward(velocity.x, 0.0, friction * delta)
+	move_and_slide()
+</code></pre>
+        </figure>
+
+        <figure class="fig">
+          <svg viewBox="0 0 600 190" role="img" aria-label="Two speed-over-time curves: the naive version is a rectangle, the accelerated version is a trapezoid.">
+            <line class="svg-line" x1="50" y1="155" x2="570" y2="155" />
+            <line class="svg-line" x1="50" y1="25" x2="50" y2="155" />
+            <line class="svg-line" x1="300" y1="20" x2="300" y2="162" stroke-dasharray="3 4" />
+            <path class="svg-plot2" d="M50,155 L50,50 L300,50 L300,155 L570,155" />
+            <path class="svg-plot" d="M50,155 L122,50 L300,50 L372,155 L570,155" />
+            <text class="svg-label" x="14" y="54">max</text>
+            <text class="svg-label" x="22" y="159">0</text>
+            <text class="svg-label" x="54" y="176">press</text>
+            <text class="svg-label" x="304" y="176">release</text>
+            <text class="svg-label" x="128" y="42">accelerate</text>
+            <text class="svg-label" x="330" y="120">friction</text>
+            <text class="svg-label" x="440" y="42">— — naive (step 3)</text>
+          </svg>
+          <figcaption>Same input, same top speed. The whole difference in feel is in the two ramps.</figcaption>
+        </figure>
+
+        <div class="why">
+          <h4>The units are the useful part</h4>
+          <p>Acceleration is in pixels per second squared, so <code class="inline">max_speed / acceleration</code>
+            is literally the seconds it takes to reach top speed: 300 / 2000 = <b>0.15 s</b>. Friction 2400
+            stops you from full speed in <b>0.125 s</b>. Stopping slightly faster than starting is a good
+            default — it reads as controlled rather than slippery.</p>
+        </div>
+
+        <div class="feel">
+          <h4>Run it and feel this</h4>
+          <p>Now try <code class="inline">acceleration = 600</code> (ice) and <code class="inline">acceleration = 8000</code>
+            (near-instant, but softer than step 3). Change <code class="inline">friction</code> to 400 and try to
+            stop on a specific spot. This is the sketch working — you're not implementing, you're listening.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── 5 ────────────────────────────────────────────────── -->
+    <section class="step" id="s5">
+      <div class="step-head">
+        <button class="step-check" type="button"><i></i><i></i><i></i><i></i></button>
+        <div class="step-title"><span class="n">Step 5</span><h2>A jump you can actually tune</h2></div>
+        <span class="step-time">15 min</span>
+      </div>
+      <div class="step-body">
+        <p>Most tutorials hand you <code class="inline">gravity = 980</code> and
+          <code class="inline">JUMP_VELOCITY = -400</code>, then leave you guessing what happens if you want a
+          jump that's a bit higher. Those aren't the units you think in. You think: <em>"about four tiles
+          high, and it should hang a little at the top."</em> So export <em>those</em> and derive the rest.</p>
+
+        <p>For constant gravity <em>g</em> and an upward launch speed <em>v</em>, the apex arrives at
+          <em>t = v / g</em> and the height reached is <em>h = v² / 2g</em>. Solve for what you want to type in:</p>
+
+        <div class="why">
+          <h4>The two lines of algebra</h4>
+          <p><b>v = 2h / t</b> and <b>g = 2h / t²</b> — where <em>h</em> is the height you want and <em>t</em>
+            is how long you want the rise to take. Use a <em>different</em> <em>t</em> on the way down and you
+            get asymmetric gravity: floaty up, decisive down. That single trick is most of what separates a
+            good jump from a realistic one.</p>
+        </div>
+
+        <figure class="fig">
+          <svg viewBox="0 0 600 190" role="img" aria-label="A jump arc that rises over 0.4 seconds and falls over 0.3 seconds.">
+            <line class="svg-line" x1="50" y1="155" x2="570" y2="155" />
+            <path class="svg-plot" d="M80,155 Q190,38 300,38 Q378,38 450,155" />
+            <line class="svg-line" x1="80" y1="38" x2="300" y2="38" stroke-dasharray="3 4" />
+            <line class="svg-line" x1="80" y1="155" x2="80" y2="38" stroke-dasharray="3 4" />
+            <text class="svg-label" x="150" y="176">time_to_peak 0.40 s</text>
+            <text class="svg-label" x="330" y="176">time_to_fall 0.30 s</text>
+            <text class="svg-label" x="86" y="100">jump_height</text>
+            <text class="svg-label" x="86" y="114">64 px</text>
+            <line class="svg-line" x1="300" y1="30" x2="300" y2="162" stroke-dasharray="3 4" />
+          </svg>
+          <figcaption>The fall is compressed, not shortened — same height, less time, so it lands harder.</figcaption>
+        </figure>
+
+        <figure class="code">
+          <figcaption>player.gd — replacing _physics_process<span class="sp"></span><button class="copy" type="button">copy</button></figcaption>
+          <pre><code>
+@export var jump_height := 64.0
+@export var jump_time_to_peak := 0.4
+@export var jump_time_to_fall := 0.3
+
+func _physics_process(delta: float) -&gt; void:
+	_run(delta)
+	_apply_gravity(delta)
+	_jump()
+	move_and_slide()
+
+
+func _run(delta: float) -&gt; void:
+	var direction := Input.get_axis("move_left", "move_right")
+	if direction != 0.0:
+		velocity.x = move_toward(velocity.x, direction * max_speed, acceleration * delta)
+	else:
+		velocity.x = move_toward(velocity.x, 0.0, friction * delta)
+
+
+func _apply_gravity(delta: float) -&gt; void:
+	if is_on_floor():
+		return
+	var time := jump_time_to_peak if velocity.y &lt; 0.0 else jump_time_to_fall
+	velocity.y += (2.0 * jump_height / (time * time)) * delta
+
+
+func _jump() -&gt; void:
+	if Input.is_action_just_pressed("jump") and is_on_floor():
+		velocity.y = -2.0 * jump_height / jump_time_to_peak
+</code></pre>
+        </figure>
+
+        <div class="trap">
+          <h4>Y points down</h4>
+          <p>In Godot's 2D space, +Y is downward. So <code class="inline">velocity.y &lt; 0.0</code> means
+            <em>rising</em>, and the jump velocity is negative. Recomputing the gravity from the exports every
+            frame costs nothing and buys you something valuable in step 8: you can drag
+            <code class="inline">jump_height</code> while the game is running and watch the arc change.</p>
+        </div>
+
+        <div class="feel">
+          <h4>Run it and feel this</h4>
+          <p>Set <code class="inline">jump_time_to_fall</code> equal to <code class="inline">jump_time_to_peak</code>
+            and jump a few times. Then set it to 0.2. The second one feels like a game; the first feels like
+            a physics demo. Nothing else changed.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── 6 ────────────────────────────────────────────────── -->
+    <section class="step" id="s6">
+      <div class="step-head">
+        <button class="step-check" type="button"><i></i><i></i><i></i><i></i></button>
+        <div class="step-title"><span class="n">Step 6</span><h2>Coyote time</h2></div>
+        <span class="step-time">8 min</span>
+      </div>
+      <div class="step-body">
+        <p>Walk off your ledge and press jump a hair late. Nothing happens, and it feels like the game's
+          fault — because it is. Keep a small timer that says "you were on the floor recently enough."</p>
+
+        <figure class="code">
+          <figcaption>player.gd — _jump becomes time-aware<span class="sp"></span><button class="copy" type="button">copy</button></figcaption>
+          <pre><code>
+@export var coyote_time := 0.12
+
+var _coyote := 0.0
+
+func _jump(delta: float) -&gt; void:
+	if is_on_floor():
+		_coyote = coyote_time
+	else:
+		_coyote -= delta
+
+	if Input.is_action_just_pressed("jump") and _coyote &gt; 0.0:
+		velocity.y = -2.0 * jump_height / jump_time_to_peak
+		_coyote = 0.0
+</code></pre>
+        </figure>
+
+        <p>Remember to pass <code class="inline">delta</code> at the call site now:
+          <code class="inline">_jump(delta)</code>.</p>
+
+        <figure class="fig">
+          <svg viewBox="0 0 600 120" role="img" aria-label="Timeline showing a 0.12 second grace window after leaving a ledge during which a jump press still works.">
+            <rect class="svg-band" x="250" y="34" width="96" height="26" />
+            <line class="svg-line" x1="50" y1="60" x2="560" y2="60" />
+            <line class="svg-line" x1="250" y1="24" x2="250" y2="76" />
+            <text class="svg-label" x="120" y="30">on the floor</text>
+            <text class="svg-label" x="256" y="20">left the ledge</text>
+            <text class="svg-label" x="256" y="76">coyote 0.12 s</text>
+            <circle cx="312" cy="60" r="4" fill="currentColor" class="svg-ink" />
+            <text class="svg-label" x="322" y="52">jump pressed here…</text>
+            <text class="svg-label" x="322" y="76">…still jumps</text>
+          </svg>
+          <figcaption>Nobody has ever noticed 120 ms of grace. Everybody notices its absence.</figcaption>
+        </figure>
+
+        <div class="trap">
+          <h4>Zero the timer when you jump</h4>
+          <p>If you don't set <code class="inline">_coyote = 0.0</code> inside the jump, the timer is still
+            positive on the next frame and you get a free double-jump. Test it by mashing.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── 7 ────────────────────────────────────────────────── -->
+    <section class="step" id="s7">
+      <div class="step-head">
+        <button class="step-check" type="button"><i></i><i></i><i></i><i></i></button>
+        <div class="step-title"><span class="n">Step 7</span><h2>Jump buffering, and a jump you can cut short</h2></div>
+        <span class="step-time">8 min</span>
+      </div>
+      <div class="step-body">
+        <p>Coyote time forgives pressing slightly late. Buffering forgives pressing slightly <em>early</em> —
+          you hit jump just before landing, and the game remembers it for a moment instead of dropping it.
+          Same shape, opposite direction.</p>
+
+        <figure class="code">
+          <figcaption>player.gd — the finished _jump<span class="sp"></span><button class="copy" type="button">copy</button></figcaption>
+          <pre><code>
+@export var buffer_time := 0.12
+@export_range(0.0, 1.0) var jump_cut := 0.5
+
+var _buffer := 0.0
+
+func _jump(delta: float) -&gt; void:
+	if is_on_floor():
+		_coyote = coyote_time
+	else:
+		_coyote -= delta
+
+	if Input.is_action_just_pressed("jump"):
+		_buffer = buffer_time
+	else:
+		_buffer -= delta
+
+	if _buffer &gt; 0.0 and _coyote &gt; 0.0:
+		velocity.y = -2.0 * jump_height / jump_time_to_peak
+		_buffer = 0.0
+		_coyote = 0.0
+
+	if Input.is_action_just_released("jump") and velocity.y &lt; 0.0:
+		velocity.y *= jump_cut
+</code></pre>
+        </figure>
+
+        <p>Note what happened to the jump condition: it no longer asks "was the button pressed this frame?"
+          It asks "is there a remembered press, and were we recently on the ground?" Two independent
+          timers, one <code class="inline">and</code>. That's the whole trick.</p>
+
+        <p>The last two lines are <b>variable jump height</b>: release early while still rising and the
+          upward velocity is halved, so a tap gives a small hop and a hold gives the full arc. Three lines,
+          and it's the difference between one jump and a range of them.</p>
+
+        <div class="feel">
+          <h4>Run it and feel this</h4>
+          <p>Deliberately press jump a fraction before you land, repeatedly, and try to keep a rhythm going
+            up a set of steps. Then set both <code class="inline">coyote_time</code> and
+            <code class="inline">buffer_time</code> to 0 and do it again. The second version is the one most
+            first-time platformers ship, and it feels broken once you know why.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── 8 ────────────────────────────────────────────────── -->
+    <section class="step" id="s8">
+      <div class="step-head">
+        <button class="step-check" type="button"><i></i><i></i><i></i><i></i></button>
+        <div class="step-title"><span class="n">Step 8</span><h2>The tuning session</h2></div>
+        <span class="step-time">15 min</span>
+      </div>
+      <div class="step-body">
+        <p>This is the actual sketch. Everything above was setup so this part could exist.</p>
+
+        <div class="why">
+          <h4>Tune it while it runs</h4>
+          <p>Start the game, then in the editor switch the Scene dock from <b>Local</b> to <b>Remote</b> and
+            select the running Player. The inspector now edits the <em>live</em> game. Drag
+            <code class="inline">jump_height</code> while jumping. This is the single most useful Godot workflow
+            habit in this whole sketch — remote values reset when you stop, so write down the ones you like.</p>
+        </div>
+
+        <div class="tablewrap">
+          <table>
+            <thead>
+              <tr><th>Knob</th><th>Start</th><th>Push it here</th><th>What you're listening for</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><code>max_speed</code></td><td class="n">300</td><td class="n">150 / 600</td><td>Top speed alone changes surprisingly little. Prove it to yourself.</td></tr>
+              <tr><td><code>acceleration</code></td><td class="n">2000</td><td class="n">600 / 8000</td><td>Weight. Low is ice, high is a cursor.</td></tr>
+              <tr><td><code>friction</code></td><td class="n">2400</td><td class="n">400 / 9999</td><td>Precision. Can you stop on a chosen tile?</td></tr>
+              <tr><td><code>jump_height</code></td><td class="n">64</td><td class="n">32 / 128</td><td>Scale. Everything else needs re-tuning after you change this.</td></tr>
+              <tr><td><code>jump_time_to_peak</code></td><td class="n">0.40</td><td class="n">0.25 / 0.60</td><td>Hang time. High values feel dreamy and slow to control.</td></tr>
+              <tr><td><code>jump_time_to_fall</code></td><td class="n">0.30</td><td class="n">0.20 / 0.40</td><td>Decisiveness of the landing.</td></tr>
+              <tr><td><code>jump_cut</code></td><td class="n">0.50</td><td class="n">0.20 / 0.90</td><td>How much range a tap versus a hold gives you.</td></tr>
+              <tr><td><code>coyote_time</code></td><td class="n">0.12</td><td class="n">0.00 / 0.25</td><td>Fairness at edges. Above ~0.2 s it starts to feel like cheating.</td></tr>
+              <tr><td><code>buffer_time</code></td><td class="n">0.12</td><td class="n">0.00 / 0.30</td><td>Whether fast repeated jumps stay in rhythm.</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p>Work through it in one pass: for each knob, push it to both extremes, then settle somewhere you
+          like. Don't reset between knobs — let the character drift into something that's yours.</p>
+
+        <p><b>Write down the numbers you land on.</b> One line in the sketchbook's notes field is enough.
+          When you re-do A1 in a few weeks, the interesting part is comparing what past-you liked.</p>
+
+        <details>
+          <summary style="cursor:pointer; font-family:var(--mono); font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-3); padding:6px 0;">Show the complete script</summary>
+          <figure class="code" style="margin-top:10px">
+            <figcaption>player.gd — all of it<span class="sp"></span><button class="copy" type="button">copy</button></figcaption>
+            <pre><code>
+extends CharacterBody2D
+
+@export_group("Run")
+@export var max_speed := 300.0
+@export var acceleration := 2000.0
+@export var friction := 2400.0
+
+@export_group("Jump")
+@export var jump_height := 64.0
+@export var jump_time_to_peak := 0.4
+@export var jump_time_to_fall := 0.3
+@export_range(0.0, 1.0) var jump_cut := 0.5
+
+@export_group("Forgiveness")
+@export var coyote_time := 0.12
+@export var buffer_time := 0.12
+
+var _coyote := 0.0
+var _buffer := 0.0
+
+
+func _physics_process(delta: float) -&gt; void:
+	_run(delta)
+	_apply_gravity(delta)
+	_jump(delta)
+	move_and_slide()
+
+
+func _run(delta: float) -&gt; void:
+	var direction := Input.get_axis("move_left", "move_right")
+	if direction != 0.0:
+		velocity.x = move_toward(velocity.x, direction * max_speed, acceleration * delta)
+	else:
+		velocity.x = move_toward(velocity.x, 0.0, friction * delta)
+
+
+func _apply_gravity(delta: float) -&gt; void:
+	if is_on_floor():
+		return
+	var time := jump_time_to_peak if velocity.y &lt; 0.0 else jump_time_to_fall
+	velocity.y += (2.0 * jump_height / (time * time)) * delta
+
+
+func _jump(delta: float) -&gt; void:
+	if is_on_floor():
+		_coyote = coyote_time
+	else:
+		_coyote -= delta
+
+	if Input.is_action_just_pressed("jump"):
+		_buffer = buffer_time
+	else:
+		_buffer -= delta
+
+	if _buffer &gt; 0.0 and _coyote &gt; 0.0:
+		velocity.y = -2.0 * jump_height / jump_time_to_peak
+		_buffer = 0.0
+		_coyote = 0.0
+
+	if Input.is_action_just_released("jump") and velocity.y &lt; 0.0:
+		velocity.y *= jump_cut
+</code></pre>
+          </figure>
+        </details>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="done">
+    <h2>That's the sketch</h2>
+    <p>You now have a character with no purpose that is genuinely nice to move around, and — more useful —
+      you can feel the difference between 0.12 and 0.20 seconds of coyote time. That's the skill. The
+      character is disposable.</p>
+
+    <p data-when-finished hidden><b>All eight steps done.</b> Log the session and it'll show up on the
+      sketchbook with today's date.</p>
+
+    <div class="actions">
+      <button class="btn" type="button" id="logSession">Log this session</button>
+      <a class="btn ghost" href="../">Back to the sketchbook</a>
+      <span class="logmsg" id="logMsg"></span>
+    </div>
+
+    <div class="next">
+      <span class="eyebrow">Natural next sketches</span>
+      <a href="../#e-A4"><span class="id">A4</span><span>Squash &amp; stretch on landing — this character, with a spring on its scale.</span></a>
+      <a href="../#e-A2"><span class="id">A2</span><span>Screenshake that feels good — and now you've got something to shake the camera at.</span></a>
+      <a href="../#e-A3"><span class="id">A3</span><span>Hitstop — the same "add forgiveness in the time domain" instinct, applied to impact.</span></a>
+    </div>
+
+    <div class="next" style="margin-top:6px">
+      <span class="eyebrow">Reference</span>
+      <a href="https://docs.godotengine.org/en/stable/tutorials/physics/using_character_body_2d.html" target="_blank" rel="noopener noreferrer"><span class="id">docs</span><span>Using CharacterBody2D — the official walkthrough</span></a>
+      <a href="https://docs.godotengine.org/en/stable/classes/class_characterbody2d.html" target="_blank" rel="noopener noreferrer"><span class="id">docs</span><span>CharacterBody2D class reference</span></a>
+      <a href="https://codingquests.io/quests/platformer-move-jump" target="_blank" rel="noopener noreferrer"><span class="id">web</span><span>Coding Quests — Godot 4 platformer movement, a written second opinion</span></a>
+    </div>
+  </footer>
+
+</div>
+
+<script src="../assets/guide.js"></script>
+</body>
+</html>

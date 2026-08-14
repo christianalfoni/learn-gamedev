@@ -384,6 +384,17 @@
   .links a:hover { color: var(--ink); text-decoration-color: currentColor; }
   .links .kind { font-family: var(--mono); font-size: 9.5px; color: var(--ink-3); }
 
+  .links a.guide {
+    text-decoration: none;
+    font-family: var(--mono); font-size: 10.5px; letter-spacing: .06em;
+    text-transform: uppercase;
+    padding: 3px 9px;
+    color: var(--tint);
+    background: color-mix(in srgb, var(--tint) 13%, transparent);
+    border: 1px solid color-mix(in srgb, var(--tint) 45%, transparent);
+  }
+  .links a.guide:hover { background: color-mix(in srgb, var(--tint) 22%, transparent); }
+
   .e-foot {
     margin-top: auto; padding-top: 10px; border-top: 1px solid var(--rule);
     display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
@@ -619,6 +630,7 @@
 
   const SKETCHES = [
     { id: "A1", m: "A", t: "The good-movement character", time: "45–90 min", mins: 90, tools: ["godot"],
+      guide: "guides/a1-good-movement.html",
       blurb: "A top-down or side-scroll character that feels great to move — acceleration, friction, coyote time, a touch of input buffering. Nothing else.",
       teach: "_physics_process, the input map, tuning constants by feel, @export for live tweaking.",
       links: [L("CharacterBody2D docs", "https://docs.godotengine.org/en/stable/classes/class_characterbody2d.html"), YT("Coding Quests — Game Juice in Godot 4", "Coding Quests Game Juice in Godot 4"), L("The Art of Screenshake", "https://www.youtube.com/watch?v=AJdEqssNZ-U")] },
@@ -1029,6 +1041,15 @@
 
     const links = document.createElement("div");
     links.className = "links";
+
+    if (e.guide) {
+      const g = document.createElement("a");
+      g.className = "guide";
+      g.href = e.guide;
+      g.textContent = "Step-by-step guide";
+      links.appendChild(g);
+    }
+
     e.links.forEach(l => {
       const a = document.createElement("a");
       a.href = l.url;
