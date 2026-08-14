@@ -220,6 +220,53 @@
     background: color-mix(in srgb, var(--cell) 16%, transparent);
   }
 
+  /* ── Written guides ───────────────────────────────────────── */
+  .guides { display: flex; flex-direction: column; gap: 14px; }
+  .guides-head { display: flex; flex-direction: column; gap: 3px; }
+  .guides-head h2 { font-family: var(--serif); font-size: 24px; font-weight: 400; }
+  .guides-head p { font-size: 13px; color: var(--ink-3); max-width: 62ch; }
+
+  .guide-cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+  @media (max-width: 880px) { .guide-cards { grid-template-columns: 1fr; } }
+
+  a.guide-card {
+    display: flex; flex-direction: column; gap: 10px;
+    padding: 17px 19px 15px;
+    background: var(--panel);
+    border: 1px solid color-mix(in srgb, var(--tint) 38%, var(--rule));
+    text-decoration: none;
+    transition: border-color .15s ease, transform .12s ease;
+  }
+  a.guide-card:hover { border-color: var(--tint); transform: translateY(-2px); }
+
+  .gc-top { display: flex; gap: 12px; align-items: flex-start; }
+  .gc-mark {
+    flex: none; width: 30px; height: 30px; padding: 2px;
+    display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 2px;
+    border: 1px solid color-mix(in srgb, var(--tint) 55%, transparent);
+  }
+  .gc-mark i { background: var(--px); }
+  .gc-headline { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
+  .gc-id { font-family: var(--mono); font-size: 11px; letter-spacing: .1em; color: var(--ink-3); }
+  .gc-headline h3 { font-size: 17px; letter-spacing: -.01em; line-height: 1.25; color: var(--ink); }
+  .gc-meta {
+    flex: none; font-family: var(--mono); font-size: 10.5px; color: var(--ink-2);
+    text-align: right; line-height: 1.6; font-variant-numeric: tabular-nums;
+  }
+  a.guide-card p { font-size: 13.5px; color: var(--ink-2); }
+
+  .gc-foot { margin-top: auto; display: flex; align-items: center; gap: 11px; }
+  .gc-bar { flex: 1; height: 4px; background: var(--panel-2); position: relative; }
+  .gc-bar i { position: absolute; inset: 0 auto 0 0; background: var(--tint); display: block; }
+  .gc-progress {
+    font-family: var(--mono); font-size: 10.5px; color: var(--ink-3);
+    font-variant-numeric: tabular-nums; white-space: nowrap;
+  }
+  .gc-open {
+    font-family: var(--mono); font-size: 10.5px; letter-spacing: .08em;
+    text-transform: uppercase; color: var(--tint); white-space: nowrap;
+  }
+
   /* ── Start here ───────────────────────────────────────────── */
   .starthere {
     background: var(--panel);
@@ -543,6 +590,15 @@
     </div>
   </section>
 
+  <section class="guides" id="guidesSection" aria-label="Written guides">
+    <div class="guides-head">
+      <h2>Written guides</h2>
+      <p>Sit-down-and-follow versions, with the research already done. The rest of the menu below is
+        still just a prompt and some links.</p>
+    </div>
+    <div class="guide-cards" id="guideCards"></div>
+  </section>
+
   <section class="starthere" aria-label="Start here">
     <span class="eyebrow">Start here — first two weeks, ~30 min a session</span>
     <div class="starthere-list" id="startList"></div>
@@ -556,6 +612,11 @@
         <button type="button" data-v="all" aria-pressed="true">All</button>
         <button type="button" data-v="todo" aria-pressed="false">Not yet</button>
         <button type="button" data-v="done" aria-pressed="false">Practiced</button>
+      </div>
+      <span class="field-label">Guide</span>
+      <div class="seg" id="guideSeg">
+        <button type="button" data-v="all" aria-pressed="true">Any</button>
+        <button type="button" data-v="yes" aria-pressed="false">Written</button>
       </div>
       <span class="field-label">Session</span>
       <div class="seg" id="lengthSeg">
@@ -630,7 +691,7 @@
 
   const SKETCHES = [
     { id: "A1", m: "A", t: "The good-movement character", time: "45–90 min", mins: 90, tools: ["godot"],
-      guide: "guides/a1-good-movement.html",
+      guide: "guides/a1-good-movement.html", guideSteps: 8,
       blurb: "A top-down or side-scroll character that feels great to move — acceleration, friction, coyote time, a touch of input buffering. Nothing else.",
       teach: "_physics_process, the input map, tuning constants by feel, @export for live tweaking.",
       links: [L("CharacterBody2D docs", "https://docs.godotengine.org/en/stable/classes/class_characterbody2d.html"), YT("Coding Quests — Game Juice in Godot 4", "Coding Quests Game Juice in Godot 4"), L("The Art of Screenshake", "https://www.youtube.com/watch?v=AJdEqssNZ-U")] },
@@ -681,7 +742,7 @@
       links: [YT("AdamCYounis — pixel art animation", "AdamCYounis pixel art walk cycle animation tutorial"), L("Saint11 — animation articles", "https://saint11.art/pixel_articles/")] },
 
     { id: "B6", m: "B", t: "The three-state character", time: "90–120 min", mins: 120, tools: ["aseprite", "godot"],
-      guide: "guides/b6-three-state-character.html",
+      guide: "guides/b6-three-state-character.html", guideSteps: 9,
       blurb: "One character with idle, run and jump animations — drawn in Aseprite with tags, imported into Godot with Aseprite Wizard, and switching states from code. The whole pipeline, end to end.",
       teach: "Tag discipline, frame economy across three loops, the .aseprite → SpriteFrames pipeline, driving animation from movement state.",
       links: [L("Aseprite Wizard", "https://github.com/viniciusgerevini/godot-aseprite-wizard"), L("AnimatedSprite2D docs", "https://docs.godotengine.org/en/stable/classes/class_animatedsprite2d.html"), L("Aseprite docs — tags", "https://www.aseprite.org/docs/tags/")] },
@@ -979,7 +1040,7 @@
 
   /* ── Filters ─────────────────────────────────────────────── */
 
-  const filters = { tools: new Set(), status: "all", length: "all" };
+  const filters = { tools: new Set(), status: "all", length: "all", guide: "all" };
 
   function matches(e) {
     if (filters.tools.size && !e.tools.some(t => filters.tools.has(t))) return false;
@@ -988,6 +1049,7 @@
     if (filters.length === "s" && e.mins > 30) return false;
     if (filters.length === "m" && (e.mins <= 30 || e.mins > 60)) return false;
     if (filters.length === "l" && e.mins <= 60) return false;
+    if (filters.guide === "yes" && !e.guide) return false;
     return true;
   }
 
@@ -1185,6 +1247,74 @@
     card.classList.add("flash");
   }
 
+  /* ── Render: written guides ──────────────────────────────────
+     Derived from SKETCHES, so a new guide only needs its `guide`
+     field set — this panel picks it up on its own. */
+
+  const guideCards = document.getElementById("guideCards");
+  const guided = SKETCHES.filter(e => e.guide);
+
+  document.getElementById("guidesSection").hidden = guided.length === 0;
+
+  guided.forEach(e => {
+    const card = document.createElement("a");
+    card.className = "guide-card";
+    card.href = e.guide;
+    card.style.setProperty("--tint", toolVar(e.tools[0]));
+
+    const mark = document.createElement("span");
+    mark.className = "gc-mark";
+    for (let i = 0; i < 4; i++) {
+      const cell = document.createElement("i");
+      cell.style.setProperty("--px", toolVar(e.tools[i % e.tools.length]));
+      mark.appendChild(cell);
+    }
+
+    const headline = document.createElement("span");
+    headline.className = "gc-headline";
+    headline.innerHTML = `<span class="gc-id">${e.id}</span><h3>${e.t}</h3>`;
+
+    const meta = document.createElement("span");
+    meta.className = "gc-meta";
+    meta.innerHTML = `${e.guideSteps || "?"} steps<br />${e.time}`;
+
+    const top = document.createElement("span");
+    top.className = "gc-top";
+    top.append(mark, headline, meta);
+
+    const teach = document.createElement("p");
+    teach.textContent = e.teach;
+
+    const foot = document.createElement("span");
+    foot.className = "gc-foot";
+    const bar = document.createElement("span");
+    bar.className = "gc-bar";
+    const fill = document.createElement("i");
+    bar.appendChild(fill);
+    const prog = document.createElement("span");
+    prog.className = "gc-progress";
+    const open = document.createElement("span");
+    open.className = "gc-open";
+    foot.append(bar, prog, open);
+
+    // The guide pages store their own step progress under the same origin,
+    // so the sketchbook can show where he left off without any plumbing.
+    let doneSteps = 0;
+    try {
+      const stem = e.guide.replace(/^.*\//, "").replace(/\.html$/, "");
+      const raw = localStorage.getItem("gamedev-guide-" + stem + "-v1");
+      if (raw) doneSteps = JSON.parse(raw).length;
+    } catch (err) { /* private mode — just show it as unstarted */ }
+
+    const total = e.guideSteps || 0;
+    fill.style.width = (total ? Math.min(1, doneSteps / total) * 100 : 0) + "%";
+    prog.textContent = total ? `${doneSteps}/${total}` : "";
+    open.textContent = doneSteps === 0 ? "Start →" : (doneSteps >= total ? "Revisit →" : "Continue →");
+
+    card.append(top, teach, foot);
+    guideCards.appendChild(card);
+  });
+
   /* ── Render: tool chips ──────────────────────────────────── */
 
   const toolChips = document.getElementById("toolChips");
@@ -1324,7 +1454,8 @@
     filters.tools.clear();
     filters.status = "all";
     filters.length = "all";
-    document.querySelectorAll("#statusSeg button, #lengthSeg button").forEach(b => {
+    filters.guide = "all";
+    document.querySelectorAll("#statusSeg button, #lengthSeg button, #guideSeg button").forEach(b => {
       b.setAttribute("aria-pressed", b.dataset.v === "all" ? "true" : "false");
     });
     apply();
@@ -1342,6 +1473,7 @@
   }
   wireSeg("statusSeg", "status");
   wireSeg("lengthSeg", "length");
+  wireSeg("guideSeg", "guide");
 
   /* ── Stats ───────────────────────────────────────────────── */
 

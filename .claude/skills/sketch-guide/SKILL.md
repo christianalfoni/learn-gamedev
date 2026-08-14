@@ -167,8 +167,24 @@ say so rather than bluffing.
    `data-guide` (the filename stem) and `data-sketch` (the sketch ID, e.g. `A3`) on `<body>` —
    `assets/guide.js` uses them for progress storage and for logging the session back into the
    sketchbook.
-2. **Register** it in `index.html`: add `guide: "guides/<file>.html",` to that sketch's object in the
-   `SKETCHES` array. The card renders the link automatically.
+2. **Register** it in `index.html` — this is the step that's easiest to forget and most visible when
+   missed, because an unregistered guide is a page nobody can reach. On that sketch's object in the
+   `SKETCHES` array, add:
+
+   ```js
+   guide: "guides/<file>.html", guideSteps: <number of steps>,
+   ```
+
+   Both fields matter. The **Written guides** panel at the top of the page is derived from
+   `SKETCHES.filter(e => e.guide)`, so the guide appears there by itself — but it uses `guideSteps`
+   to show progress ("4/9") by reading the guide page's own `localStorage`. Get the count wrong and
+   the progress bar lies. The sketch card lower down also grows its link automatically, and the
+   **Guide → Written** filter starts including it.
+
+   **If the sketch doesn't exist yet**, add it to `SKETCHES` first — a guide is allowed to invent a
+   sketch the original 26 didn't cover. B6 came about that way. Give it the next free ID in its
+   module, tag every tool it genuinely uses (the filter counts on it), and make `time`/`mins` agree
+   with the sum of the guide's step estimates.
 3. **Validate**:
    ```bash
    python3 .claude/skills/sketch-guide/scripts/check_guide.py guides/<file>.html --links
