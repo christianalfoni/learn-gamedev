@@ -175,11 +175,18 @@ say so rather than bluffing.
    guide: "guides/<file>.html", guideSteps: <number of steps>,
    ```
 
-   Both fields matter. The **Written guides** panel at the top of the page is derived from
-   `SKETCHES.filter(e => e.guide)`, so the guide appears there by itself — but it uses `guideSteps`
-   to show progress ("4/9") by reading the guide page's own `localStorage`. Get the count wrong and
-   the progress bar lies. The sketch card lower down also grows its link automatically, and the
-   **Guide → Written** filter starts including it.
+   Both fields matter. **The front page renders `SKETCHES.filter(e => e.guide)` and nothing else** —
+   a sketch with no guide is invisible there. So adding `guide:` is what publishes the page, and
+   forgetting it means writing something nobody can reach. `guideSteps` drives the progress readout
+   ("4/9 steps"), which the card gets by reading the guide page's own `localStorage` under the shared
+   origin. Get the count wrong and the progress bar lies.
+
+   The rest of the `SKETCHES` array stays in the file deliberately: it's the catalogue of what a
+   guide *could* be written for, and the front page counts it ("2 written · 25 more sketches
+   waiting"). Don't delete unguided entries to tidy up.
+
+   Tool filter chips appear on the front page automatically once there are more than four guides —
+   below that they'd be noise. Nothing to do, but don't be surprised by their absence.
 
    **If the sketch doesn't exist yet**, add it to `SKETCHES` first — a guide is allowed to invent a
    sketch the original 26 didn't cover. B6 came about that way. Give it the next free ID in its
@@ -207,5 +214,9 @@ say so rather than bluffing.
 - Guide progress and sketchbook progress share an origin, which is why the log-session button in the
   footer can write to the tracker's own `localStorage`. Keep that footer block intact when copying
   the template.
-- `index.html` is deliberately self-contained; guides deliberately share `assets/`. Don't
-  "fix" either one into the other.
+- `index.html` is deliberately self-contained; guides and `setup.html` deliberately share
+  `assets/`. Don't "fix" either arrangement into the other.
+- The site is three things: `index.html` (guides only), `guides/` (the guides), and `setup.html`
+  (per-tool settings, teachers and practice notes — reference material, not a guide, reached from a
+  footer link). If you're adding tool-setup content rather than a sketch walkthrough, it belongs in
+  `setup.html`.

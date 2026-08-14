@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="color-scheme" content="light dark" />
+<meta name="description" content="Per-tool setup for Godot, Aseprite, Audacity and FL Studio, plus notes on how to practise." />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ctext y='26' font-size='26'%3E%F0%9F%8E%9B%EF%B8%8F%3C/text%3E%3C/svg%3E" />
+<link rel="stylesheet" href="assets/guide.css" />
+<title>Tool setup &amp; practice notes — The Gamedev Sketchbook</title>
+<style>
+  .wrap { max-width: 900px; }
+  header.head { padding-bottom: 10px; }
+  section.pad { padding: 26px 0 6px; display: flex; flex-direction: column; gap: 16px; }
+  /* ── Start here ───────────────────────────────────────────── */
+  .starthere {
+    background: var(--panel);
+    border: 1px solid var(--rule);
+    padding: 16px 20px 18px;
+    display: flex; flex-direction: column; gap: 12px;
+  }
+  .starthere-list { display: flex; flex-wrap: wrap; gap: 8px 26px; }
+  .step {
+    display: flex; align-items: flex-start; gap: 9px;
+    font-size: 13.5px; color: var(--ink-2);
+    cursor: pointer;
+  }
+  .step input { margin: 3px 0 0; accent-color: var(--focus); }
+  .step[data-checked="1"] { color: var(--ink-3); text-decoration: line-through; text-decoration-color: var(--rule-strong); }
+  /* ── Workbench ────────────────────────────────────────────── */
+  .section-head { display: flex; flex-direction: column; gap: 4px; border-bottom: 1px solid var(--rule-strong); padding-bottom: 10px; }
+  .section-head h2 { font-family: var(--serif); font-size: 24px; font-weight: 400; }
+  .section-head p { font-size: 13px; color: var(--ink-3); max-width: 60ch; }
+
+  .bench { display: flex; flex-direction: column; gap: 10px; }
+
+  details.tool {
+    background: var(--panel);
+    border: 1px solid var(--rule);
+  }
+  details.tool[hidden] { display: none; }
+  details.tool > summary {
+    list-style: none; cursor: pointer;
+    padding: 13px 18px;
+    display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  }
+  .bench-sw {
+    flex: none; width: 18px; height: 18px; padding: 1px;
+    display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 2px;
+    border: 1px solid color-mix(in srgb, var(--tint) 55%, transparent);
+  }
+  .bench-sw i { background: var(--tint); }
+  details.tool > summary::-webkit-details-marker { display: none; }
+  details.tool > summary::after {
+    content: "+"; margin-left: auto;
+    font-family: var(--mono); font-size: 15px; color: var(--ink-3);
+  }
+  details.tool[open] > summary::after { content: "–"; }
+  details.tool > summary h3 { font-size: 15px; }
+  details.tool > summary .sub { font-size: 12.5px; color: var(--ink-3); }
+
+  .tool-body {
+    padding: 16px 18px 20px;
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 22px;
+    border-top: 1px solid var(--rule);
+  }
+  .block { display: flex; flex-direction: column; gap: 8px; }
+  .block h4 {
+    margin: 0; font-family: var(--mono); font-size: 10.5px; letter-spacing: .12em;
+    text-transform: uppercase; color: var(--ink-3); font-weight: 400;
+  }
+  .block ul { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 7px; }
+  .block li { font-size: 13px; color: var(--ink-2); display: flex; gap: 8px; }
+  .block li::before { content: "▪"; color: var(--tint); flex: none; font-size: 10px; line-height: 1.7; }
+  .block li b { color: var(--ink); font-weight: 600; }
+  .block li code {
+    font-family: var(--mono); font-size: 11.5px;
+    background: var(--panel-2); padding: 1px 4px; color: var(--ink);
+  }
+  .block a { color: var(--ink); text-decoration-color: var(--rule-strong); text-underline-offset: 3px; }
+  .block a:hover { text-decoration-color: currentColor; }
+  /* ── Practice / caveats ───────────────────────────────────── */
+  .notes-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 18px; }
+  .note-card {
+    background: var(--panel); border: 1px solid var(--rule);
+    padding: 16px 18px 18px; display: flex; flex-direction: column; gap: 10px;
+  }
+  .note-card h3 { font-family: var(--serif); font-size: 17px; font-weight: 400; }
+  .note-card ul { margin: 0; padding-left: 0; list-style: none; display: flex; flex-direction: column; gap: 8px; }
+  .note-card li { font-size: 13px; color: var(--ink-2); }
+  .note-card li b { color: var(--ink); font-weight: 600; }
+  .note-card a { color: var(--ink); text-decoration-color: var(--rule-strong); text-underline-offset: 3px; }
+  .starthere { border: 1px solid var(--rule); background: var(--panel); }
+  details.tool { --tint: var(--c-godot); }
+</style>
+</head>
+
+<body data-guide="setup" data-sketch="">
+
+<div class="rail">
+  <div class="rail-inner">
+    <a class="back" href="./">← Guides</a>
+    <span class="pct">Setup &amp; notes</span>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <header class="head">
+    <span class="eyebrow">Reference · not a guide</span>
+    <h1>Tool setup &amp; practice notes</h1>
+    <p class="standfirst">The settings worth making once per tool, the people worth learning from,
+      and a few notes on how this practice is meant to work. Nothing here needs doing in order.</p>
+  </header>
+
+  <section class="pad">
+    <div class="section-head">
+      <h2>Start here</h2>
+      <p>If Godot isn't installed yet, this is the shortest path to being able to start a guide.</p>
+    </div>
+    <div class="starthere">
+      <div class="starthere-list" id="startList"></div>
+    </div>
+  </section>
+
+  <section class="pad">
+    <div class="section-head">
+      <h2>The workbench</h2>
+      <p>Settings, addons and teachers, per tool.</p>
+    </div>
+    <div class="bench" id="benchList"></div>
+  </section>
+
+  <section class="pad">
+    <div class="section-head">
+      <h2>How to practise this</h2>
+      <p>Cadence, places to practise in company, and the things that will go stale.</p>
+    </div>
+    <div class="notes-grid" id="practiceGrid"></div>
+  </section>
+
+  <footer style="border-top:1px solid var(--rule); margin:36px 0 80px; padding-top:16px; display:flex; gap:16px; flex-wrap:wrap; justify-content:space-between; font-size:12px; color:var(--ink-3);">
+    <span><a href="./" style="color:var(--ink)">← Back to the guides</a></span>
+    <span>Checkboxes here are stored in this browser only.</span>
+  </footer>
+
+</div>
+
+<script>
+(() => {
+  "use strict";
+
+const TOOLS = {
+    godot:    { name: "Godot 4",   sub: "engine, GDScript, scene tree", varName: "--c-godot" },
+    aseprite: { name: "Aseprite",  sub: "pixel art and animation",      varName: "--c-aseprite" },
+    audacity: { name: "Audacity",  sub: "SFX editing + free generators", varName: "--c-audacity" },
+    fl:       { name: "FL Studio", sub: "game music and chiptune",      varName: "--c-fl" },
+    shader:   { name: "Shaders",   sub: "GDShader — lives inside Godot", varName: "--c-shader" }
+  };
+
+const START_STEPS = [
+    { id: "s1", label: "Install Godot 4.5.x (or 4.6.x) + Aseprite Wizard, Phantom Camera, GDScript Formatter" },
+    { id: "s2", label: "Run through GDQuest's Learn GDScript From Zero at speed" },
+    { id: "s3", label: "Do A1 — the good-movement character" },
+    { id: "s4", label: "Watch The Art of Screenshake once — it reframes everything" }
+  ];
+
+const BENCH = [
+    {
+      tool: "godot",
+      title: "Godot 4",
+      sub: "Install 4.5.x stable or 4.6.x — pick one and stay put",
+      blocks: [
+        { h: "Settings to make once", items: [
+          "Standard build, not .NET, unless you specifically want C#.",
+          "<b>Editor Settings → Aseprite</b>: point at your Aseprite executable so the importer works.",
+          "<b>Project Settings → Input Map</b>: never hardcode keys, not even in a throwaway sketch.",
+          "<b>Project Settings → Autoload</b>: for things that must outlive scene changes — score, save data, audio manager, event bus.",
+          "Audio buses: Master / Music / SFX, with a Compressor on Music if you want ducking."
+        ]},
+        { h: "Addons", items: [
+          '<a href="https://github.com/viniciusgerevini/godot-aseprite-wizard">Aseprite Wizard</a> — imports .aseprite directly; tags become animations, slices and tilesets come across. The one that matters most here.',
+          '<a href="https://github.com/ramokz/phantom-camera">Phantom Camera</a> — Cinemachine-style virtual cameras; makes follow, smoothing and framing trivial.',
+          '<a href="https://godotengine.org/asset-library/asset?filter=GDScript+Formatter">GDScript Formatter</a> — in-editor formatting (Asset Library search).',
+          '<a href="https://github.com/bitbrain/beehave">Beehave</a> — behaviour trees with a visual runtime debugger, if you get to AI.',
+          '<a href="https://github.com/nathanhoad/godot_dialogue_manager">Dialogue Manager</a> — stateless branching dialogue.',
+          '<a href="https://github.com/Portponky/better-terrain">Better Terrain</a> — install this the moment built-in terrain painting frustrates you.'
+        ]},
+        { h: "Idioms worth internalising", items: [
+          "<b>Scenes, not ECS.</b> Composition via scenes-as-prefabs. Don't hand-roll an entity system to fight it.",
+          "<b>Signals are first-class.</b> Buttons, collisions, timers, decoupling. An autoload holding nothing but signals is the idiomatic event bus.",
+          "<b>Resources (.tres) as data.</b> Custom Resource classes for stats, items and tuning tables — designer-facing and serialisable.",
+          "<code>@export</code> every tuning knob so you can feel changes without recompiling.",
+          "<code>_process</code> for visuals and input polling, <code>_physics_process</code> for movement. Mixing them up is what jitter is.",
+          "<b>AnimationPlayer</b> for authored sequences (its tracks can call methods and emit signals); <b>AnimationTree</b> for blending and state.",
+          "<b>TileMapLayer</b> — one node per layer since 4.3; terrain sets and peering bits for autotiling.",
+          "<code>@tool</code> scripts run in the editor when you want live preview."
+        ]},
+        { h: "Teachers", items: [
+          '<a href="https://docs.godotengine.org/">Official docs</a> — "Your first 2D game" plus the class reference. Always current.',
+          '<a href="https://www.gdquest.com/library/learn_gdscript_from_zero/">GDQuest — Learn GDScript From Zero</a> — free, in-browser, an hour or two at your level.',
+          '<a href="https://school.gdquest.com/">GDQuest school &amp; library</a> — current Godot 4 path.',
+          '<a href="https://www.youtube.com/results?search_query=Clear+Code+ultimate+introduction+to+Godot+4">Clear Code — The ultimate introduction to Godot 4</a> (~11 h, free).',
+          '<a href="https://www.youtube.com/results?search_query=Brackeys+godot+beginner+tutorial">Brackeys — Godot beginner series</a>, and DevWorm for focused 2024–25 topics.',
+          "Check upload dates. HeartBeast, KidsCanCode and BornCG have deep Godot 3 back-catalogues."
+        ]}
+      ]
+    },
+    {
+      tool: "aseprite",
+      title: "Aseprite",
+      sub: "Set it up once so the Godot side is automatic",
+      blocks: [
+        { h: "Settings to make once", items: [
+          "Fixed grid matching your sprite size.",
+          "Pixel-perfect pencil on.",
+          "<b>Tags</b> for every animation — they become Godot animations verbatim.",
+          "Frame durations in milliseconds; the importer converts to Godot FPS.",
+          "Lean on the <b>update-on-save</b> pipeline: saving the .aseprite file updates the texture in Godot.",
+          "<b>Slices</b> for regions, UI and 9-patch StyleBoxes."
+        ]},
+        { h: "Craft", items: [
+          "Build and lock a limited palette before you draw. Constraint is the point.",
+          "Squash/stretch, anticipation, low frame counts — few frames read as snappy, not cheap.",
+          "Sub-pixel movement is what makes small animations feel smooth."
+        ]},
+        { h: "Teachers", items: [
+          '<a href="https://saint11.art/pixel_articles/">Saint11 (Pedro Medeiros)</a> — the canonical free tip archive. Start here.',
+          '<a href="https://www.youtube.com/results?search_query=AdamCYounis+aseprite">AdamCYounis</a> — the deepest Aseprite channel; his 1.3 tileset workflow video is the reference.',
+          '<a href="https://www.youtube.com/results?search_query=Brandon+James+Greer+pixel+art">Brandon James Greer</a> — concise technique: shading, palettes, coherency.',
+          '<a href="https://www.youtube.com/results?search_query=MortMort+aseprite+guide+for+beginners">MortMort</a> — the beginner classic. No new content, but the back catalogue holds up.',
+          '<a href="https://www.aseprite.org/docs/">Aseprite docs</a> — tags, slices, onion skinning, tilesets.'
+        ]}
+      ]
+    },
+    {
+      tool: "audacity",
+      title: "Audacity + the free generators",
+      sub: "Audacity edits; it does not generate — pair it with a generator",
+      blocks: [
+        { h: "Settings to make once", items: [
+          "Project rate <b>44100 Hz</b>.",
+          "Learn the zero-crossing snap (<code>Z</code>) — it is the whole seamless-loop trick.",
+          "Export pipeline: <b>OGG Vorbis</b> for music, <b>WAV</b> for short SFX.",
+          "Enable <b>Macros</b> for repetitive batch edits.",
+          "In Godot: OGG in RAM costs roughly 10× its on-disk size, so keep short SFX as WAV."
+        ]},
+        { h: "Generators (not optional)", items: [
+          '<a href="https://sfxr.me/">jsfxr</a> — the modern browser go-to: jump, coin, laser, explosion presets.',
+          '<a href="https://www.bfxr.net/">Bfxr</a> — more waveforms, filters, a mixer.',
+          '<a href="https://sfbgames.itch.io/chiptone">ChipTone</a> — the most expressive free browser generator.',
+          '<a href="https://jfxr.frozenfractal.com/">jfxr</a> — another capable browser option.',
+          "Workflow: generate in ChipTone/jsfxr → layer 2–3 in Audacity → pitch, EQ, trim → export WAV."
+        ]},
+        { h: "Teachers, and when to leave", items: [
+          '<a href="https://www.youtube.com/results?search_query=Marshall+McGee+sound+design">Marshall McGee</a> — the clearest game-sound-design channel going.',
+          '<a href="https://akashthakkar.com/courses">Akash Thakkar</a> — techniques and free-tools videos (Hyper Light Drifter).',
+          '<a href="https://www.youtube.com/results?search_query=BlipSounds+sound+design+course">BlipSounds</a> — strong on implementation.',
+          "<b>Reaper</b> is the better long-term game-audio DAW (automation, VSTs, ReaScript, ~$60 personal licence). Switch only when you find yourself wanting automation or middleware — not before."
+        ]}
+      ]
+    },
+    {
+      tool: "fl",
+      title: "FL Studio",
+      sub: "You know the theory — this is DAW fluency plus game-music idiom",
+      blocks: [
+        { h: "Export settings for game audio", items: [
+          "SFX: <b>WAV</b>, short and uncompressed.",
+          "Music: <b>OGG Vorbis</b>. MP3 encoders add padding frames that break seamless loops; OGG does not.",
+          "Trim so loop start and end land on zero crossings.",
+          "<b>Cut remainder</b> for one-shots; leave the remainder only when you want a reverb or decay tail.",
+          "In Godot, set <b>Loop = true</b> in the import tab for the OGG."
+        ]},
+        { h: "Chiptune instruments", items: [
+          '<a href="https://ymck.net/app/magical-8bit-plug-en">Magical 8bit Plug 2</a> — the free gold standard: pseudo-triangle, 1-bit noise, arpeggiator, sweep. Music made with it is free for commercial use.',
+          "Plogue <b>chipsynth SFC</b> (SNES/SPC700) and <b>chipsounds</b> — paid, with demos, if constraints start feeling limiting rather than generative.",
+          "Skip Matt Montag's NES VST: legacy 32-bit Windows-only, may not load in modern 64-bit FL."
+        ]},
+        { h: "Teachers", items: [
+          '<a href="https://www.youtube.com/results?search_query=SeamlessR+FL+Studio">SeamlessR</a> — the deepest FL synthesis/sound-design educator.',
+          '<a href="https://www.youtube.com/results?search_query=In+The+Mix+FL+Studio">In The Mix</a> — production, mixing, mastering, FL-first.',
+          '<a href="https://www.youtube.com/@FL_STUDIO">Official FL Studio channel</a> — features and workflow.',
+          '<a href="https://www.google.com/search?q=Winifred+Phillips+A+Composer%27s+Guide+to+Game+Music">A Composer\'s Guide to Game Music</a> (Winifred Phillips, MIT Press, 2014) — the definitive text on loops, resequencing, layering, adaptive music.',
+          '<a href="https://online.berklee.edu/">Berklee Online</a> — Interactive Scoring for Games / Game Audio 101, paid and structured.'
+        ]}
+      ]
+    },
+    {
+      tool: "shader",
+      title: "Shaders (GDShader)",
+      sub: "Inside Godot, but a distinct language worth its own sketches",
+      blocks: [
+        { h: "Where to learn", items: [
+          '<a href="https://godotshaders.com/">Godot Shaders</a> — community library. Read and adapt rather than start blank.',
+          '<a href="https://jayaarrgh.itch.io/book-of-shaders-godot">The Book of Shaders, ported to Godot</a> — interactive, with a live editor, updated for Godot 4.',
+          '<a href="https://www.google.com/search?q=Kodeco+introduction+to+shaders+in+Godot+4">Kodeco — Introduction to Shaders in Godot 4</a> — fragment/vertex basics in GDShader.',
+          '<a href="https://www.google.com/search?q=Godot+Shaders+Bible+Jettelly">The Godot Shaders Bible</a> (Jettelly, paid) — 360+ pages, first edition completed for Godot 4.6.',
+          '<a href="https://kenney.nl/assets">Kenney assets</a> — free sprites to shade against so you never start from nothing.'
+        ]}
+      ]
+    }
+  ];
+
+const PRACTICE = [
+    { h: "Cadence", items: [
+      "<b>Non-linear by design.</b> Pick by mood, in any order. Each sketch is self-contained.",
+      "<b>Log one line per session</b> — what you tried, what felt good. That's what the notes field on each card is for.",
+      "<b>Re-do things.</b> The rep counter exists because the second attempt at A1 six weeks later is the point, not a failure to progress.",
+      "<b>Permission to abandon.</b> Half-done is a complete sketch if you learned the thing.",
+      '<b>Not "one game a month."</b> That re-imports exactly the ship-it pressure you are escaping.'
+    ]},
+    { h: "Practise in company", items: [
+      '<a href="https://bp.io/pd">Pixel Dailies</a> — a daily prompt with no obligation to submit. The model deliberate-practice tradition.',
+      '<a href="https://godotwildjam.com/">Godot Wild Jam</a> — monthly, starts the 2nd Friday at 4 PM New York time and runs 9 full days. Community-voted theme; wildcards are optional and ignoring them costs no score.',
+      "Ludum Dare (~3×/year), GMTK Jam (annual), Brackeys Jam (twice/year) — bigger and occasional.",
+      "If you want a deadline's energy without ship pressure: enter one jam and deliberately abandon it half-done."
+    ]},
+    { h: "Never be blocked", items: [
+      '<a href="https://kenney.nl/assets">Kenney.nl</a> — huge CC0 packs.',
+      '<a href="https://opengameart.org/">OpenGameArt</a> and free itch.io asset packs.',
+      '<a href="https://freesound.org/">freesound.org</a> — Creative Commons source material.',
+      "Using someone else's placeholder art is not cheating in a sketch about movement."
+    ]},
+    { h: "What will go stale", items: [
+      "<b>Version drift.</b> Godot ships roughly every four months. These target 4.5.x; 4.6.x exists as of mid-2026.",
+      "<b>Pre-mid-2024 tutorials</b> predate TileMapLayer (the old TileMap was deprecated in 4.3) — treat old tilemap content with care.",
+      "<b>Godot 3 back-catalogues</b> are everywhere on YouTube. Check upload dates; prefer official docs for anything version-sensitive.",
+      "<b>Aggregator 'best tutorial' lists</b> rank by view count and surface stale content. Go to primary creators.",
+      "<b>Prices change.</b> Berklee and Akash Thakkar's courses are paid and not always publicly priced — verify before committing.",
+      "<b>Middleware.</b> True runtime adaptive music usually means FMOD/Wwise. Two AudioStreamPlayers and a bus fade (D2) is plenty for craft practice."
+    ]}
+  ];
+
+  const KEY = "gamedev-sketchbook-v1";
+  let state = { sketches: {}, steps: {}, updated: null };
+  try {
+    const raw = localStorage.getItem(KEY);
+    if (raw) {
+      const p = JSON.parse(raw);
+      state = { sketches: p.sketches || {}, steps: p.steps || {}, updated: p.updated || null };
+    }
+  } catch (e) { /* private mode */ }
+
+  const toolVar = t => `var(${TOOLS[t].varName})`;
+
+  const startList = document.getElementById("startList");
+  START_STEPS.forEach(s => {
+    const label = document.createElement("label");
+    label.className = "step";
+    const cb = document.createElement("input");
+    cb.type = "checkbox";
+    cb.checked = !!state.steps[s.id];
+    label.dataset.checked = cb.checked ? "1" : "0";
+    cb.addEventListener("change", () => {
+      state.steps[s.id] = cb.checked;
+      label.dataset.checked = cb.checked ? "1" : "0";
+      state.updated = new Date().toISOString();
+      try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) { /* no-op */ }
+    });
+    const span = document.createElement("span");
+    span.textContent = s.label;
+    label.append(cb, span);
+    startList.appendChild(label);
+  });
+
+  const benchList = document.getElementById("benchList");
+  BENCH.forEach(b => {
+    const d = document.createElement("details");
+    d.className = "tool";
+    d.style.setProperty("--tint", toolVar(b.tool));
+    const s = document.createElement("summary");
+    s.innerHTML = `<span class="bench-sw"><i></i><i></i><i></i><i></i></span>
+      <h3>${b.title}</h3><span class="sub">${b.sub}</span>`;
+    const body = document.createElement("div");
+    body.className = "tool-body";
+    b.blocks.forEach(bl => {
+      const block = document.createElement("div");
+      block.className = "block";
+      block.innerHTML = `<h4>${bl.h}</h4><ul>${bl.items.map(i => `<li><span>${i}</span></li>`).join("")}</ul>`;
+      body.appendChild(block);
+    });
+    d.append(s, body);
+    benchList.appendChild(d);
+  });
+
+  const practiceGrid = document.getElementById("practiceGrid");
+  PRACTICE.forEach(p => {
+    const c = document.createElement("div");
+    c.className = "note-card";
+    c.innerHTML = `<h3>${p.h}</h3><ul>${p.items.map(i => `<li>${i}</li>`).join("")}</ul>`;
+    practiceGrid.appendChild(c);
+  });
+
+  document.querySelectorAll("#benchList a, #practiceGrid a").forEach(a => {
+    a.target = "_blank"; a.rel = "noopener noreferrer";
+  });
+})();
+</script>
+</body>
+</html>
