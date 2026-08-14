@@ -1,0 +1,169 @@
+<!-- Skeleton for a sketch guide. Copy this, replace every {{...}}, delete what the
+     sketch doesn't need. guides/a1-good-movement.html is the worked example —
+     read it for how the callouts and steps actually get used. -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="color-scheme" content="light dark" />
+<meta name="description" content="{{one sentence, no marketing}}" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ctext y='26' font-size='26'%3E%F0%9F%8E%9B%EF%B8%8F%3C/text%3E%3C/svg%3E" />
+<link rel="stylesheet" href="../assets/guide.css" />
+<title>{{A3}} · {{Title}} — The Gamedev Sketchbook</title>
+</head>
+
+<!-- data-guide = filename stem (progress key). data-sketch = sketch ID (logs back to the tracker). -->
+<body data-guide="{{a3-hitstop}}" data-sketch="{{A3}}">
+
+<div class="rail">
+  <div class="rail-inner">
+    <a class="back" href="../">← Sketchbook</a>
+    <span class="bar"><i></i></span>
+    <!-- Initial text only; guide.js keeps it live. Must match the real step count. -->
+    <span class="pct">0/{{N}} steps</span>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <header class="head">
+    <span class="eyebrow">Sketch {{A3}} · Module {{A}} — {{module name}}</span>
+    <h1>{{Title}}</h1>
+    <p class="standfirst">{{Two sentences. What it is, and what it deliberately is not.}}</p>
+    <div class="meta">
+      <!-- --tone: c-godot | c-aseprite | c-audacity | c-fl | c-shader -->
+      <span class="pill" style="--tone: var(--c-godot)">{{Godot 4.5+}}</span>
+      <span class="pill">{{20 min}}</span>
+      <span class="pill">{{N}} steps</span>
+      <span class="pill">{{GDScript}}</span>
+    </div>
+
+    <div class="outcome">
+      <h2>What you'll have at the end</h2>
+      <ul>
+        <li>{{Concrete artefact or capability, not a learning objective.}}</li>
+      </ul>
+    </div>
+  </header>
+
+  <!-- Omit the whole section if nothing verifiable is worth watching. -->
+  <section class="prep">
+    <div class="prep-head">
+      <h2>Prep</h2>
+      <span>{{N}} minutes of watching before you open {{tool}}.</span>
+    </div>
+
+    <a class="vid" href="https://www.youtube.com/watch?v={{ID}}" target="_blank" rel="noopener noreferrer">
+      <span class="n">01</span>
+      <span class="t">{{Real title, as fetched}}</span>
+      <span class="len">{{M:SS}}</span>
+      <span class="by">{{Channel}} · {{Mon YYYY}}{{ · Godot 4}}</span>
+      <span class="why">{{Why this one, and how to watch it — along? once, without typing?}}</span>
+    </a>
+
+    <!-- class="vid optional" for anything long or tangential; always say why it's optional. -->
+  </section>
+
+  <main class="steps">
+
+    <section class="step" id="s1">
+      <div class="step-head">
+        <button class="step-check" type="button"><i></i><i></i><i></i><i></i></button>
+        <div class="step-title"><span class="n">Step 1</span><h2>{{Imperative, concrete}}</h2></div>
+        <span class="step-time">{{10 min}}</span>
+      </div>
+      <div class="step-body">
+        <p>{{Prose. Second person, present tense.}}</p>
+
+        <figure class="code">
+          <figcaption>{{player.gd}}<span class="sp"></span><button class="copy" type="button">copy</button></figcaption>
+          <pre><code>
+{{Tabs for indentation. Escape &lt; and &gt;. Code starts on the line after <code>.}}
+</code></pre>
+        </figure>
+
+        <!-- Three callouts, each with a job. Don't reach for one when plain prose will do. -->
+        <div class="feel">
+          <h4>Run it and feel this</h4>
+          <p>{{What changed, in sensory terms. This is often the real lesson.}}</p>
+        </div>
+
+        <div class="why">
+          <h4>{{Specific heading — "The units are the useful part", not "Explanation"}}</h4>
+          <p>{{The reasoning behind a choice he could otherwise cargo-cult.}}</p>
+        </div>
+
+        <div class="trap">
+          <h4>{{Easy to miss}}</h4>
+          <p>{{A specific failure with a specific symptom, so he recognises it when it happens.}}</p>
+        </div>
+
+        <figure class="fig">
+          <svg viewBox="0 0 600 190" role="img" aria-label="{{describe it for screen readers}}">
+            <line class="svg-line" x1="50" y1="155" x2="570" y2="155" />
+            <path class="svg-plot" d="{{...}}" />
+            <path class="svg-plot2" d="{{...}}" /><!-- dashed: the "before" or comparison -->
+            <rect class="svg-band" x="250" y="34" width="96" height="26" /><!-- a window in time -->
+            <text class="svg-label" x="54" y="176">{{label}}</text>
+          </svg>
+          <figcaption>{{What to notice — not a restatement of the title.}}</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <!-- ... more steps ... Last one should be the play/tune section, not a cleanup step. -->
+
+    <!-- A tuning table belongs wherever the sketch has knobs worth pushing to extremes. -->
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Knob</th><th>Start</th><th>Push it here</th><th>What you're listening for</th></tr></thead>
+        <tbody>
+          <tr><td><code>{{name}}</code></td><td class="n">{{300}}</td><td class="n">{{150 / 600}}</td><td>{{what changes}}</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Complete file, collapsed, so he can diff against his own. -->
+    <details>
+      <summary style="cursor:pointer; font-family:var(--mono); font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-3); padding:6px 0;">Show the complete script</summary>
+      <figure class="code" style="margin-top:10px">
+        <figcaption>{{player.gd}} — all of it<span class="sp"></span><button class="copy" type="button">copy</button></figcaption>
+        <pre><code>
+{{...}}
+</code></pre>
+      </figure>
+    </details>
+
+  </main>
+
+  <footer class="done">
+    <h2>That's the sketch</h2>
+    <p>{{One honest sentence about what he can now do that he couldn't. Name the skill, and say
+       plainly that the artefact is disposable — the practice was the point.}}</p>
+
+    <p data-when-finished hidden><b>All {{N}} steps done.</b> Log the session and it'll show up on the
+      sketchbook with today's date.</p>
+
+    <div class="actions">
+      <button class="btn" type="button" id="logSession">Log this session</button>
+      <a class="btn ghost" href="../">Back to the sketchbook</a>
+      <span class="logmsg" id="logMsg"></span>
+    </div>
+
+    <div class="next">
+      <span class="eyebrow">Natural next sketches</span>
+      <a href="../#e-{{A4}}"><span class="id">{{A4}}</span><span>{{Why this one follows.}}</span></a>
+    </div>
+
+    <div class="next" style="margin-top:6px">
+      <span class="eyebrow">Reference</span>
+      <a href="{{url}}" target="_blank" rel="noopener noreferrer"><span class="id">docs</span><span>{{What it is}}</span></a>
+    </div>
+  </footer>
+
+</div>
+
+<script src="../assets/guide.js"></script>
+</body>
+</html>
