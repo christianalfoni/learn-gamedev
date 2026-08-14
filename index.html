@@ -1,0 +1,1395 @@
+<title>The Gamedev Sketchbook — Practice Log</title>
+
+<style>
+  /* ─────────────────────────────────────────────────────────────
+     Tokens. Neutrals carry a slight blue bias; the five tool hues
+     are the only accents on the page — progress fills the palette.
+     ───────────────────────────────────────────────────────────── */
+  :root {
+    --ground:      #F1F3F7;
+    --panel:       #FFFFFF;
+    --panel-2:     #E9ECF2;
+    --ink:         #14161B;
+    --ink-2:       #4C5261;
+    --ink-3:       #858C9C;
+    --rule:        #D8DCE5;
+    --rule-strong: #C2C8D4;
+    --focus:       #3B7FBF;
+    --shadow:      0 1px 2px rgba(20, 22, 27, .06), 0 8px 24px -16px rgba(20, 22, 27, .28);
+
+    --c-godot:    #3B7FBF;
+    --c-aseprite: #C24E7D;
+    --c-audacity: #17877C;
+    --c-fl:       #7452CC;
+    --c-shader:   #A96B12;
+
+    --serif: "Iowan Old Style", "Charter", "Palatino Linotype", Palatino, Georgia, serif;
+    --sans:  "Avenir Next", "Segoe UI", system-ui, -apple-system, sans-serif;
+    --mono:  ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+
+    --maxw: 1180px;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --ground:      #0E1116;
+      --panel:       #161A21;
+      --panel-2:     #1E232C;
+      --ink:         #E7EAF0;
+      --ink-2:       #A3AAB9;
+      --ink-3:       #6D7587;
+      --rule:        #262C36;
+      --rule-strong: #39414F;
+      --focus:       #79B4EA;
+      --shadow:      0 1px 2px rgba(0, 0, 0, .4), 0 10px 30px -18px rgba(0, 0, 0, .9);
+
+      --c-godot:    #6FB0E8;
+      --c-aseprite: #E886B4;
+      --c-audacity: #45C4B6;
+      --c-fl:       #A98CF0;
+      --c-shader:   #E0A44E;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --ground:      #0E1116;
+    --panel:       #161A21;
+    --panel-2:     #1E232C;
+    --ink:         #E7EAF0;
+    --ink-2:       #A3AAB9;
+    --ink-3:       #6D7587;
+    --rule:        #262C36;
+    --rule-strong: #39414F;
+    --focus:       #79B4EA;
+    --shadow:      0 1px 2px rgba(0, 0, 0, .4), 0 10px 30px -18px rgba(0, 0, 0, .9);
+    --c-godot:    #6FB0E8;
+    --c-aseprite: #E886B4;
+    --c-audacity: #45C4B6;
+    --c-fl:       #A98CF0;
+    --c-shader:   #E0A44E;
+  }
+
+  :root[data-theme="light"] {
+    --ground:      #F1F3F7;
+    --panel:       #FFFFFF;
+    --panel-2:     #E9ECF2;
+    --ink:         #14161B;
+    --ink-2:       #4C5261;
+    --ink-3:       #858C9C;
+    --rule:        #D8DCE5;
+    --rule-strong: #C2C8D4;
+    --focus:       #3B7FBF;
+    --shadow:      0 1px 2px rgba(20, 22, 27, .06), 0 8px 24px -16px rgba(20, 22, 27, .28);
+    --c-godot:    #3B7FBF;
+    --c-aseprite: #C24E7D;
+    --c-audacity: #17877C;
+    --c-fl:       #7452CC;
+    --c-shader:   #A96B12;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 15px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .page {
+    max-width: var(--maxw);
+    margin: 0 auto;
+    padding: 40px 22px 96px;
+    display: flex;
+    flex-direction: column;
+    gap: 34px;
+  }
+
+  h1, h2, h3 { margin: 0; text-wrap: balance; font-weight: 600; }
+  p { margin: 0; }
+  a { color: inherit; }
+
+  :focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+    border-radius: 1px;
+  }
+
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 10.5px;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+  }
+
+  /* ── Masthead ─────────────────────────────────────────────── */
+  .masthead { display: flex; flex-direction: column; gap: 14px; }
+
+  .masthead h1 {
+    font-family: var(--serif);
+    font-size: clamp(34px, 5.2vw, 52px);
+    line-height: 1.02;
+    letter-spacing: -.015em;
+    font-weight: 400;
+  }
+  .masthead h1 em { font-style: italic; }
+
+  .standfirst {
+    font-family: var(--serif);
+    font-size: 17px;
+    line-height: 1.5;
+    color: var(--ink-2);
+    max-width: 60ch;
+  }
+
+  .mast-top { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; flex-wrap: wrap; }
+
+  /* ── Ledger ───────────────────────────────────────────────── */
+  .ledger {
+    background: var(--panel);
+    border: 1px solid var(--rule);
+    box-shadow: var(--shadow);
+    display: grid;
+    grid-template-columns: minmax(0, 260px) 1fr;
+  }
+  @media (max-width: 820px) { .ledger { grid-template-columns: 1fr; } }
+
+  .stats {
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid var(--rule);
+  }
+  @media (max-width: 820px) {
+    .stats { flex-direction: row; border-right: 0; border-bottom: 1px solid var(--rule); }
+  }
+
+  .stat { padding: 16px 20px; display: flex; flex-direction: column; gap: 2px; flex: 1; }
+  .stat + .stat { border-top: 1px solid var(--rule); }
+  @media (max-width: 820px) { .stat + .stat { border-top: 0; border-left: 1px solid var(--rule); } }
+
+  .stat b {
+    font-family: var(--mono);
+    font-size: 25px;
+    font-weight: 500;
+    letter-spacing: -.02em;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.1;
+  }
+  .stat span { font-size: 11.5px; color: var(--ink-3); letter-spacing: .03em; }
+
+  .palette { padding: 18px 20px 16px; display: flex; flex-direction: column; gap: 12px; }
+  .palette-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+
+  .grid-modules { display: flex; gap: 18px; flex-wrap: wrap; }
+  .grid-module { display: flex; flex-direction: column; gap: 6px; }
+  .grid-cells { display: flex; gap: 4px; }
+  .grid-module-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: .1em;
+    color: var(--ink-3);
+    text-transform: uppercase;
+  }
+
+  .cell {
+    width: 22px; height: 22px;
+    padding: 0;
+    border: 1px solid;
+    background: transparent;
+    cursor: pointer;
+    position: relative;
+    transition: background-color .18s ease, transform .12s ease;
+  }
+  .cell:hover { transform: translateY(-2px); }
+  .cell[data-done="1"] { background: var(--cell); border-color: var(--cell); }
+  .cell[data-done="0"] { border-color: color-mix(in srgb, var(--cell) 45%, transparent); }
+  .cell[data-done="0"]::after {
+    content: ""; position: absolute; inset: 4px;
+    background: color-mix(in srgb, var(--cell) 16%, transparent);
+  }
+
+  /* ── Start here ───────────────────────────────────────────── */
+  .starthere {
+    background: var(--panel);
+    border: 1px solid var(--rule);
+    padding: 16px 20px 18px;
+    display: flex; flex-direction: column; gap: 12px;
+  }
+  .starthere-list { display: flex; flex-wrap: wrap; gap: 8px 26px; }
+  .step {
+    display: flex; align-items: flex-start; gap: 9px;
+    font-size: 13.5px; color: var(--ink-2);
+    cursor: pointer;
+  }
+  .step input { margin: 3px 0 0; accent-color: var(--focus); }
+  .step[data-checked="1"] { color: var(--ink-3); text-decoration: line-through; text-decoration-color: var(--rule-strong); }
+
+  /* ── Controls ─────────────────────────────────────────────── */
+  .controls {
+    position: sticky; top: 0; z-index: 20;
+    margin: 0 -22px;
+    background: color-mix(in srgb, var(--ground) 90%, transparent);
+    backdrop-filter: blur(10px);
+    border-top: 1px solid var(--rule);
+    border-bottom: 1px solid var(--rule);
+    padding: 12px 22px;
+    display: flex; flex-direction: column; gap: 12px;
+  }
+  .chips { display: flex; gap: 8px; flex-wrap: wrap; }
+
+  .chip {
+    position: relative;
+    display: flex; align-items: center; gap: 8px;
+    padding: 7px 12px 9px;
+    background: var(--panel);
+    border: 1px solid var(--rule);
+    color: var(--ink-2);
+    font-family: var(--sans);
+    font-size: 13px;
+    cursor: pointer;
+    overflow: hidden;
+    transition: border-color .15s ease, color .15s ease, background-color .15s ease;
+  }
+  .chip:hover { border-color: var(--rule-strong); color: var(--ink); }
+  .chip[aria-pressed="true"] {
+    color: var(--ink);
+    border-color: color-mix(in srgb, var(--tint) 60%, var(--rule));
+    background: color-mix(in srgb, var(--tint) 12%, var(--panel));
+  }
+  .chip .sw { width: 11px; height: 11px; background: var(--tint); flex: none; }
+  .chip .ct {
+    font-family: var(--mono); font-size: 11.5px;
+    font-variant-numeric: tabular-nums; color: var(--ink-3);
+  }
+  .chip .meter {
+    position: absolute; left: 0; bottom: 0; height: 3px;
+    background: var(--tint);
+    transition: width .3s ease;
+  }
+  .chip.plain .sw { display: none; }
+
+  .controls-row { display: flex; gap: 10px 18px; align-items: center; flex-wrap: wrap; }
+  .seg { display: flex; border: 1px solid var(--rule); background: var(--panel); }
+  .seg button {
+    padding: 6px 11px;
+    background: transparent; border: 0;
+    font-family: var(--sans); font-size: 12.5px; color: var(--ink-3);
+    cursor: pointer;
+  }
+  .seg button + button { border-left: 1px solid var(--rule); }
+  .seg button[aria-pressed="true"] { background: var(--panel-2); color: var(--ink); }
+  .field-label { font-family: var(--mono); font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-3); }
+  .spacer { flex: 1 1 auto; }
+
+  .linkbtn {
+    background: none; border: 0; padding: 4px 2px;
+    font-family: var(--sans); font-size: 12.5px; color: var(--ink-3);
+    cursor: pointer; text-decoration: underline; text-underline-offset: 3px;
+    text-decoration-color: var(--rule-strong);
+  }
+  .linkbtn:hover { color: var(--ink); }
+
+  .count-note { font-family: var(--mono); font-size: 11.5px; color: var(--ink-3); font-variant-numeric: tabular-nums; }
+
+  /* ── Modules ──────────────────────────────────────────────── */
+  main { display: flex; flex-direction: column; gap: 40px; }
+  .module { display: flex; flex-direction: column; gap: 16px; scroll-margin-top: 120px; }
+  .module[hidden] { display: none; }
+
+  .module-head { display: flex; gap: 16px; align-items: baseline; border-bottom: 1px solid var(--rule-strong); padding-bottom: 10px; }
+  .module-letter {
+    font-family: var(--serif); font-size: 30px; line-height: 1;
+    color: var(--ink-3); font-weight: 400; width: 1.1em; flex: none;
+  }
+  .module-head h2 { font-family: var(--serif); font-size: 22px; font-weight: 400; letter-spacing: -.01em; }
+  .module-head p { font-size: 13px; color: var(--ink-3); max-width: 52ch; }
+  .module-head .mh-text { display: flex; flex-direction: column; gap: 3px; }
+
+  .cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+  @media (max-width: 880px) { .cards { grid-template-columns: 1fr; } }
+
+  .sketch {
+    background: var(--panel);
+    border: 1px solid var(--rule);
+    padding: 15px 17px 13px;
+    display: flex; flex-direction: column; gap: 10px;
+    scroll-margin-top: 130px;
+  }
+  .sketch[hidden] { display: none; }
+  .sketch[data-done="1"] { border-color: color-mix(in srgb, var(--tint) 42%, var(--rule)); }
+  .sketch.flash { animation: flash .9s ease; }
+  @keyframes flash {
+    0%   { box-shadow: 0 0 0 3px color-mix(in srgb, var(--tint) 55%, transparent); }
+    100% { box-shadow: 0 0 0 3px transparent; }
+  }
+
+  .e-top { display: flex; gap: 12px; align-items: flex-start; }
+
+  .mark {
+    flex: none; width: 30px; height: 30px; padding: 2px;
+    display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 2px;
+    background: transparent; border: 1px solid var(--rule-strong);
+    cursor: pointer;
+  }
+  .mark i { display: block; background: var(--px); opacity: .2; transition: opacity .18s ease; }
+  .mark:hover i { opacity: .45; }
+  .sketch[data-done="1"] .mark { border-color: color-mix(in srgb, var(--tint) 65%, transparent); }
+  .sketch[data-done="1"] .mark i { opacity: 1; }
+
+  .e-headline { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
+  .e-id {
+    font-family: var(--mono); font-size: 11px; letter-spacing: .1em;
+    color: var(--ink-3);
+  }
+  .sketch h3 { font-size: 15.5px; letter-spacing: -.005em; line-height: 1.3; }
+
+  .e-time {
+    flex: none; font-family: var(--mono); font-size: 11px;
+    color: var(--ink-2); font-variant-numeric: tabular-nums;
+    border: 1px solid var(--rule); padding: 3px 6px; white-space: nowrap;
+  }
+
+  .e-blurb { font-size: 13.5px; color: var(--ink-2); }
+  .e-teach { font-size: 12.5px; color: var(--ink-3); }
+  .e-teach b { font-family: var(--mono); font-size: 10px; letter-spacing: .1em; text-transform: uppercase; font-weight: 400; color: var(--ink-3); }
+
+  .tags { display: flex; gap: 6px; flex-wrap: wrap; }
+  .tag {
+    font-family: var(--mono); font-size: 10.5px; letter-spacing: .04em;
+    padding: 2px 7px;
+    color: var(--tone);
+    background: color-mix(in srgb, var(--tone) 13%, transparent);
+    border: 1px solid color-mix(in srgb, var(--tone) 26%, transparent);
+  }
+
+  .links { display: flex; gap: 6px 14px; flex-wrap: wrap; }
+  .links a {
+    font-size: 12.5px; color: var(--ink-2);
+    text-decoration: underline; text-decoration-color: var(--rule-strong);
+    text-underline-offset: 3px;
+    display: inline-flex; align-items: baseline; gap: 5px;
+  }
+  .links a:hover { color: var(--ink); text-decoration-color: currentColor; }
+  .links .kind { font-family: var(--mono); font-size: 9.5px; color: var(--ink-3); }
+
+  .e-foot {
+    margin-top: auto; padding-top: 10px; border-top: 1px solid var(--rule);
+    display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  }
+  .reps { display: flex; align-items: center; gap: 6px; }
+  .reps button {
+    width: 22px; height: 22px; line-height: 1;
+    background: var(--panel-2); border: 1px solid var(--rule);
+    color: var(--ink-2); cursor: pointer; font-family: var(--mono); font-size: 13px;
+  }
+  .reps button:hover { color: var(--ink); border-color: var(--rule-strong); }
+  .reps .n {
+    font-family: var(--mono); font-size: 12px; color: var(--ink-2);
+    font-variant-numeric: tabular-nums; min-width: 3.2em;
+  }
+  .stamp { font-family: var(--mono); font-size: 10.5px; color: var(--ink-3); }
+
+  .notes-toggle {
+    margin-left: auto;
+    background: none; border: 0; padding: 2px;
+    font-family: var(--mono); font-size: 10.5px; letter-spacing: .08em; text-transform: uppercase;
+    color: var(--ink-3); cursor: pointer;
+  }
+  .notes-toggle:hover { color: var(--ink); }
+  .notes-toggle[data-has="1"] { color: var(--tint); }
+
+  .notes textarea {
+    width: 100%; min-height: 62px; resize: vertical;
+    background: var(--ground); color: var(--ink);
+    border: 1px solid var(--rule); padding: 8px 10px;
+    font-family: var(--sans); font-size: 13px; line-height: 1.5;
+  }
+  .notes textarea::placeholder { color: var(--ink-3); }
+
+  /* ── Workbench ────────────────────────────────────────────── */
+  .section-head { display: flex; flex-direction: column; gap: 4px; border-bottom: 1px solid var(--rule-strong); padding-bottom: 10px; }
+  .section-head h2 { font-family: var(--serif); font-size: 24px; font-weight: 400; }
+  .section-head p { font-size: 13px; color: var(--ink-3); max-width: 60ch; }
+
+  .bench { display: flex; flex-direction: column; gap: 10px; }
+
+  details.tool {
+    background: var(--panel);
+    border: 1px solid var(--rule);
+  }
+  details.tool[hidden] { display: none; }
+  details.tool > summary {
+    list-style: none; cursor: pointer;
+    padding: 13px 18px;
+    display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  }
+  .bench-sw {
+    flex: none; width: 18px; height: 18px; padding: 1px;
+    display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 2px;
+    border: 1px solid color-mix(in srgb, var(--tint) 55%, transparent);
+  }
+  .bench-sw i { background: var(--tint); }
+  details.tool > summary::-webkit-details-marker { display: none; }
+  details.tool > summary::after {
+    content: "+"; margin-left: auto;
+    font-family: var(--mono); font-size: 15px; color: var(--ink-3);
+  }
+  details.tool[open] > summary::after { content: "–"; }
+  details.tool > summary h3 { font-size: 15px; }
+  details.tool > summary .sub { font-size: 12.5px; color: var(--ink-3); }
+
+  .tool-body {
+    padding: 16px 18px 20px;
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 22px;
+    border-top: 1px solid var(--rule);
+  }
+  .block { display: flex; flex-direction: column; gap: 8px; }
+  .block h4 {
+    margin: 0; font-family: var(--mono); font-size: 10.5px; letter-spacing: .12em;
+    text-transform: uppercase; color: var(--ink-3); font-weight: 400;
+  }
+  .block ul { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 7px; }
+  .block li { font-size: 13px; color: var(--ink-2); display: flex; gap: 8px; }
+  .block li::before { content: "▪"; color: var(--tint); flex: none; font-size: 10px; line-height: 1.7; }
+  .block li b { color: var(--ink); font-weight: 600; }
+  .block li code {
+    font-family: var(--mono); font-size: 11.5px;
+    background: var(--panel-2); padding: 1px 4px; color: var(--ink);
+  }
+  .block a { color: var(--ink); text-decoration-color: var(--rule-strong); text-underline-offset: 3px; }
+  .block a:hover { text-decoration-color: currentColor; }
+
+  /* ── Practice / caveats ───────────────────────────────────── */
+  .notes-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 18px; }
+  .note-card {
+    background: var(--panel); border: 1px solid var(--rule);
+    padding: 16px 18px 18px; display: flex; flex-direction: column; gap: 10px;
+  }
+  .note-card h3 { font-family: var(--serif); font-size: 17px; font-weight: 400; }
+  .note-card ul { margin: 0; padding-left: 0; list-style: none; display: flex; flex-direction: column; gap: 8px; }
+  .note-card li { font-size: 13px; color: var(--ink-2); }
+  .note-card li b { color: var(--ink); font-weight: 600; }
+  .note-card a { color: var(--ink); text-decoration-color: var(--rule-strong); text-underline-offset: 3px; }
+
+  .empty {
+    padding: 40px 0; text-align: center; color: var(--ink-3);
+    font-family: var(--serif); font-size: 16px;
+  }
+  .empty[hidden] { display: none; }
+
+  footer {
+    border-top: 1px solid var(--rule);
+    padding-top: 16px;
+    display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap;
+    font-size: 12px; color: var(--ink-3);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+  }
+</style>
+
+<div class="page">
+
+  <header class="masthead">
+    <div class="mast-top">
+      <span class="eyebrow">Practice log · Godot 4 · Aseprite · Audacity · FL Studio</span>
+      <span class="eyebrow" id="lastSession">—</span>
+    </div>
+    <h1>The Gamedev <em>Sketchbook</em></h1>
+    <p class="standfirst">A menu of small, self-contained sketches — not a course to finish. Pick by mood,
+      size the session to the time you actually have, and re-do anything that felt good. The doing is the
+      point; nothing here needs shipping.</p>
+  </header>
+
+  <section class="ledger" aria-label="Progress">
+    <div class="stats">
+      <div class="stat"><b id="statDone">0/26</b><span>sketches practiced</span></div>
+      <div class="stat"><b id="statReps">0</b><span>sessions logged</span></div>
+      <div class="stat"><b id="statModules">0/6</b><span>modules complete</span></div>
+    </div>
+    <div class="palette">
+      <div class="palette-head">
+        <span class="eyebrow">One cell per sketch — the palette fills as you practice</span>
+        <span class="count-note" id="paletteHint">click a cell to jump</span>
+      </div>
+      <div class="grid-modules" id="paletteGrid"></div>
+    </div>
+  </section>
+
+  <section class="starthere" aria-label="Start here">
+    <span class="eyebrow">Start here — first two weeks, ~30 min a session</span>
+    <div class="starthere-list" id="startList"></div>
+  </section>
+
+  <nav class="controls" aria-label="Filters">
+    <div class="chips" id="toolChips"></div>
+    <div class="controls-row">
+      <span class="field-label">Status</span>
+      <div class="seg" id="statusSeg">
+        <button type="button" data-v="all" aria-pressed="true">All</button>
+        <button type="button" data-v="todo" aria-pressed="false">Not yet</button>
+        <button type="button" data-v="done" aria-pressed="false">Practiced</button>
+      </div>
+      <span class="field-label">Session</span>
+      <div class="seg" id="lengthSeg">
+        <button type="button" data-v="all" aria-pressed="true">Any</button>
+        <button type="button" data-v="s" aria-pressed="false">≤30 min</button>
+        <button type="button" data-v="m" aria-pressed="false">31–60</button>
+        <button type="button" data-v="l" aria-pressed="false">60+</button>
+      </div>
+      <span class="spacer"></span>
+      <span class="count-note" id="visibleCount"></span>
+      <button type="button" class="linkbtn" id="btnExport">Export</button>
+      <button type="button" class="linkbtn" id="btnImport">Import</button>
+      <button type="button" class="linkbtn" id="btnReset">Reset</button>
+      <input type="file" id="fileInput" accept="application/json" hidden />
+    </div>
+  </nav>
+
+  <main>
+    <div id="modules"></div>
+    <p class="empty" id="emptyState" hidden>Nothing matches those filters.</p>
+
+    <section id="workbench">
+      <div class="section-head">
+        <h2>The workbench</h2>
+        <p>Settings, addons and the people worth learning from — per tool. These panels follow the tool
+          filter above, so filtering down to one tool leaves only its setup on screen.</p>
+      </div>
+      <div class="bench" id="benchList"></div>
+    </section>
+
+    <section id="practice">
+      <div class="section-head">
+        <h2>How to practice this</h2>
+        <p>Cadence, places to practice in company, and the things that will go stale.</p>
+      </div>
+      <div class="notes-grid" id="practiceGrid"></div>
+    </section>
+  </main>
+
+  <footer>
+    <span>Progress is stored in this browser only — use Export to keep a copy.</span>
+    <span id="footNote"></span>
+  </footer>
+</div>
+
+<script>
+(() => {
+  "use strict";
+
+  /* ── Data ────────────────────────────────────────────────── */
+
+  const TOOLS = {
+    godot:    { name: "Godot 4",   sub: "engine, GDScript, scene tree", varName: "--c-godot" },
+    aseprite: { name: "Aseprite",  sub: "pixel art and animation",      varName: "--c-aseprite" },
+    audacity: { name: "Audacity",  sub: "SFX editing + free generators", varName: "--c-audacity" },
+    fl:       { name: "FL Studio", sub: "game music and chiptune",      varName: "--c-fl" },
+    shader:   { name: "Shaders",   sub: "GDShader — lives inside Godot", varName: "--c-shader" }
+  };
+
+  const L = (label, url) => ({ label, url, kind: "link" });
+  const YT = (label, q) => ({ label, url: "https://www.youtube.com/results?search_query=" + encodeURIComponent(q), kind: "search" });
+  const WEB = (label, q) => ({ label, url: "https://www.google.com/search?q=" + encodeURIComponent(q), kind: "search" });
+
+  const MODULES = [
+    { id: "A", title: "Godot game-feel sketches",  blurb: "Make one thing feel good, and nothing else. No goal, no enemies, no game." },
+    { id: "B", title: "Aseprite sketches",         blurb: "Small finished pieces — frame economy, palette discipline, and the pipeline into Godot." },
+    { id: "C", title: "Audacity + SFX sketches",   blurb: "The generators create, Audacity shapes. Each one ends in a file you could drop into a game." },
+    { id: "D", title: "FL Studio game-music sketches", blurb: "Loops, layers and stingers — the game-music idioms your theory background doesn't already cover." },
+    { id: "E", title: "Shader sketches",           blurb: "GDShader, one effect at a time, on a sprite you already have." },
+    { id: "F", title: "Toy sketches — all tools",  blurb: "The payoff: one sprite, one sound and one bit of code that together feel great." }
+  ];
+
+  const SKETCHES = [
+    { id: "A1", m: "A", t: "The good-movement character", time: "45–90 min", mins: 90, tools: ["godot"],
+      blurb: "A top-down or side-scroll character that feels great to move — acceleration, friction, coyote time, a touch of input buffering. Nothing else.",
+      teach: "_physics_process, the input map, tuning constants by feel, @export for live tweaking.",
+      links: [L("CharacterBody2D docs", "https://docs.godotengine.org/en/stable/classes/class_characterbody2d.html"), YT("Coding Quests — Game Juice in Godot 4", "Coding Quests Game Juice in Godot 4"), L("The Art of Screenshake", "https://www.youtube.com/watch?v=AJdEqssNZ-U")] },
+
+    { id: "A2", m: "A", t: "Screenshake that feels good", time: "30 min", mins: 30, tools: ["godot"],
+      blurb: "A decaying camera shake where a light action requests a little and a heavy one requests a lot — strongest request wins. Make it toggleable; it's a motion-sickness trigger for some people.",
+      teach: "Phantom Camera / Camera2D, tweens, noise-driven offset, accessibility as a default.",
+      links: [YT("Quality screen shake in Godot 4", "Quality Screen Shake in Godot 4.4"), L("Phantom Camera", "https://github.com/ramokz/phantom-camera"), WEB("Juicee plugin — read the source", "Juicee godot game feel plugin github Kelpekk")] },
+
+    { id: "A3", m: "A", t: "Hitstop", time: "20 min", mins: 20, tools: ["godot"],
+      blurb: "Freeze the game for ~80 ms on impact using a timer that ignores time_scale, then snap back.",
+      teach: "Engine.time_scale, frame-independent timers, why a pause reads as connection.",
+      links: [L("Timer — process callback & ignore_time_scale", "https://docs.godotengine.org/en/stable/classes/class_timer.html"), YT("Hit stop in Godot 4", "hitstop hit stop godot 4 tutorial")] },
+
+    { id: "A4", m: "A", t: "Squash & stretch on landing", time: "30 min", mins: 30, tools: ["godot"],
+      blurb: "Drive a sprite's scale with a small damped spring so the squash overshoots into a stretch and settles.",
+      teach: "Tweens vs springs, overshoot, Disney's first principle written as code.",
+      links: [L("Tween docs", "https://docs.godotengine.org/en/stable/classes/class_tween.html"), YT("Godot 4 Tween tutorial — Coding Quests", "Coding Quests Godot 4 Tween Tutorial")] },
+
+    { id: "A5", m: "A", t: "One satisfying particle burst", time: "30 min", mins: 30, tools: ["godot"],
+      blurb: "A self-freeing GPUParticles2D burst — dust or coin sparkle — that fires everything at once and cleans itself up.",
+      teach: "Particle systems, one-shot emission, objects that manage their own lifetime.",
+      links: [L("GPUParticles2D docs", "https://docs.godotengine.org/en/stable/classes/class_gpuparticles2d.html"), YT("Godot 4 particles one shot burst", "godot 4 GPUParticles2D one shot burst tutorial")] },
+
+    { id: "A6", m: "A", t: "Tween sampler", time: "30 min", mins: 30, tools: ["godot"],
+      blurb: "Animate one UI element five ways — position, scale, rotation, modulate, and a sub-property like modulate:a — each with a different transition and ease.",
+      teach: "The Godot 4 Tween API and an intuition for easing curves.",
+      links: [L("Tween docs", "https://docs.godotengine.org/en/stable/classes/class_tween.html"), L("Tweens tutorial (official docs)", "https://docs.godotengine.org/en/stable/tutorials/animation/index.html")] },
+
+    { id: "B1", m: "B", t: "Six-frame torch loop", time: "30–45 min", mins: 45, tools: ["aseprite"],
+      blurb: "A torch or candle flame in exactly six frames that loops seamlessly. Onion skinning on.",
+      teach: "Frame economy, looping animation, onion skinning.",
+      links: [L("Saint11 pixel-art articles", "https://saint11.art/pixel_articles/"), YT("MortMort — Aseprite guide for beginners", "MortMort Aseprite Guide for Beginners Pixel Art Tutorial")] },
+
+    { id: "B2", m: "B", t: "16-tile autotiling set", time: "60–90 min", mins: 90, tools: ["aseprite", "godot"],
+      blurb: "A 16-tile tileset (or terrain set) that autotiles correctly in Godot's TileMapLayer. The full loop, art through import.",
+      teach: "Aseprite 1.3 tileset features, Godot terrain sets and peering bits, the Aseprite→Godot tileset pipeline.",
+      links: [YT("AdamCYounis — Aseprite 1.3 tileset workflow", "AdamCYounis Revisiting my tileset workflow for Aseprite 1.3"), L("TileMapLayer docs", "https://docs.godotengine.org/en/stable/classes/class_tilemaplayer.html"), L("Better Terrain (if built-in terrains fight you)", "https://github.com/Portponky/better-terrain")] },
+
+    { id: "B3", m: "B", t: "One palette, one scene", time: "45 min", mins: 45, tools: ["aseprite"],
+      blurb: "Build and lock a 16-colour palette, then paint a small prop or character using only it. No sneaking in a 17th.",
+      teach: "Palette discipline, colour ramps, constraint as a creative tool.",
+      links: [L("Saint11 — colour theory & palette articles", "https://saint11.art/pixel_articles/"), YT("Brandon James Greer — palettes", "Brandon James Greer pixel art palette tutorial")] },
+
+    { id: "B4", m: "B", t: "Sub-pixel walk cycle", time: "60 min", mins: 60, tools: ["aseprite"],
+      blurb: "A 4–8 frame walk cycle with real attention to sub-pixel movement and anticipation.",
+      teach: "Animation principles at pixel scale — frame counts, readability, snappiness.",
+      links: [YT("AdamCYounis — pixel art animation", "AdamCYounis pixel art walk cycle animation tutorial"), L("Saint11 — animation articles", "https://saint11.art/pixel_articles/")] },
+
+    { id: "B5", m: "B", t: "9-slice a panel", time: "20 min", mins: 20, tools: ["aseprite", "godot"],
+      blurb: "A UI panel drawn with slices in Aseprite, imported as a 9-patch StyleBox in Godot.",
+      teach: "Slices, 9-patch, the UI asset pipeline end to end.",
+      links: [L("Aseprite docs — slices", "https://www.aseprite.org/docs/slices/"), L("NinePatchRect docs", "https://docs.godotengine.org/en/stable/classes/class_ninepatchrect.html")] },
+
+    { id: "C1", m: "C", t: "One impact from three layers", time: "30 min", mins: 30, tools: ["audacity"],
+      blurb: "One satisfying hit built from three sources — a ChipTone hit, a body thump, a transient click — then EQ'd and trimmed.",
+      teach: "Layering, transient design, the sub / body / click model.",
+      links: [L("ChipTone", "https://sfbgames.itch.io/chiptone"), YT("Marshall McGee — making a punch sound", "Marshall McGee making a powerful punch sound from scratch"), L("jsfxr", "https://sfxr.me/")] },
+
+    { id: "C2", m: "C", t: "The seamless loop trim", time: "20 min", mins: 20, tools: ["audacity", "godot"],
+      blurb: "Take a 30-second ambient bed, trim it to loop seamlessly on zero crossings (Z), export OGG, and verify the loop in Godot's import tab.",
+      teach: "Zero crossings, loop points, OGG-vs-MP3 padding, the Godot import Loop flag.",
+      links: [L("Importing audio samples (Godot docs)", "https://docs.godotengine.org/en/stable/tutorials/assets_pipeline/importing_audio_samples.html"), WEB("How to create a seamless loop", "how to create a seamless audio loop audacity zero crossing")] },
+
+    { id: "C3", m: "C", t: "Pitch a family of sounds", time: "20 min", mins: 20, tools: ["audacity", "godot"],
+      blurb: "One footstep or coin becomes five variations via small pitch and volume shifts, then goes into an AudioStreamRandomizer.",
+      teach: "Variation, AudioStreamRandomizer, escaping robotic repetition.",
+      links: [L("AudioStreamRandomizer docs", "https://docs.godotengine.org/en/stable/classes/class_audiostreamrandomizer.html"), YT("Akash Thakkar — essential sound design techniques", "Akash Thakkar video game sound design 4 essential techniques")] },
+
+    { id: "C4", m: "C", t: "Batch cleanup", time: "15 min", mins: 15, tools: ["audacity"],
+      blurb: "Grab or record five raw sounds, then build a Macro that normalises, trims silence and exports them all as WAV.",
+      teach: "Macros and batch export — the unglamorous pipeline that saves every later session.",
+      links: [L("Audacity manual — Macros", "https://manual.audacityteam.org/man/macros.html"), L("freesound.org (raw material)", "https://freesound.org/")] },
+
+    { id: "D1", m: "D", t: "30-second seamless loop", time: "45–90 min", mins: 90, tools: ["fl"],
+      blurb: "A 30-second chiptune loop in Magical 8bit Plug 2 that repeats without a seam. Export OGG, cut the remainder.",
+      teach: "Loop-based composition, seam management, chiptune voicing under channel constraints.",
+      links: [L("Magical 8bit Plug 2", "https://ymck.net/app/magical-8bit-plug-en"), WEB("Composing game music — beginner's guide", "GameMaker beginner's guide to composing game music")] },
+
+    { id: "D2", m: "D", t: "Vertical layering pair", time: "60–90 min", mins: 90, tools: ["fl", "godot"],
+      blurb: "Two stems of identical length, tempo and key — a calm 'explore' layer and a 'combat' layer — that work alone and together. Cross-fade them in Godot with two AudioStreamPlayers.",
+      teach: "Vertical layering, stem discipline, adaptive-music thinking without middleware.",
+      links: [WEB("Vertical vs horizontal adaptive music", "vertical layering vs horizontal resequencing game music"), L("AudioStreamPlayer docs", "https://docs.godotengine.org/en/stable/classes/class_audiostreamplayer.html"), WEB("A Composer's Guide to Game Music — Phillips", "Winifred Phillips A Composer's Guide to Game Music MIT Press")] },
+
+    { id: "D3", m: "D", t: "Horizontal resequence", time: "60 min", mins: 60, tools: ["fl"],
+      blurb: "Two short sections — an A 'verse' and a B 'boss' — plus a stinger that carries you from one to the other.",
+      teach: "Horizontal resequencing, transitions, what a stinger has to do in under two seconds.",
+      links: [WEB("Adaptive music in games — explainer", "adaptive music horizontal resequencing games guide")] },
+
+    { id: "D4", m: "D", t: "One-channel melody sketch", time: "20 min", mins: 20, tools: ["fl"],
+      blurb: "A memorable melody constrained to a single pulse channel, NES-style. No harmony to hide behind.",
+      teach: "Melodic economy under hard constraints.",
+      links: [L("Magical 8bit Plug 2", "https://ymck.net/app/magical-8bit-plug-en")] },
+
+    { id: "E1", m: "E", t: "Dissolve shader", time: "45 min", mins: 45, tools: ["godot", "shader"],
+      blurb: "A dissolve/burn on a sprite, driven by a noise texture and a threshold uniform you can scrub.",
+      teach: "Fragment shaders, uniforms, noise, exposing shader params to the inspector.",
+      links: [L("Godot Shaders library", "https://godotshaders.com/"), WEB("Introduction to shaders in Godot 4 — Kodeco", "Kodeco introduction to shaders in Godot 4")] },
+
+    { id: "E2", m: "E", t: "Hit flash", time: "20 min", mins: 20, tools: ["godot", "shader"],
+      blurb: "Flash a sprite white on hit by mixing toward white with a uniform. The single most-used 2D game shader there is.",
+      teach: "Driving shader uniforms from code, and how little it takes to sell an impact.",
+      links: [L("Godot Shaders library", "https://godotshaders.com/"), L("Shading reference (docs)", "https://docs.godotengine.org/en/stable/tutorials/shaders/index.html")] },
+
+    { id: "E3", m: "E", t: "Palette-cycle / scrolling water", time: "30 min", mins: 30, tools: ["godot", "shader"],
+      blurb: "Recreate an old-school colour-cycling or UV-scroll effect on a tile or sprite.",
+      teach: "UV manipulation, TIME, retro techniques that cost nothing.",
+      links: [L("The Book of Shaders, ported to Godot", "https://jayaarrgh.itch.io/book-of-shaders-godot"), L("Godot Shaders library", "https://godotshaders.com/")] },
+
+    { id: "F1", m: "F", t: "The juicy button", time: "45 min", mins: 45, tools: ["godot", "aseprite", "audacity", "shader"],
+      blurb: "A button that pops on hover, clicks with your own SFX, and flashes with your own shader. Nothing else on screen.",
+      teach: "The whole feedback loop across all four crafts, in miniature.",
+      links: [L("Tween docs", "https://docs.godotengine.org/en/stable/classes/class_tween.html"), L("jsfxr", "https://sfxr.me/")] },
+
+    { id: "F2", m: "F", t: "The satisfying pickup", time: "45 min", mins: 45, tools: ["godot", "aseprite", "audacity"],
+      blurb: "A coin: spin animation, a pickup sound that rises a semitone per grab, a sparkle burst, a floating +1.",
+      teach: "Multi-tool feedback layering — the juice thesis in one object.",
+      links: [L("AudioStreamRandomizer docs", "https://docs.godotengine.org/en/stable/classes/class_audiostreamrandomizer.html"), L("The Art of Screenshake", "https://www.youtube.com/watch?v=AJdEqssNZ-U")] },
+
+    { id: "F3", m: "F", t: "The impact", time: "60 min", mins: 60, tools: ["godot", "aseprite", "audacity", "shader"],
+      blurb: "An enemy that, when hit, does hitstop + white flash + screenshake + a three-layer impact sound + a particle burst. No health system. No game. Just the hit.",
+      teach: "Orchestrating game feel across code, art and audio — the Screenshake talk made real.",
+      links: [L("The Art of Screenshake", "https://www.youtube.com/watch?v=AJdEqssNZ-U"), YT("Juice it or lose it", "Juice it or lose it Martin Jonasson Petri Purho")] },
+
+    { id: "F4", m: "F", t: "The living torch", time: "30 min", mins: 30, tools: ["godot", "aseprite", "audacity"],
+      blurb: "Your six-frame torch (B1) + a looping crackle + a subtle light flicker. One atmospheric object, nothing around it.",
+      teach: "Sprite, audio and code atmosphere; looping across two different media at once.",
+      links: [L("PointLight2D docs", "https://docs.godotengine.org/en/stable/classes/class_pointlight2d.html"), L("freesound.org", "https://freesound.org/")] }
+  ];
+
+  const START_STEPS = [
+    { id: "s1", label: "Install Godot 4.5.x (or 4.6.x) + Aseprite Wizard, Phantom Camera, GDScript Formatter" },
+    { id: "s2", label: "Run through GDQuest's Learn GDScript From Zero at speed" },
+    { id: "s3", label: "Do A1 — the good-movement character" },
+    { id: "s4", label: "Watch The Art of Screenshake once — it reframes everything" }
+  ];
+
+  const BENCH = [
+    {
+      tool: "godot",
+      title: "Godot 4",
+      sub: "Install 4.5.x stable or 4.6.x — pick one and stay put",
+      blocks: [
+        { h: "Settings to make once", items: [
+          "Standard build, not .NET, unless you specifically want C#.",
+          "<b>Editor Settings → Aseprite</b>: point at your Aseprite executable so the importer works.",
+          "<b>Project Settings → Input Map</b>: never hardcode keys, not even in a throwaway sketch.",
+          "<b>Project Settings → Autoload</b>: for things that must outlive scene changes — score, save data, audio manager, event bus.",
+          "Audio buses: Master / Music / SFX, with a Compressor on Music if you want ducking."
+        ]},
+        { h: "Addons", items: [
+          '<a href="https://github.com/viniciusgerevini/godot-aseprite-wizard">Aseprite Wizard</a> — imports .aseprite directly; tags become animations, slices and tilesets come across. The one that matters most here.',
+          '<a href="https://github.com/ramokz/phantom-camera">Phantom Camera</a> — Cinemachine-style virtual cameras; makes follow, smoothing and framing trivial.',
+          '<a href="https://godotengine.org/asset-library/asset?filter=GDScript+Formatter">GDScript Formatter</a> — in-editor formatting (Asset Library search).',
+          '<a href="https://github.com/bitbrain/beehave">Beehave</a> — behaviour trees with a visual runtime debugger, if you get to AI.',
+          '<a href="https://github.com/nathanhoad/godot_dialogue_manager">Dialogue Manager</a> — stateless branching dialogue.',
+          '<a href="https://github.com/Portponky/better-terrain">Better Terrain</a> — install this the moment built-in terrain painting frustrates you.'
+        ]},
+        { h: "Idioms worth internalising", items: [
+          "<b>Scenes, not ECS.</b> Composition via scenes-as-prefabs. Don't hand-roll an entity system to fight it.",
+          "<b>Signals are first-class.</b> Buttons, collisions, timers, decoupling. An autoload holding nothing but signals is the idiomatic event bus.",
+          "<b>Resources (.tres) as data.</b> Custom Resource classes for stats, items and tuning tables — designer-facing and serialisable.",
+          "<code>@export</code> every tuning knob so you can feel changes without recompiling.",
+          "<code>_process</code> for visuals and input polling, <code>_physics_process</code> for movement. Mixing them up is what jitter is.",
+          "<b>AnimationPlayer</b> for authored sequences (its tracks can call methods and emit signals); <b>AnimationTree</b> for blending and state.",
+          "<b>TileMapLayer</b> — one node per layer since 4.3; terrain sets and peering bits for autotiling.",
+          "<code>@tool</code> scripts run in the editor when you want live preview."
+        ]},
+        { h: "Teachers", items: [
+          '<a href="https://docs.godotengine.org/">Official docs</a> — "Your first 2D game" plus the class reference. Always current.',
+          '<a href="https://www.gdquest.com/library/learn_gdscript_from_zero/">GDQuest — Learn GDScript From Zero</a> — free, in-browser, an hour or two at your level.',
+          '<a href="https://school.gdquest.com/">GDQuest school &amp; library</a> — current Godot 4 path.',
+          '<a href="https://www.youtube.com/results?search_query=Clear+Code+ultimate+introduction+to+Godot+4">Clear Code — The ultimate introduction to Godot 4</a> (~11 h, free).',
+          '<a href="https://www.youtube.com/results?search_query=Brackeys+godot+beginner+tutorial">Brackeys — Godot beginner series</a>, and DevWorm for focused 2024–25 topics.',
+          "Check upload dates. HeartBeast, KidsCanCode and BornCG have deep Godot 3 back-catalogues."
+        ]}
+      ]
+    },
+    {
+      tool: "aseprite",
+      title: "Aseprite",
+      sub: "Set it up once so the Godot side is automatic",
+      blocks: [
+        { h: "Settings to make once", items: [
+          "Fixed grid matching your sprite size.",
+          "Pixel-perfect pencil on.",
+          "<b>Tags</b> for every animation — they become Godot animations verbatim.",
+          "Frame durations in milliseconds; the importer converts to Godot FPS.",
+          "Lean on the <b>update-on-save</b> pipeline: saving the .aseprite file updates the texture in Godot.",
+          "<b>Slices</b> for regions, UI and 9-patch StyleBoxes."
+        ]},
+        { h: "Craft", items: [
+          "Build and lock a limited palette before you draw. Constraint is the point.",
+          "Squash/stretch, anticipation, low frame counts — few frames read as snappy, not cheap.",
+          "Sub-pixel movement is what makes small animations feel smooth."
+        ]},
+        { h: "Teachers", items: [
+          '<a href="https://saint11.art/pixel_articles/">Saint11 (Pedro Medeiros)</a> — the canonical free tip archive. Start here.',
+          '<a href="https://www.youtube.com/results?search_query=AdamCYounis+aseprite">AdamCYounis</a> — the deepest Aseprite channel; his 1.3 tileset workflow video is the reference.',
+          '<a href="https://www.youtube.com/results?search_query=Brandon+James+Greer+pixel+art">Brandon James Greer</a> — concise technique: shading, palettes, coherency.',
+          '<a href="https://www.youtube.com/results?search_query=MortMort+aseprite+guide+for+beginners">MortMort</a> — the beginner classic. No new content, but the back catalogue holds up.',
+          '<a href="https://www.aseprite.org/docs/">Aseprite docs</a> — tags, slices, onion skinning, tilesets.'
+        ]}
+      ]
+    },
+    {
+      tool: "audacity",
+      title: "Audacity + the free generators",
+      sub: "Audacity edits; it does not generate — pair it with a generator",
+      blocks: [
+        { h: "Settings to make once", items: [
+          "Project rate <b>44100 Hz</b>.",
+          "Learn the zero-crossing snap (<code>Z</code>) — it is the whole seamless-loop trick.",
+          "Export pipeline: <b>OGG Vorbis</b> for music, <b>WAV</b> for short SFX.",
+          "Enable <b>Macros</b> for repetitive batch edits.",
+          "In Godot: OGG in RAM costs roughly 10× its on-disk size, so keep short SFX as WAV."
+        ]},
+        { h: "Generators (not optional)", items: [
+          '<a href="https://sfxr.me/">jsfxr</a> — the modern browser go-to: jump, coin, laser, explosion presets.',
+          '<a href="https://www.bfxr.net/">Bfxr</a> — more waveforms, filters, a mixer.',
+          '<a href="https://sfbgames.itch.io/chiptone">ChipTone</a> — the most expressive free browser generator.',
+          '<a href="https://jfxr.frozenfractal.com/">jfxr</a> — another capable browser option.',
+          "Workflow: generate in ChipTone/jsfxr → layer 2–3 in Audacity → pitch, EQ, trim → export WAV."
+        ]},
+        { h: "Teachers, and when to leave", items: [
+          '<a href="https://www.youtube.com/results?search_query=Marshall+McGee+sound+design">Marshall McGee</a> — the clearest game-sound-design channel going.',
+          '<a href="https://akashthakkar.com/courses">Akash Thakkar</a> — techniques and free-tools videos (Hyper Light Drifter).',
+          '<a href="https://www.youtube.com/results?search_query=BlipSounds+sound+design+course">BlipSounds</a> — strong on implementation.',
+          "<b>Reaper</b> is the better long-term game-audio DAW (automation, VSTs, ReaScript, ~$60 personal licence). Switch only when you find yourself wanting automation or middleware — not before."
+        ]}
+      ]
+    },
+    {
+      tool: "fl",
+      title: "FL Studio",
+      sub: "You know the theory — this is DAW fluency plus game-music idiom",
+      blocks: [
+        { h: "Export settings for game audio", items: [
+          "SFX: <b>WAV</b>, short and uncompressed.",
+          "Music: <b>OGG Vorbis</b>. MP3 encoders add padding frames that break seamless loops; OGG does not.",
+          "Trim so loop start and end land on zero crossings.",
+          "<b>Cut remainder</b> for one-shots; leave the remainder only when you want a reverb or decay tail.",
+          "In Godot, set <b>Loop = true</b> in the import tab for the OGG."
+        ]},
+        { h: "Chiptune instruments", items: [
+          '<a href="https://ymck.net/app/magical-8bit-plug-en">Magical 8bit Plug 2</a> — the free gold standard: pseudo-triangle, 1-bit noise, arpeggiator, sweep. Music made with it is free for commercial use.',
+          "Plogue <b>chipsynth SFC</b> (SNES/SPC700) and <b>chipsounds</b> — paid, with demos, if constraints start feeling limiting rather than generative.",
+          "Skip Matt Montag's NES VST: legacy 32-bit Windows-only, may not load in modern 64-bit FL."
+        ]},
+        { h: "Teachers", items: [
+          '<a href="https://www.youtube.com/results?search_query=SeamlessR+FL+Studio">SeamlessR</a> — the deepest FL synthesis/sound-design educator.',
+          '<a href="https://www.youtube.com/results?search_query=In+The+Mix+FL+Studio">In The Mix</a> — production, mixing, mastering, FL-first.',
+          '<a href="https://www.youtube.com/@FL_STUDIO">Official FL Studio channel</a> — features and workflow.',
+          '<a href="https://www.google.com/search?q=Winifred+Phillips+A+Composer%27s+Guide+to+Game+Music">A Composer\'s Guide to Game Music</a> (Winifred Phillips, MIT Press, 2014) — the definitive text on loops, resequencing, layering, adaptive music.',
+          '<a href="https://online.berklee.edu/">Berklee Online</a> — Interactive Scoring for Games / Game Audio 101, paid and structured.'
+        ]}
+      ]
+    },
+    {
+      tool: "shader",
+      title: "Shaders (GDShader)",
+      sub: "Inside Godot, but a distinct language worth its own sketches",
+      blocks: [
+        { h: "Where to learn", items: [
+          '<a href="https://godotshaders.com/">Godot Shaders</a> — community library. Read and adapt rather than start blank.',
+          '<a href="https://jayaarrgh.itch.io/book-of-shaders-godot">The Book of Shaders, ported to Godot</a> — interactive, with a live editor, updated for Godot 4.',
+          '<a href="https://www.google.com/search?q=Kodeco+introduction+to+shaders+in+Godot+4">Kodeco — Introduction to Shaders in Godot 4</a> — fragment/vertex basics in GDShader.',
+          '<a href="https://www.google.com/search?q=Godot+Shaders+Bible+Jettelly">The Godot Shaders Bible</a> (Jettelly, paid) — 360+ pages, first edition completed for Godot 4.6.',
+          '<a href="https://kenney.nl/assets">Kenney assets</a> — free sprites to shade against so you never start from nothing.'
+        ]}
+      ]
+    }
+  ];
+
+  const PRACTICE = [
+    { h: "Cadence", items: [
+      "<b>Non-linear by design.</b> Pick by mood, in any order. Each sketch is self-contained.",
+      "<b>Log one line per session</b> — what you tried, what felt good. That's what the notes field on each card is for.",
+      "<b>Re-do things.</b> The rep counter exists because the second attempt at A1 six weeks later is the point, not a failure to progress.",
+      "<b>Permission to abandon.</b> Half-done is a complete sketch if you learned the thing.",
+      '<b>Not "one game a month."</b> That re-imports exactly the ship-it pressure you are escaping.'
+    ]},
+    { h: "Practise in company", items: [
+      '<a href="https://bp.io/pd">Pixel Dailies</a> — a daily prompt with no obligation to submit. The model deliberate-practice tradition.',
+      '<a href="https://godotwildjam.com/">Godot Wild Jam</a> — monthly, starts the 2nd Friday at 4 PM New York time and runs 9 full days. Community-voted theme; wildcards are optional and ignoring them costs no score.',
+      "Ludum Dare (~3×/year), GMTK Jam (annual), Brackeys Jam (twice/year) — bigger and occasional.",
+      "If you want a deadline's energy without ship pressure: enter one jam and deliberately abandon it half-done."
+    ]},
+    { h: "Never be blocked", items: [
+      '<a href="https://kenney.nl/assets">Kenney.nl</a> — huge CC0 packs.',
+      '<a href="https://opengameart.org/">OpenGameArt</a> and free itch.io asset packs.',
+      '<a href="https://freesound.org/">freesound.org</a> — Creative Commons source material.',
+      "Using someone else's placeholder art is not cheating in a sketch about movement."
+    ]},
+    { h: "What will go stale", items: [
+      "<b>Version drift.</b> Godot ships roughly every four months. These target 4.5.x; 4.6.x exists as of mid-2026.",
+      "<b>Pre-mid-2024 tutorials</b> predate TileMapLayer (the old TileMap was deprecated in 4.3) — treat old tilemap content with care.",
+      "<b>Godot 3 back-catalogues</b> are everywhere on YouTube. Check upload dates; prefer official docs for anything version-sensitive.",
+      "<b>Aggregator 'best tutorial' lists</b> rank by view count and surface stale content. Go to primary creators.",
+      "<b>Prices change.</b> Berklee and Akash Thakkar's courses are paid and not always publicly priced — verify before committing.",
+      "<b>Middleware.</b> True runtime adaptive music usually means FMOD/Wwise. Two AudioStreamPlayers and a bus fade (D2) is plenty for craft practice."
+    ]}
+  ];
+
+  /* ── State ───────────────────────────────────────────────── */
+
+  const KEY = "gamedev-sketchbook-v1";
+  const LEGACY_KEY = "gamedev-etudes-v1";
+  const blank = () => ({ sketches: {}, steps: {}, updated: null });
+  let state = blank();
+
+  // Accepts the older shape too, so nothing logged before the rename is lost.
+  const adopt = parsed => ({
+    sketches: parsed.sketches || parsed.etudes || {},
+    steps: parsed.steps || {},
+    updated: parsed.updated || null
+  });
+
+  function load() {
+    try {
+      const raw = localStorage.getItem(KEY) || localStorage.getItem(LEGACY_KEY);
+      if (raw) state = adopt(JSON.parse(raw));
+    } catch (e) { state = blank(); }
+  }
+
+  function save() {
+    state.updated = new Date().toISOString();
+    try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) { /* private mode */ }
+    renderStats();
+  }
+
+  const rec = id => (state.sketches[id] = state.sketches[id] || { reps: 0, last: null, note: "" });
+  const isDone = id => (state.sketches[id]?.reps || 0) > 0;
+
+  const fmtDate = iso => {
+    if (!iso) return "";
+    const d = new Date(iso);
+    return d.toLocaleDateString(undefined, { day: "numeric", month: "short" });
+  };
+
+  /* ── Filters ─────────────────────────────────────────────── */
+
+  const filters = { tools: new Set(), status: "all", length: "all" };
+
+  function matches(e) {
+    if (filters.tools.size && !e.tools.some(t => filters.tools.has(t))) return false;
+    if (filters.status === "done" && !isDone(e.id)) return false;
+    if (filters.status === "todo" && isDone(e.id)) return false;
+    if (filters.length === "s" && e.mins > 30) return false;
+    if (filters.length === "m" && (e.mins <= 30 || e.mins > 60)) return false;
+    if (filters.length === "l" && e.mins <= 60) return false;
+    return true;
+  }
+
+  const toolVar = t => `var(${TOOLS[t].varName})`;
+
+  /* ── Render: cards ───────────────────────────────────────── */
+
+  const modulesEl = document.getElementById("modules");
+
+  function buildCard(e) {
+    const card = document.createElement("article");
+    card.className = "sketch";
+    card.id = "e-" + e.id;
+    card.style.setProperty("--tint", toolVar(e.tools[0]));
+
+    const top = document.createElement("div");
+    top.className = "e-top";
+
+    const mark = document.createElement("button");
+    mark.type = "button";
+    mark.className = "mark";
+    mark.setAttribute("aria-label", "Log a session of " + e.id);
+    for (let i = 0; i < 4; i++) {
+      const cell = document.createElement("i");
+      cell.style.setProperty("--px", toolVar(e.tools[i % e.tools.length]));
+      mark.appendChild(cell);
+    }
+    mark.addEventListener("click", () => { bump(e.id, +1); });
+
+    const head = document.createElement("div");
+    head.className = "e-headline";
+    head.innerHTML = `<span class="e-id">${e.id}</span><h3>${e.t}</h3>`;
+
+    const time = document.createElement("span");
+    time.className = "e-time";
+    time.textContent = e.time;
+
+    top.append(mark, head, time);
+
+    const blurb = document.createElement("p");
+    blurb.className = "e-blurb";
+    blurb.textContent = e.blurb;
+
+    const teach = document.createElement("p");
+    teach.className = "e-teach";
+    teach.innerHTML = `<b>Teaches</b> · ${e.teach}`;
+
+    const tags = document.createElement("div");
+    tags.className = "tags";
+    e.tools.forEach(t => {
+      const tag = document.createElement("span");
+      tag.className = "tag";
+      tag.style.setProperty("--tone", toolVar(t));
+      tag.textContent = TOOLS[t].name;
+      tags.appendChild(tag);
+    });
+
+    const links = document.createElement("div");
+    links.className = "links";
+    e.links.forEach(l => {
+      const a = document.createElement("a");
+      a.href = l.url;
+      a.target = "_blank";
+      a.rel = "noopener noreferrer";
+      a.innerHTML = `${l.label} <span class="kind">${l.kind === "search" ? "⌕" : "↗"}</span>`;
+      links.appendChild(a);
+    });
+
+    const foot = document.createElement("div");
+    foot.className = "e-foot";
+
+    const reps = document.createElement("div");
+    reps.className = "reps";
+    const minus = document.createElement("button");
+    minus.type = "button"; minus.textContent = "−";
+    minus.setAttribute("aria-label", "Remove a session from " + e.id);
+    const n = document.createElement("span");
+    n.className = "n";
+    const plus = document.createElement("button");
+    plus.type = "button"; plus.textContent = "+";
+    plus.setAttribute("aria-label", "Log a session of " + e.id);
+    minus.addEventListener("click", () => bump(e.id, -1));
+    plus.addEventListener("click", () => bump(e.id, +1));
+    reps.append(minus, n, plus);
+
+    const stamp = document.createElement("span");
+    stamp.className = "stamp";
+
+    const noteBtn = document.createElement("button");
+    noteBtn.type = "button";
+    noteBtn.className = "notes-toggle";
+    noteBtn.textContent = "Notes";
+
+    foot.append(reps, stamp, noteBtn);
+
+    const notes = document.createElement("div");
+    notes.className = "notes";
+    notes.hidden = true;
+    const ta = document.createElement("textarea");
+    ta.placeholder = "One line: what you tried, what felt good.";
+    ta.addEventListener("input", () => {
+      rec(e.id).note = ta.value;
+      noteBtn.dataset.has = ta.value.trim() ? "1" : "0";
+      queueSave();
+    });
+    notes.appendChild(ta);
+
+    noteBtn.addEventListener("click", () => {
+      notes.hidden = !notes.hidden;
+      if (!notes.hidden) ta.focus();
+    });
+
+    card.append(top, blurb, teach, tags, links, foot, notes);
+
+    card._sync = () => {
+      const r = rec(e.id);
+      card.dataset.done = r.reps > 0 ? "1" : "0";
+      n.textContent = r.reps > 0 ? "×" + r.reps : "—";
+      stamp.textContent = r.last ? "last · " + fmtDate(r.last) : "";
+      ta.value = r.note || "";
+      noteBtn.dataset.has = (r.note || "").trim() ? "1" : "0";
+    };
+    card._sync();
+    return card;
+  }
+
+  const cardIndex = {};
+
+  MODULES.forEach(m => {
+    const sec = document.createElement("section");
+    sec.className = "module";
+    sec.id = "mod-" + m.id;
+
+    const head = document.createElement("div");
+    head.className = "module-head";
+    head.innerHTML = `<span class="module-letter">${m.id}</span>
+      <div class="mh-text"><h2>${m.title}</h2><p>${m.blurb}</p></div>`;
+
+    const cards = document.createElement("div");
+    cards.className = "cards";
+    SKETCHES.filter(e => e.m === m.id).forEach(e => {
+      const c = buildCard(e);
+      cardIndex[e.id] = c;
+      cards.appendChild(c);
+    });
+
+    sec.append(head, cards);
+    modulesEl.appendChild(sec);
+  });
+
+  /* ── Render: palette grid ────────────────────────────────── */
+
+  const paletteGrid = document.getElementById("paletteGrid");
+  const cellIndex = {};
+
+  MODULES.forEach(m => {
+    const wrap = document.createElement("div");
+    wrap.className = "grid-module";
+    const cells = document.createElement("div");
+    cells.className = "grid-cells";
+    SKETCHES.filter(e => e.m === m.id).forEach(e => {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = "cell";
+      b.style.setProperty("--cell", toolVar(e.tools[0]));
+      b.title = `${e.id} — ${e.t} (${e.time})`;
+      b.setAttribute("aria-label", `${e.id} ${e.t}`);
+      b.addEventListener("click", () => jumpTo(e.id));
+      cellIndex[e.id] = b;
+      cells.appendChild(b);
+    });
+    const label = document.createElement("span");
+    label.className = "grid-module-label";
+    label.textContent = m.id + " · " + m.title.replace(/ sketches.*/i, "").replace(/ —.*/, "");
+    wrap.append(cells, label);
+    paletteGrid.appendChild(wrap);
+  });
+
+  function jumpTo(id) {
+    const card = cardIndex[id];
+    if (!card) return;
+    if (card.hidden) { clearFilters(); }
+    card.scrollIntoView({ behavior: "smooth", block: "center" });
+    card.classList.remove("flash");
+    void card.offsetWidth;
+    card.classList.add("flash");
+  }
+
+  /* ── Render: tool chips ──────────────────────────────────── */
+
+  const toolChips = document.getElementById("toolChips");
+  const chipIndex = {};
+
+  const allChip = document.createElement("button");
+  allChip.type = "button";
+  allChip.className = "chip plain";
+  allChip.style.setProperty("--tint", "var(--focus)");
+  allChip.setAttribute("aria-pressed", "true");
+  allChip.innerHTML = `<span>All tools</span><span class="ct" id="allCount"></span>`;
+  allChip.addEventListener("click", () => { filters.tools.clear(); apply(); });
+  toolChips.appendChild(allChip);
+
+  Object.keys(TOOLS).forEach(t => {
+    const chip = document.createElement("button");
+    chip.type = "button";
+    chip.className = "chip";
+    chip.style.setProperty("--tint", toolVar(t));
+    chip.setAttribute("aria-pressed", "false");
+    chip.innerHTML = `<span class="sw"></span><span>${TOOLS[t].name}</span><span class="ct"></span><span class="meter"></span>`;
+    chip.addEventListener("click", () => {
+      if (filters.tools.has(t)) filters.tools.delete(t); else filters.tools.add(t);
+      apply();
+    });
+    chipIndex[t] = chip;
+    toolChips.appendChild(chip);
+  });
+
+  /* ── Render: start-here steps ────────────────────────────── */
+
+  const startList = document.getElementById("startList");
+  START_STEPS.forEach(s => {
+    const label = document.createElement("label");
+    label.className = "step";
+    const cb = document.createElement("input");
+    cb.type = "checkbox";
+    cb.checked = !!state.steps[s.id];
+    label.dataset.checked = cb.checked ? "1" : "0";
+    cb.addEventListener("change", () => {
+      state.steps[s.id] = cb.checked;
+      label.dataset.checked = cb.checked ? "1" : "0";
+      save();
+    });
+    const span = document.createElement("span");
+    span.textContent = s.label;
+    label.append(cb, span);
+    startList.appendChild(label);
+  });
+
+  /* ── Render: workbench ───────────────────────────────────── */
+
+  const benchList = document.getElementById("benchList");
+  const benchIndex = {};
+
+  BENCH.forEach(b => {
+    const d = document.createElement("details");
+    d.className = "tool";
+    d.style.setProperty("--tint", toolVar(b.tool));
+    const s = document.createElement("summary");
+    s.innerHTML = `<span class="bench-sw"><i></i><i></i><i></i><i></i></span>
+      <h3>${b.title}</h3><span class="sub">${b.sub}</span>`;
+    const body = document.createElement("div");
+    body.className = "tool-body";
+    b.blocks.forEach(bl => {
+      const block = document.createElement("div");
+      block.className = "block";
+      block.innerHTML = `<h4>${bl.h}</h4><ul>${bl.items.map(i => `<li><span>${i}</span></li>`).join("")}</ul>`;
+      body.appendChild(block);
+    });
+    d.append(s, body);
+    benchIndex[b.tool] = d;
+    benchList.appendChild(d);
+  });
+
+  benchList.querySelectorAll("a").forEach(a => { a.target = "_blank"; a.rel = "noopener noreferrer"; });
+
+  /* ── Render: practice notes ──────────────────────────────── */
+
+  const practiceGrid = document.getElementById("practiceGrid");
+  PRACTICE.forEach(p => {
+    const c = document.createElement("div");
+    c.className = "note-card";
+    c.innerHTML = `<h3>${p.h}</h3><ul>${p.items.map(i => `<li>${i}</li>`).join("")}</ul>`;
+    practiceGrid.appendChild(c);
+  });
+  practiceGrid.querySelectorAll("a").forEach(a => { a.target = "_blank"; a.rel = "noopener noreferrer"; });
+
+  /* ── Behaviour ───────────────────────────────────────────── */
+
+  let saveTimer = null;
+  function queueSave() {
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(save, 400);
+  }
+
+  function bump(id, delta) {
+    const r = rec(id);
+    r.reps = Math.max(0, r.reps + delta);
+    r.last = r.reps > 0 ? new Date().toISOString() : null;
+    cardIndex[id]._sync();
+    save();
+    apply();
+  }
+
+  const emptyState = document.getElementById("emptyState");
+  const visibleCount = document.getElementById("visibleCount");
+
+  function apply() {
+    let shown = 0;
+    MODULES.forEach(m => {
+      let any = false;
+      SKETCHES.filter(e => e.m === m.id).forEach(e => {
+        const ok = matches(e);
+        cardIndex[e.id].hidden = !ok;
+        if (ok) { any = true; shown++; }
+      });
+      document.getElementById("mod-" + m.id).hidden = !any;
+    });
+
+    emptyState.hidden = shown > 0;
+    visibleCount.textContent = shown === SKETCHES.length ? `${SKETCHES.length} sketches` : `${shown} of ${SKETCHES.length} shown`;
+
+    Object.keys(TOOLS).forEach(t => {
+      chipIndex[t].setAttribute("aria-pressed", filters.tools.has(t) ? "true" : "false");
+    });
+    allChip.setAttribute("aria-pressed", filters.tools.size === 0 ? "true" : "false");
+
+    Object.keys(benchIndex).forEach(t => {
+      benchIndex[t].hidden = filters.tools.size > 0 && !filters.tools.has(t);
+    });
+
+    renderStats();
+  }
+
+  function clearFilters() {
+    filters.tools.clear();
+    filters.status = "all";
+    filters.length = "all";
+    document.querySelectorAll("#statusSeg button, #lengthSeg button").forEach(b => {
+      b.setAttribute("aria-pressed", b.dataset.v === "all" ? "true" : "false");
+    });
+    apply();
+  }
+
+  function wireSeg(elId, key) {
+    const seg = document.getElementById(elId);
+    seg.addEventListener("click", ev => {
+      const btn = ev.target.closest("button");
+      if (!btn) return;
+      filters[key] = btn.dataset.v;
+      seg.querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", String(b === btn)));
+      apply();
+    });
+  }
+  wireSeg("statusSeg", "status");
+  wireSeg("lengthSeg", "length");
+
+  /* ── Stats ───────────────────────────────────────────────── */
+
+  const statDone = document.getElementById("statDone");
+  const statReps = document.getElementById("statReps");
+  const statModules = document.getElementById("statModules");
+  const lastSession = document.getElementById("lastSession");
+  const allCount = document.getElementById("allCount");
+  const footNote = document.getElementById("footNote");
+
+  function renderStats() {
+    const done = SKETCHES.filter(e => isDone(e.id));
+    const reps = SKETCHES.reduce((sum, e) => sum + (state.sketches[e.id]?.reps || 0), 0);
+    const modsDone = MODULES.filter(m => SKETCHES.filter(e => e.m === m.id).every(e => isDone(e.id))).length;
+
+    statDone.textContent = `${done.length}/${SKETCHES.length}`;
+    statReps.textContent = String(reps);
+    statModules.textContent = `${modsDone}/${MODULES.length}`;
+    allCount.textContent = `${done.length}/${SKETCHES.length}`;
+
+    Object.keys(TOOLS).forEach(t => {
+      const all = SKETCHES.filter(e => e.tools.includes(t));
+      const d = all.filter(e => isDone(e.id)).length;
+      const chip = chipIndex[t];
+      chip.querySelector(".ct").textContent = `${d}/${all.length}`;
+      chip.querySelector(".meter").style.width = (all.length ? (d / all.length) * 100 : 0) + "%";
+    });
+
+    SKETCHES.forEach(e => {
+      cellIndex[e.id].dataset.done = isDone(e.id) ? "1" : "0";
+    });
+
+    const stamps = SKETCHES.map(e => state.sketches[e.id]?.last).filter(Boolean).sort();
+    const latest = stamps[stamps.length - 1];
+    lastSession.textContent = latest ? "Last session · " + fmtDate(latest) : "No sessions logged yet";
+    footNote.textContent = state.updated ? "Saved " + new Date(state.updated).toLocaleString() : "";
+  }
+
+  /* ── Export / import / reset ─────────────────────────────── */
+
+  document.getElementById("btnExport").addEventListener("click", () => {
+    const blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "gamedev-sketchbook-progress.json";
+    a.click();
+    URL.revokeObjectURL(a.href);
+  });
+
+  const fileInput = document.getElementById("fileInput");
+  document.getElementById("btnImport").addEventListener("click", () => fileInput.click());
+  fileInput.addEventListener("change", () => {
+    const f = fileInput.files[0];
+    if (!f) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        state = adopt(JSON.parse(reader.result));
+        save();
+        syncAll();
+      } catch (e) {
+        alert("That file isn't a progress export — expected JSON with a \"sketches\" key.");
+      }
+    };
+    reader.readAsText(f);
+    fileInput.value = "";
+  });
+
+  document.getElementById("btnReset").addEventListener("click", () => {
+    if (!confirm("Clear every logged session and note? Export first if you want a copy.")) return;
+    state = blank();
+    save();
+    syncAll();
+  });
+
+  function syncAll() {
+    SKETCHES.forEach(e => cardIndex[e.id]._sync());
+    startList.querySelectorAll("label.step").forEach((label, i) => {
+      const on = !!state.steps[START_STEPS[i].id];
+      label.querySelector("input").checked = on;
+      label.dataset.checked = on ? "1" : "0";
+    });
+    apply();
+  }
+
+  load();
+  syncAll();
+})();
+</script>
