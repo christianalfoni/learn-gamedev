@@ -66,8 +66,12 @@
       <span class="t">How to implement coyote jump &amp; jump buffering in Godot 4</span>
       <span class="len">6:23</span>
       <span class="by">kahanscious · Dec 2024 · Godot 4</span>
-      <span class="why">Steps 6 and 7 in video form, current for Godot 4. Watch it once now without
-        typing along — you'll write your own version here, and it helps to have seen the shape first.</span>
+      <span class="why">Steps 6 and 7 in video form, current for Godot 4. Watch it once without typing
+        along — you'll write your own version here. One difference worth knowing up front: he wires the
+        timers with <code class="inline">get_tree().create_timer()</code> and signals, where this guide counts
+        a float down in <code class="inline">_physics_process</code>. Same idea, different shape; seeing both is
+        useful. He also lands on 0.2 s of coyote time where this guide starts at 0.12 — that disagreement is
+        exactly what step 8 is for.</span>
     </a>
 
     <a class="vid optional" href="https://www.youtube.com/watch?v=AJdEqssNZ-U" target="_blank" rel="noopener noreferrer">

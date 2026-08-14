@@ -680,6 +680,12 @@
       teach: "Animation principles at pixel scale — frame counts, readability, snappiness.",
       links: [YT("AdamCYounis — pixel art animation", "AdamCYounis pixel art walk cycle animation tutorial"), L("Saint11 — animation articles", "https://saint11.art/pixel_articles/")] },
 
+    { id: "B6", m: "B", t: "The three-state character", time: "90–120 min", mins: 120, tools: ["aseprite", "godot"],
+      guide: "guides/b6-three-state-character.html",
+      blurb: "One character with idle, run and jump animations — drawn in Aseprite with tags, imported into Godot with Aseprite Wizard, and switching states from code. The whole pipeline, end to end.",
+      teach: "Tag discipline, frame economy across three loops, the .aseprite → SpriteFrames pipeline, driving animation from movement state.",
+      links: [L("Aseprite Wizard", "https://github.com/viniciusgerevini/godot-aseprite-wizard"), L("AnimatedSprite2D docs", "https://docs.godotengine.org/en/stable/classes/class_animatedsprite2d.html"), L("Aseprite docs — tags", "https://www.aseprite.org/docs/tags/")] },
+
     { id: "B5", m: "B", t: "9-slice a panel", time: "20 min", mins: 20, tools: ["aseprite", "godot"],
       blurb: "A UI panel drawn with slices in Aseprite, imported as a 9-patch StyleBox in Godot.",
       teach: "Slices, 9-patch, the UI asset pipeline end to end.",

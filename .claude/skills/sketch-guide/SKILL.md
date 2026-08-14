@@ -54,6 +54,38 @@ Two judgment calls that come up constantly:
 If you can't verify a good video for a topic, write the guide without one. Prep is optional;
 accuracy isn't.
 
+## Read the transcript before you recommend a video
+
+A title and a runtime tell you almost nothing. `scripts/fetch_transcript.py` gives you the actual
+content as timestamped text:
+
+```bash
+# one-off, installs yt-dlp into a gitignored repo-local venv
+python3 .claude/skills/sketch-guide/scripts/fetch_transcript.py --setup
+
+python3 .claude/skills/sketch-guide/scripts/fetch_transcript.py VIDEO_ID
+```
+
+Read it before writing the prep card, and use it to:
+
+- **Confirm it teaches what you're claiming.** A title match is not a content match.
+- **Detect version drift from the inside.** A Godot video that says `KinematicBody2D` is Godot 3
+  regardless of its upload date.
+- **Find the timestamp worth pointing at**, so a 40-minute video can be cited at the 6 minutes that
+  matter.
+- **Spot where the video and your guide disagree**, which is the highest-value thing it gives you.
+  A1's prep video wires coyote time with `get_tree().create_timer()` and signals; the guide counts a
+  float down in `_physics_process`. Both are fine, but a reader who watched then followed would
+  stumble. Naming the difference in the prep card turns a contradiction into a second perspective.
+
+Transcripts are research material. Write every guide in your own words — never paste transcript text
+into a page, and don't reproduce a creator's explanation at length. What you take from a transcript
+is *knowing*, not *wording*.
+
+Note the transcript only works via yt-dlp's `android` player client; every other route YouTube now
+gates behind a proof-of-origin token. If it starts returning nothing, the script says so and points
+at yt-dlp's PO-Token guide — the fix is usually just upgrading yt-dlp.
+
 ## The shape
 
 Read `references/template.html` for the skeleton to copy, and `references/house-style.md` for voice,

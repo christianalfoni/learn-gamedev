@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="color-scheme" content="light dark" />
+<meta name="description" content="Sketch B6 — draw a character with idle, run and jump animations in Aseprite, tag them, import with Aseprite Wizard, and drive the states from Godot." />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ctext y='26' font-size='26'%3E%F0%9F%8E%9B%EF%B8%8F%3C/text%3E%3C/svg%3E" />
+<link rel="stylesheet" href="../assets/guide.css" />
+<title>B6 · The three-state character — The Gamedev Sketchbook</title>
+</head>
+
+<body data-guide="b6-three-state-character" data-sketch="B6">
+
+<div class="rail">
+  <div class="rail-inner">
+    <a class="back" href="../">← Sketchbook</a>
+    <span class="bar"><i></i></span>
+    <span class="pct">0/9 steps</span>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <header class="head">
+    <span class="eyebrow">Sketch B6 · Module B — Aseprite, ending in Godot</span>
+    <h1>The three-state character</h1>
+    <p class="standfirst">One small character with three animations — idle, run, jump — drawn with
+      tags in Aseprite, imported into Godot with Aseprite Wizard, and switched from code. The whole
+      pipeline end to end, at a scale you can finish in one sitting.</p>
+    <div class="meta">
+      <span class="pill" style="--tone: var(--c-aseprite)">Aseprite 1.3+</span>
+      <span class="pill" style="--tone: var(--c-godot)">Godot 4.5+</span>
+      <span class="pill">90–120 min</span>
+      <span class="pill">9 steps</span>
+    </div>
+
+    <div class="outcome">
+      <h2>What you'll have at the end</h2>
+      <ul>
+        <li>A single <code class="inline">.aseprite</code> file holding <b>three tagged animations</b> — 11 frames
+          in total, which is fewer than it sounds.</li>
+        <li>Those tags arriving in Godot as <b>SpriteFrames animations with the right timing</b>, without
+          you ever exporting a sprite sheet by hand.</li>
+        <li>A character that <b>picks its own animation</b> from how it's moving, and faces the way it's going.</li>
+        <li>A save-and-see loop: change a frame in Aseprite, re-import, and watch it update in Godot.</li>
+      </ul>
+    </div>
+
+    <div class="trap" style="margin-top:4px">
+      <h4>How this guide is built</h4>
+      <p>The drawing itself is taught by video here, not by me. I can give you the constraints, the
+        frame counts, the tag discipline, the whole Godot side and a way to check your own work — but
+        for "how do I actually move these pixels", a person drawing on screen beats any amount of
+        prose. The two prep videos below are doing that job, and the steps are built around them.</p>
+    </div>
+  </header>
+
+  <section class="prep">
+    <div class="prep-head">
+      <h2>Prep</h2>
+      <span>14 minutes, and both are load-bearing this time.</span>
+    </div>
+
+    <a class="vid" href="https://www.youtube.com/watch?v=6prNLpNasMI" target="_blank" rel="noopener noreferrer">
+      <span class="n">01</span>
+      <span class="t">Animate Player Walk Cycle in Aseprite — Pixel Art Tutorial for Beginners</span>
+      <span class="len">6:43</span>
+      <span class="by">SpaceCat · Jul 2024</span>
+      <span class="why">The run cycle in step 4 is the hard part of this sketch, and this is the
+        clearest short demonstration of the four-frame structure. Watch it before you start, then
+        keep it open — step 4 assumes you're working alongside it rather than from memory.</span>
+    </a>
+
+    <a class="vid" href="https://www.youtube.com/watch?v=6HzETy7izig" target="_blank" rel="noopener noreferrer">
+      <span class="n">02</span>
+      <span class="t">Import 2D Character Animations as AnimatedSprite2D Sprite Frames — Godot Aseprite Wizard Tutorial P1</span>
+      <span class="len">7:16</span>
+      <span class="by">Chris' Tutorials · Jan 2025 · Godot 4</span>
+      <span class="why">Covers step 7. The Aseprite half runs to about 2:00 and the Godot import
+        starts after that, so if you're short on time, start there. He also excludes layers by
+        pattern, which is the tidier version of what step 6 has you do by hand.</span>
+    </a>
+
+    <a class="vid optional" href="https://www.youtube.com/watch?v=gi7pOCnwjSc" target="_blank" rel="noopener noreferrer">
+      <span class="n">03</span>
+      <span class="t">How To Use Aseprite — Let's Make An Idle Animation From Scratch</span>
+      <span class="len">25:11 · optional</span>
+      <span class="by">Seyff · Jul 2025</span>
+      <span class="why">Only if Aseprite itself is still unfamiliar. It's a full tour of the tool
+        built around making an idle, so it overlaps steps 1–3 at a much slower pace. Skip it if you
+        already know your way around the timeline.</span>
+    </a>
+  </section>
+
+  <main class="steps">
+
+    <!-- ── 1 ────────────────────────────────────────────────── -->
+    <section class="step" id="s1">
+      <div class="step-head">
+        <button class="step-check" type="button"><i></i><i></i><i></i><i></i></button>
+        <div class="step-title"><span class="n">Step 1</span><h2>Set the constraints before you draw anything</h2></div>
+        <span class="step-time">8 min</span>
+      </div>
+      <div class="step-body">
+        <p>Pixel art punishes indecision late and rewards it early. Decide all of this now, write it
+          on a sticky note, and don't renegotiate mid-sketch:</p>
+        <ul>
+          <li><b>Canvas 32 × 32.</b> Big enough for a readable character, small enough that a walk
+            cycle is an evening rather than a week.</li>
+          <li><b>Eight colours, maximum.</b> Build the palette first. Two skin, two shirt, two
+            trousers, one outline, one accent is a complete character.</li>
+          <li><b>Four frames per loop, three for the jump.</b> Eleven frames total.</li>
+          <li><b>One character, facing right.</b> You'll get left for free in step 8.</li>
+        </ul>
+        <p>In Aseprite: <b>File → New</b> at 32 × 32. Then <b>View → Grid → Grid Settings</b> to 1 × 1,
+          turn on <b>Pixel-Perfect</b> in the pencil options, and open <b>Window → Timeline</b> if it
+          isn't already showing. Turn on <b>onion skinning</b> in the timeline — the ghosted
+          neighbouring frames are the single most useful thing on screen once you're animating.</p>
+
+        <div class="why">
+          <h4>Why four frames and not twelve</h4>
+          <p>Low frame counts read as <em>snappy</em> rather than cheap, and they're the reason
+            pixel-art characters feel responsive. A four-frame run at ~10 fps is a completely
+            standard game-feel choice, not a compromise. More frames mostly buys you smoothness you
+            didn't want and an evening you don't get back.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── 2 ────────────────────────────────────────────────── -->
+    <section class="step" id="s2">
+      <div class="step-head">
+        <button class="step-check" type="button"><i></i><i></i><i></i><i></i></button>
+        <div class="step-title"><span class="n">Step 2</span><h2>The base pose, silhouette first</h2></div>
+        <span class="step-time">15 min</span>
+      </div>
+      <div class="step-body">
+        <p>One frame. A character standing, facing right. Draw it as a solid black silhouette before
+          you add a single colour — if the shape doesn't read as a person in solid black, no amount of
+          shading will save it.</p>
+        <p>Then, on the same frame: outline, flat colours, and one pass of shading. Keep the head
+          slightly oversized; it reads better at this scale and gives you something to bob in step 3.</p>
+
+        <div class="feel">
+          <h4>The check that matters</h4>
+          <p>Zoom to <b>100%</b> — actual size, not the comfortable 800% you've been drawing at. This is
+            the only size that tells the truth. If you can't tell where the arms are, the design is too
+            busy for 32 pixels. Simplify now, before you multiply it by eleven frames.</p>
+        </div>
+
+        <div class="trap">
+          <h4>Put the character on its own layer</h4>
+          <p>Add a background layer underneath in a mid grey so you can see your outline, and keep the
+            character on a separate transparent layer. In step 6 you'll exclude that background from
+            the export, and that's only possible if it was never merged in.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── 3 ────────────────────────────────────────────────── -->
+    <section class="step" id="s3">
+      <div class="step-head">
+        <button class="step-check" type="button"><i></i><i></i><i></i><i></i></button>
+        <div class="step-title"><span class="n">Step 3</span><h2>Idle — four frames of almost nothing</h2></div>
+        <span class="step-time">12 min</span>
+      </div>
+      <div class="step-body">
+        <p>Copy your base pose across four frames. Then change almost nothing:</p>
+        <ol>
+          <li><b>Frame 1</b> — the base pose, untouched.</li>
+          <li><b>Frame 2</b> — the whole body down <b>one pixel</b>. Not the feet.</li>
+          <li><b>Frame 3</b> — down <b>two pixels</b>, and let the head lag one pixel behind the body.</li>
+          <li><b>Frame 4</b> — same as frame 2, on the way back up.</li>
+        </ol>
+        <p>That's a breath. It's one or two pixels of movement and it's the difference between a
+          character and a sticker. Set the frame duration to around <b>150 ms</b> — idles are slow.</p>
+
+        <div class="why">
+          <h4>Why the head lags</h4>
+          <p>Offsetting one part by a frame is the cheapest possible version of <em>follow-through</em>:
+            parts of a body don't all arrive at the same time. At 32 pixels you can't animate cloth or
+            hair properly, so a one-pixel, one-frame delay on the head is doing the entire job of
+            selling weight.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── 4 ────────────────────────────────────────────────── -->
+    <section class="step" id="s4">
+      <div class="step-head">
+        <button class="step-check" type="button"><i></i><i></i><i></i><i></i></button>
+        <div class="step-title"><span class="n">Step 4</span><h2>Run — the four-frame cycle</h2></div>
+        <span class="step-time">20 min</span>
+      </div>
+      <div class="step-body">
+        <p>This is the hard one, and it's where prep video 01 does the teaching. The structure it
+          walks through is the classic four-frame cycle:</p>
+
+        <figure class="fig">
+          <svg viewBox="0 0 600 150" role="img" aria-label="Four-frame run cycle: contact, down, pass, up, looping back to contact.">
+            <g class="svg-line">
+              <rect x="40" y="30" width="110" height="70" />
+              <rect x="175" y="30" width="110" height="70" />
+              <rect x="310" y="30" width="110" height="70" />
+              <rect x="445" y="30" width="110" height="70" />
+            </g>
+            <text class="svg-label" x="52" y="22">1 · contact</text>
+            <text class="svg-label" x="187" y="22">2 · down</text>
+            <text class="svg-label" x="322" y="22">3 · pass</text>
+            <text class="svg-label" x="457" y="22">4 · up</text>
+            <text class="svg-label" x="52" y="120">legs apart</text>
+            <text class="svg-label" x="187" y="120">lowest point</text>
+            <text class="svg-label" x="322" y="120">legs together</text>
+            <text class="svg-label" x="457" y="120">highest point</text>
+            <path class="svg-plot" d="M555,65 q22,0 22,35 l-540,0 q-22,0 -22,-35" stroke-dasharray="4 4" />
+            <text class="svg-label" x="250" y="145">frame 3 is frame 1 with the legs swapped</text>
+          </svg>
+          <figcaption>Two poses doing the work of four. The body's height changes across the cycle — that's what makes it a run rather than a glide.</figcaption>
+        </figure>
+
+        <p>Two things worth knowing before you start, because they save the most time:</p>
+        <ul>
+          <li><b>Frame 3 is frame 1 with the legs swapped.</b> Copy it and redraw the legs rather than
+            starting fresh. Same for 4 versus 2.</li>
+          <li><b>The body rises and falls.</b> Frame 2 is the lowest point, frame 4 the highest. A run
+            with a level head is the classic "walking on ice" look.</li>
+        </ul>
+        <p>Frame duration around <b>100 ms</b> — runs are roughly half the frame time of an idle. Tag it
+          in step 6; for now just get the four frames drawn.</p>
+
+        <div class="feel">
+          <h4>Scrub it constantly</h4>
+          <p>Hit play in the timeline every couple of edits rather than drawing all four and then
+            looking. Animation errors are invisible while still and obvious in motion, and the fastest
+            way to fix a bad cycle is to catch it two pixels in.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── 5 ────────────────────────────────────────────────── -->
+    <section class="step" id="s5">
+      <div class="step-head">
+        <button class="step-check" type="button"><i></i><i></i><i></i><i></i></button>
+        <div class="step-title"><span class="n">Step 5</span><h2>Jump — three frames, and it doesn't loop</h2></div>
+        <span class="step-time">10 min</span>
+      </div>
+      <div class="step-body">
+        <p>The jump is the easy one, because it isn't a cycle. Three frames, played once:</p>
+        <ol>
+          <li><b>Crouch</b> — knees bent, body compressed by two or three pixels. This is anticipation,
+            and it's the frame people skip.</li>
+          <li><b>Rise</b> — body stretched, arms up, legs tucked slightly.</li>
+          <li><b>Fall</b> — arms out, legs reaching down, ready to land.</li>
+        </ol>
+        <p>In step 8 the code holds the jump animation for the whole time the character is airborne, so
+          frame 3 is what's on screen for most of a fall. Make it the one that reads best.</p>
+
+        <div class="why">
+          <h4>Squash and stretch, three frames deep</h4>
+          <p>The crouch is <em>squash</em>, the rise is <em>stretch</em>. It's the same principle
+            sketch A4 does with a damped spring on a sprite's scale, except here you're drawing it by
+            hand — which is a better way to understand what the spring is imitating.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── 6 ────────────────────────────────────────────────── -->
+    <section class="step" id="s6">
+      <div class="step-head">
+        <button class="step-check" type="button"><i></i><i></i><i></i><i></i></button>
+        <div class="step-title"><span class="n">Step 6</span><h2>Tags, timing and layers — the contract with Godot</h2></div>
+        <span class="step-time">8 min</span>
+      </div>
+      <div class="step-body">
+        <p>Everything so far was drawing. This step is the part that makes the drawing usable, and
+          it's where most Aseprite-to-engine pipelines go wrong.</p>
+
+        <p>Select each animation's frame range in the timeline, right-click, <b>New Tag</b>, and name
+          them <b>exactly</b>:</p>
+        <ul>
+          <li><code class="inline">idle</code> — frames 1–4, loop</li>
+          <li><code class="inline">run</code> — frames 5–8, loop</li>
+          <li><code class="inline">jump</code> — frames 9–11, no loop</li>
+        </ul>
+
+        <figure class="fig">
+          <svg viewBox="0 0 600 130" role="img" aria-label="Pipeline diagram: Aseprite tags become SpriteFrames animations consumed by AnimatedSprite2D.">
+            <g class="svg-line">
+              <rect x="10" y="40" width="130" height="46" />
+              <rect x="180" y="40" width="130" height="46" />
+              <rect x="350" y="40" width="110" height="46" />
+              <rect x="500" y="40" width="90" height="46" />
+            </g>
+            <text class="svg-label" x="22" y="60">character.aseprite</text>
+            <text class="svg-label" x="22" y="76">tags: idle/run/jump</text>
+            <text class="svg-label" x="192" y="60">Aseprite Wizard</text>
+            <text class="svg-label" x="192" y="76">inspector dock</text>
+            <text class="svg-label" x="362" y="60">SpriteFrames</text>
+            <text class="svg-label" x="362" y="76">.tres resource</text>
+            <text class="svg-label" x="512" y="60">Animated</text>
+            <text class="svg-label" x="512" y="76">Sprite2D</text>
+            <g class="svg-plot">
+              <path d="M140,63 L178,63 M310,63 L348,63 M460,63 L498,63" />
+              <path d="M172,58 l8,5 -8,5 M342,58 l8,5 -8,5 M492,58 l8,5 -8,5" />
+            </g>
+            <text class="svg-label" x="150" y="112">tag name in Aseprite = animation name in code — spelling and case included</text>
+          </svg>
+          <figcaption>Nothing here involves exporting a sprite sheet by hand. That's the point of the plugin.</figcaption>
+        </figure>
+
+        <p>Then set frame durations. Aseprite works in <b>milliseconds</b> and the Wizard converts them
+          to Godot's FPS for you, so tune the timing here where you can see it, not in the engine.
+          Select a tag's frames, right-click, <b>Frame Properties</b>, and set the duration.</p>
+        <p>Finally, layers: your grey background must not end up in the export. Either delete it, or
+          hide it and rename it something like <code class="inline">_bg</code> so you can exclude it by
+          pattern in the Wizard's settings — that's the approach in prep video 02.</p>
+
+        <div class="trap">
+          <h4>Tag names are case-sensitive across the whole pipeline</h4>
+          <p>A tag called <code class="inline">Idle</code> becomes an animation called
+            <code class="inline">Idle</code>, and <code class="inline">sprite.play("idle")</code> in step 8
+            will quietly do nothing. Lowercase everything now and it stays a non-issue forever.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── 7 ────────────────────────────────────────────────── -->
+    <section class="step" id="s7">
+      <div class="step-head">
+        <button class="step-check" type="button"><i></i><i></i><i></i><i></i></button>
+        <div class="step-title"><span class="n">Step 7</span><h2>Into Godot with Aseprite Wizard</h2></div>
+        <span class="step-time">15 min</span>
+      </div>
+      <div class="step-body">
+        <p>Prep video 02 covers this from about 2:00 onward. In short:</p>
+        <ol>
+          <li>Install <a href="https://github.com/viniciusgerevini/godot-aseprite-wizard" target="_blank" rel="noopener noreferrer">Aseprite Wizard</a>
+            from the in-editor Asset Library, then enable it in <b>Project Settings → Plugins</b>.</li>
+          <li>Tell it where Aseprite lives: <b>Editor Settings → Aseprite</b> → set the executable path.
+            On macOS that's inside the <code class="inline">.app</code> bundle; on Windows it's the
+            <code class="inline">Aseprite.exe</code> in the install folder. Nothing works until this is right,
+            and the error message if it's wrong is not especially loud.</li>
+          <li>Save your <code class="inline">.aseprite</code> file into the project — a
+            <code class="inline">sprites/</code> folder is fine.</li>
+          <li>Add an <b>AnimatedSprite2D</b> to your player scene, select it, and use the Wizard's
+            inspector dock to import the file as <b>SpriteFrames</b>. Your three tags arrive as three
+            animations with the timing you set in Aseprite.</li>
+        </ol>
+        <p>Set <b>Texture Filter</b> to <b>Nearest</b> on the AnimatedSprite2D (or project-wide in
+          <b>Project Settings → Rendering → Textures → Canvas Textures → Default Texture Filter</b>).
+          Without it your pixel art is blurry and every subsequent judgement you make about it is wrong.</p>
+
+        <div class="feel">
+          <h4>The loop that makes this worth it</h4>
+          <p>Change one pixel in Aseprite, save, re-import in the Wizard dock, and watch it change in
+            Godot. That round trip — seconds, not minutes, and no sprite sheet in sight — is the actual
+            payoff of this sketch. Do it once deliberately just to feel it.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── 8 ────────────────────────────────────────────────── -->
+    <section class="step" id="s8">
+      <div class="step-head">
+        <button class="step-check" type="button"><i></i><i></i><i></i><i></i></button>
+        <div class="step-title"><span class="n">Step 8</span><h2>Let the movement choose the animation</h2></div>
+        <span class="step-time">12 min</span>
+      </div>
+      <div class="step-body">
+        <p>The character should never be told which animation to play. It should be asked how it's
+          moving, and answer with an animation. That's four lines:</p>
+
+        <figure class="code">
+          <figcaption>player.gd — the animation half<span class="sp"></span><button class="copy" type="button">copy</button></figcaption>
+          <pre><code>
+@onready var sprite: AnimatedSprite2D = $AnimatedSprite2D
+
+func _animate() -&gt; void:
+	if not is_on_floor():
+		sprite.play("jump")
+	elif absf(velocity.x) &gt; 8.0:
+		sprite.play("run")
+	else:
+		sprite.play("idle")
+
+	# Only flip when actually moving, or the character snaps back to
+	# facing right the instant it stops.
+	if not is_zero_approx(velocity.x):
+		sprite.flip_h = velocity.x &lt; 0.0
+</code></pre>
+        </figure>
+
+        <figure class="fig">
+          <svg viewBox="0 0 600 120" role="img" aria-label="Decision order: airborne gives jump, otherwise moving gives run, otherwise idle.">
+            <g class="svg-line">
+              <rect x="20" y="20" width="150" height="34" />
+              <rect x="20" y="68" width="150" height="34" />
+              <rect x="330" y="8" width="90" height="30" />
+              <rect x="330" y="48" width="90" height="30" />
+              <rect x="330" y="88" width="90" height="30" />
+            </g>
+            <text class="svg-label" x="32" y="41">not is_on_floor()</text>
+            <text class="svg-label" x="32" y="89">abs(velocity.x) &gt; 8</text>
+            <text class="svg-label" x="345" y="28">jump</text>
+            <text class="svg-label" x="345" y="68">run</text>
+            <text class="svg-label" x="345" y="108">idle</text>
+            <g class="svg-plot">
+              <path d="M170,32 L328,23 M170,80 L328,63 M170,92 L328,103" />
+            </g>
+            <text class="svg-label" x="182" y="18">yes</text>
+            <text class="svg-label" x="182" y="76">yes</text>
+            <text class="svg-label" x="182" y="114">no</text>
+          </svg>
+          <figcaption>Order matters: airborne wins over moving, so a running jump plays the jump.</figcaption>
+        </figure>
+
+        <p>Call <code class="inline">_animate()</code> from <code class="inline">_physics_process</code>, just
+          before <code class="inline">move_and_slide()</code>. If you've done sketch A1, paste that movement
+          code in and you're finished — otherwise the minimum that makes this testable:</p>
+
+        <figure class="code">
+          <figcaption>player.gd — placeholder movement, if you don't have A1's<span class="sp"></span><button class="copy" type="button">copy</button></figcaption>
+          <pre><code>
+extends CharacterBody2D
+
+@export var max_speed := 180.0
+@export var acceleration := 1400.0
+@export var friction := 1800.0
+@export var gravity := 980.0
+@export var jump_velocity := -320.0
+
+@onready var sprite: AnimatedSprite2D = $AnimatedSprite2D
+
+
+func _physics_process(delta: float) -&gt; void:
+	var direction := Input.get_axis("move_left", "move_right")
+	if direction != 0.0:
+		velocity.x = move_toward(velocity.x, direction * max_speed, acceleration * delta)
+	else:
+		velocity.x = move_toward(velocity.x, 0.0, friction * delta)
+
+	if not is_on_floor():
+		velocity.y += gravity * delta
+
+	if Input.is_action_just_pressed("jump") and is_on_floor():
+		velocity.y = jump_velocity
+
+	_animate()
+	move_and_slide()
+</code></pre>
+        </figure>
+
+        <div class="trap">
+          <h4>Use <code class="inline">play()</code>, never assign <code class="inline">animation</code></h4>
+          <p>Calling <code class="inline">sprite.play("run")</code> every frame is safe — the docs are explicit
+            that calling it with the animation already playing resumes rather than restarts. But
+            assigning <code class="inline">sprite.animation = "run"</code> every frame resets the frame counter
+            and <code class="inline">frame_progress</code>, so your run animation freezes on frame one and you
+            spend twenty minutes blaming Aseprite.</p>
+        </div>
+
+        <div class="why">
+          <h4>The 8.0 threshold</h4>
+          <p>Comparing against a small number rather than zero means the run animation stops while the
+            character is still sliding the last few pixels to a halt. Compare against exactly 0 and
+            you get a frame or two of running-in-place at the end of every stop.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── 9 ────────────────────────────────────────────────── -->
+    <section class="step" id="s9">
+      <div class="step-head">
+        <button class="step-check" type="button"><i></i><i></i><i></i><i></i></button>
+        <div class="step-title"><span class="n">Step 9</span><h2>The read test</h2></div>
+        <span class="step-time">12 min</span>
+      </div>
+      <div class="step-body">
+        <p>This is the sketch. Everything before it was preparation for looking properly.</p>
+
+        <p>Run the game and work through these deliberately. Each one is a question you can answer by
+          looking, which is why they work without anyone reviewing your art:</p>
+
+        <div class="tablewrap">
+          <table>
+            <thead>
+              <tr><th>Test</th><th>How</th><th>What a failure looks like</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Actual size</td><td>View the game at 1× with no zoom</td><td>You can't tell which way the character faces</td></tr>
+              <tr><td>Silhouette</td><td>Set <code>modulate</code> to black in the inspector while it runs</td><td>Idle and run are indistinguishable as shapes</td></tr>
+              <tr><td>Transition</td><td>Run, then stop, then jump from standing, then jump while running</td><td>A visible pop, or a frame of the wrong animation</td></tr>
+              <tr><td>Flip</td><td>Run left, stop, run right</td><td>The character faces right the moment it stops</td></tr>
+              <tr><td>Timing</td><td>Halve then double every duration in Aseprite, re-import</td><td>You can't tell which version is better — look again</td></tr>
+              <tr><td>Loop seam</td><td>Watch the run for 20 seconds without blinking</td><td>A hitch where frame 4 meets frame 1</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p>Then break it on purpose, because that's where the learning is. Set the idle to 40 ms — a
+          character having a panic attack. Set the run to 400 ms — underwater. Delete the crouch frame
+          from the jump and see how much anticipation was doing. Put them back when you're done, or
+          don't.</p>
+
+        <div class="feel">
+          <h4>The one that surprises people</h4>
+          <p>The silhouette test. Colour hides an enormous amount of ambiguity, and a character that
+            reads beautifully in full colour can be completely illegible in black. If idle and run
+            look the same in silhouette, the run needs more extreme leg positions — not more shading.</p>
+        </div>
+
+        <p><b>Write down what you changed in the tuning pass.</b> Frame durations especially — next time
+          you draw a cycle you'll start from numbers you already trust instead of guessing again.</p>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="done">
+    <h2>That's the sketch</h2>
+    <p>You've drawn eleven frames and, more usefully, you now own the whole path from a pixel in
+      Aseprite to a frame on screen in Godot — the part that stops most people from using their own
+      art. The character is disposable. The pipeline and the read test aren't.</p>
+
+    <p data-when-finished hidden><b>All nine steps done.</b> Log the session and it'll show up on the
+      sketchbook with today's date.</p>
+
+    <div class="actions">
+      <button class="btn" type="button" id="logSession">Log this session</button>
+      <a class="btn ghost" href="../">Back to the sketchbook</a>
+      <span class="logmsg" id="logMsg"></span>
+    </div>
+
+    <div class="next">
+      <span class="eyebrow">Natural next sketches</span>
+      <a href="../#e-A1"><span class="id">A1</span><span>The good-movement character — give this character movement worth animating.</span></a>
+      <a href="../#e-B3"><span class="id">B3</span><span>One palette, one scene — the same discipline, pushed to a locked 16 colours.</span></a>
+      <a href="../#e-A4"><span class="id">A4</span><span>Squash &amp; stretch on landing — the jump's crouch frame, done in code instead.</span></a>
+    </div>
+
+    <div class="next" style="margin-top:6px">
+      <span class="eyebrow">Reference</span>
+      <a href="https://www.aseprite.org/docs/tags/" target="_blank" rel="noopener noreferrer"><span class="id">docs</span><span>Aseprite — tags</span></a>
+      <a href="https://www.aseprite.org/docs/onion-skinning/" target="_blank" rel="noopener noreferrer"><span class="id">docs</span><span>Aseprite — onion skinning</span></a>
+      <a href="https://docs.godotengine.org/en/stable/classes/class_animatedsprite2d.html" target="_blank" rel="noopener noreferrer"><span class="id">docs</span><span>AnimatedSprite2D class reference</span></a>
+      <a href="https://thisisvini.com/aseprite-wizard/en/9.x-4/introduction/index.html" target="_blank" rel="noopener noreferrer"><span class="id">web</span><span>Aseprite Wizard — getting started</span></a>
+      <a href="https://saint11.art/pixel_articles/" target="_blank" rel="noopener noreferrer"><span class="id">web</span><span>Saint11's pixel-art articles — the reference archive for everything drawing-side</span></a>
+    </div>
+  </footer>
+
+</div>
+
+<script src="../assets/guide.js"></script>
+</body>
+</html>

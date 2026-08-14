@@ -1,2 +1,3 @@
 # Claude Code writes this per-machine — it should not travel between clones.
 .claude/settings.local.json
+.tools/
