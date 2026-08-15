@@ -241,6 +241,8 @@ def check_links(src):
                     t = re.search(r'<meta name="title" content="([^"]*)"', page)
                     ch = re.search(r'"ownerChannelName":"([^"]*)"', page)
                     secs = re.search(r'"lengthSeconds":"(\d+)"', page)
+                    views = re.search(r'"viewCount":"(\d+)"', page)
+                    likes = re.search(r'"likeCount":"(\d+)"', page)
                     if not t:
                         warn(f"reachable but no title found — is {url} still a public video?")
                     label = t.group(1) if t else "?"
@@ -249,6 +251,17 @@ def check_links(src):
                     if secs:
                         s = int(secs.group(1))
                         label += f"  [{s // 60}:{s % 60:02d}]"
+                    if views:
+                        v = int(views.group(1))
+                        label += f"  · {v:,} views"
+                        if likes:
+                            label += f", {int(likes.group(1)):,} likes"
+                        # Reach isn't the whole story, but a few hundred views usually
+                        # means a search result nobody vetted rather than a good pick.
+                        if v < 5000:
+                            warn(f"only {v:,} views — {url}\n        "
+                                 f"rank the alternatives with video_stats.py and keep this only if "
+                                 f"it is clearly more relevant than anything bigger")
                     note(f"{code}  {url}\n        → {label}")
                     check_video_claims(src, url, label, t, secs, ch)
                 else:

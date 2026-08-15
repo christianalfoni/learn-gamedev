@@ -54,6 +54,38 @@ Two judgment calls that come up constantly:
 If you can't verify a good video for a topic, write the guide without one. Prep is optional;
 accuracy isn't.
 
+## Rank candidates: relevance first, then reach
+
+A search will happily hand you a 1,200-view video that matches the title exactly, and that's how the
+first pass of these guides shipped a video with 33 likes as *required* prep. Don't let search
+ordering pick for you — gather every candidate, then rank them:
+
+```bash
+python3 .claude/skills/sketch-guide/scripts/video_stats.py ID1 ID2 ID3
+python3 .claude/skills/sketch-guide/scripts/video_stats.py --guide guides/a1-good-movement.html
+```
+
+It prints views, likes, likes-per-thousand, runtime and date, sorted by reach, and flags anything
+with a fraction of the leader's audience.
+
+**Relevance is still the deciding vote.** A 900-view video that teaches exactly the thing beats a
+million-view video that's merely adjacent, and a hugely popular Godot 3 tutorial is worse than
+nothing because it teaches an API that no longer exists. Two real examples from this repo:
+
+- A 34k-view "complete 2D player movement" video lost to a 27k one because its transcript said
+  *KinematicBody2D* — Godot 3.
+- Brackeys' GDScript tutorial has 2.3M views and was still wrong for A1, because A1 is about movement
+  feel and the video is about the language.
+
+**Among genuinely relevant candidates, take the bigger one.** Reach means more people found it clear,
+and it usually correlates with better audio, editing and pacing. Likes-per-thousand is the useful
+tiebreaker between two videos of similar size — 50/1k is exceptional, 30/1k is good, under 15/1k on a
+big channel suggests people watched and weren't helped.
+
+Put the view count in the byline (`Saultoons · Mar 2021 · 276k views`) so the reader can weigh the
+recommendation themselves. `check_guide.py --links` warns on anything under 5,000 views, which is a
+prompt to justify the pick or replace it — not an automatic veto.
+
 ## Read the transcript before you recommend a video
 
 A title and a runtime tell you almost nothing. `scripts/fetch_transcript.py` gives you the actual
