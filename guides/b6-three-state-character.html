@@ -25,7 +25,7 @@
   <header class="head">
     <span class="eyebrow">Sketch B6 · Module B — Aseprite, ending in Godot</span>
     <h1>The three-state character</h1>
-    <p class="standfirst">One small character with three animations — idle, run, jump — drawn with
+    <p class="standfirst">One small character with three animations — idle, walk, jump — drawn with
       tags in Aseprite, imported into Godot with Aseprite Wizard, and switched from code. The whole
       pipeline end to end, at a scale you can finish in one sitting.</p>
     <div class="meta">
@@ -67,9 +67,9 @@
       <span class="t">Easy Pixel Art Walk Cycle Tutorial</span>
       <span class="len">3:03</span>
       <span class="by">Saultoons · Mar 2021 · 276k views</span>
-      <span class="why">The run cycle in step 4 is the hard part of this sketch, and this is three
-        minutes on exactly the four poses step 4 uses — contact, down, passing, up — including how the
-        arms move opposite the legs. Watch it before you start, then keep it open: step 4 assumes
+      <span class="why">The walk cycle in step 4 is the hard part of this sketch, and this is three
+        minutes on exactly the method step 4 uses — two contact positions with a passing position
+        between them — including how the arms swing opposite the legs. Watch it before you start, then keep it open: step 4 assumes
         you're working alongside it rather than from memory.</span>
     </a>
 
@@ -192,50 +192,86 @@
     <section class="step" id="s4">
       <div class="step-head">
         <button class="step-check" type="button"><i></i><i></i><i></i><i></i></button>
-        <div class="step-title"><span class="n">Step 4</span><h2>Run — the four-frame cycle</h2></div>
+        <div class="step-title"><span class="n">Step 4</span><h2>Walk — four frames, two of them nearly free</h2></div>
         <span class="step-time">20 min</span>
       </div>
       <div class="step-body">
-        <p>This is the hard one, and it's where prep video 01 does the teaching. The four poses it
-          names are the classic cycle:</p>
+        <p>This is the hard one, and it's where prep video 01 does the teaching. The method it shows is
+          the one worth keeping: start from the <b>two contact positions</b>, then put a
+          <b>passing position</b> between them. That's an entire walk in four frames.</p>
 
         <figure class="fig">
-          <svg viewBox="0 0 600 150" role="img" aria-label="Four-frame run cycle: contact, down, pass, up, looping back to contact.">
+          <svg viewBox="0 0 600 178" role="img" aria-label="Four-frame walk cycle: contact, passing, contact mirrored, passing mirrored, with the head tracing an arc above.">
+            <path class="svg-plot" d="M95,52 Q162,52 230,28 Q297,28 365,52 Q432,52 500,28" />
+            <circle cx="95" cy="52" r="3.5" fill="currentColor" class="svg-ink" />
+            <circle cx="230" cy="28" r="3.5" fill="currentColor" class="svg-ink" />
+            <circle cx="365" cy="52" r="3.5" fill="currentColor" class="svg-ink" />
+            <circle cx="500" cy="28" r="3.5" fill="currentColor" class="svg-ink" />
+            <text class="svg-label" x="510" y="20">head path</text>
             <g class="svg-line">
-              <rect x="40" y="30" width="110" height="70" />
-              <rect x="175" y="30" width="110" height="70" />
-              <rect x="310" y="30" width="110" height="70" />
-              <rect x="445" y="30" width="110" height="70" />
+              <rect x="40" y="70" width="110" height="58" />
+              <rect x="175" y="70" width="110" height="58" />
+              <rect x="310" y="70" width="110" height="58" />
+              <rect x="445" y="70" width="110" height="58" />
             </g>
-            <text class="svg-label" x="52" y="22">1 · contact</text>
-            <text class="svg-label" x="187" y="22">2 · down</text>
-            <text class="svg-label" x="322" y="22">3 · pass</text>
-            <text class="svg-label" x="457" y="22">4 · up</text>
-            <text class="svg-label" x="52" y="120">legs apart</text>
-            <text class="svg-label" x="187" y="120">lowest point</text>
-            <text class="svg-label" x="322" y="120">legs together</text>
-            <text class="svg-label" x="457" y="120">highest point</text>
-            <path class="svg-plot" d="M555,65 q22,0 22,35 l-540,0 q-22,0 -22,-35" stroke-dasharray="4 4" />
-            <text class="svg-label" x="250" y="145">frame 3 is frame 1 with the legs swapped</text>
+            <text class="svg-label" x="52" y="90">1 · contact</text>
+            <text class="svg-label" x="187" y="90">2 · passing</text>
+            <text class="svg-label" x="322" y="90">3 · contact</text>
+            <text class="svg-label" x="457" y="90">4 · passing</text>
+            <text class="svg-label" x="52" y="106">legs widest</text>
+            <text class="svg-label" x="187" y="106">legs together</text>
+            <text class="svg-label" x="322" y="106">mirror of 1</text>
+            <text class="svg-label" x="457" y="106">mirror of 2</text>
+            <text class="svg-label" x="52" y="120">body lowest</text>
+            <text class="svg-label" x="187" y="120">body highest</text>
+            <text class="svg-label" x="322" y="120">body lowest</text>
+            <text class="svg-label" x="457" y="120">body highest</text>
+            <text class="svg-label" x="150" y="152">two poses drawn, two poses mirrored — the head rises and falls once per step</text>
           </svg>
-          <figcaption>Two poses doing the work of four. The body's height changes across the cycle — that's what makes it a run rather than a glide.</figcaption>
+          <figcaption>The arc is the point. A head that travels in a straight line reads as gliding, whatever the legs are doing.</figcaption>
         </figure>
 
-        <p>Two things worth knowing before you start, because they save the most time:</p>
+        <ol>
+          <li><b>Frame 1 — contact.</b> Left foot forward, right foot back, legs at their widest spread.
+            The body sits at its <em>lowest</em> here, because the weight has just landed.</li>
+          <li><b>Frame 2 — passing.</b> Legs together under the body, one foot flat and the other
+            lifting past it. The body is at its <em>highest</em>.</li>
+          <li><b>Frame 3 — contact, mirrored.</b> Frame 1 with the legs and arms swapped.</li>
+          <li><b>Frame 4 — passing, mirrored.</b> Frame 2 with the arms swapped.</li>
+        </ol>
+
+        <p>Two details separate a walk from a shuffle, and both come straight from the video:</p>
         <ul>
-          <li><b>Frame 3 is frame 1 with the legs swapped.</b> Copy it and redraw the legs rather than
-            starting fresh. Same for 4 versus 2.</li>
-          <li><b>The body rises and falls.</b> Frame 2 is the lowest point, frame 4 the highest. A run
-            with a level head is the classic "walking on ice" look.</li>
+          <li><b>Arms swing opposite the legs</b>, and they're widest on the contact frames — the same
+            frames where the legs are widest. Left leg forward means right arm forward.</li>
+          <li><b>The head travels in an arc.</b> One pixel down on the contacts, one pixel up on the
+            passings. At 32 × 32 that single pixel is most of what sells the walk.</li>
         </ul>
-        <p>Frame duration around <b>100 ms</b> — runs are roughly half the frame time of an idle. Tag it
-          in step 6; for now just get the four frames drawn.</p>
+
+        <p>Frame duration around <b>130 ms</b>. A walk is deliberate — if it reads as a jog, that's a
+          sign you want different poses rather than a shorter duration. A run isn't a fast walk; it has
+          a moment where both feet leave the ground, and that's a separate sketch.</p>
+
+        <div class="why">
+          <h4>Why half of it is nearly free</h4>
+          <p>Frames 3 and 4 are frames 1 and 2 with the limbs swapped, so a four-frame walk is two
+            frames of drawing plus two of editing. Copy, paste, swap — never redraw. That economy is
+            why four frames is the standard minimum rather than a compromise, and it's the reason this
+            step fits in twenty minutes.</p>
+        </div>
 
         <div class="feel">
           <h4>Scrub it constantly</h4>
           <p>Hit play in the timeline every couple of edits rather than drawing all four and then
             looking. Animation errors are invisible while still and obvious in motion, and the fastest
             way to fix a bad cycle is to catch it two pixels in.</p>
+        </div>
+
+        <div class="trap">
+          <h4>Mirroring the whole frame flips the facing</h4>
+          <p>You want the <em>limbs</em> swapped, not the character turned around. Select just the legs
+            and arms to flip, or redraw them in the opposite position — if you mirror the entire canvas
+            your character will moonwalk.</p>
         </div>
       </div>
     </section>
@@ -282,7 +318,7 @@
           them <b>exactly</b>:</p>
         <ul>
           <li><code class="inline">idle</code> — frames 1–4, loop</li>
-          <li><code class="inline">run</code> — frames 5–8, loop</li>
+          <li><code class="inline">walk</code> — frames 5–8, loop</li>
           <li><code class="inline">jump</code> — frames 9–11, no loop</li>
         </ul>
 
@@ -382,7 +418,7 @@ func _animate() -&gt; void:
 	if not is_on_floor():
 		sprite.play("jump")
 	elif absf(velocity.x) &gt; 8.0:
-		sprite.play("run")
+		sprite.play("walk")
 	else:
 		sprite.play("idle")
 
@@ -405,7 +441,7 @@ func _animate() -&gt; void:
             <text class="svg-label" x="32" y="41">not is_on_floor()</text>
             <text class="svg-label" x="32" y="89">abs(velocity.x) &gt; 8</text>
             <text class="svg-label" x="345" y="28">jump</text>
-            <text class="svg-label" x="345" y="68">run</text>
+            <text class="svg-label" x="345" y="68">walk</text>
             <text class="svg-label" x="345" y="108">idle</text>
             <g class="svg-plot">
               <path d="M170,32 L328,23 M170,80 L328,63 M170,92 L328,103" />
@@ -455,16 +491,16 @@ func _physics_process(delta: float) -&gt; void:
 
         <div class="trap">
           <h4>Use <code class="inline">play()</code>, never assign <code class="inline">animation</code></h4>
-          <p>Calling <code class="inline">sprite.play("run")</code> every frame is safe — the docs are explicit
+          <p>Calling <code class="inline">sprite.play("walk")</code> every frame is safe — the docs are explicit
             that calling it with the animation already playing resumes rather than restarts. But
-            assigning <code class="inline">sprite.animation = "run"</code> every frame resets the frame counter
-            and <code class="inline">frame_progress</code>, so your run animation freezes on frame one and you
+            assigning <code class="inline">sprite.animation = "walk"</code> every frame resets the frame counter
+            and <code class="inline">frame_progress</code>, so your walk animation freezes on frame one and you
             spend twenty minutes blaming Aseprite.</p>
         </div>
 
         <div class="why">
           <h4>The 8.0 threshold</h4>
-          <p>Comparing against a small number rather than zero means the run animation stops while the
+          <p>Comparing against a small number rather than zero means the walk animation stops while the
             character is still sliding the last few pixels to a halt. Compare against exactly 0 and
             you get a frame or two of running-in-place at the end of every stop.</p>
         </div>
@@ -491,25 +527,25 @@ func _physics_process(delta: float) -&gt; void:
             </thead>
             <tbody>
               <tr><td>Actual size</td><td>View the game at 1× with no zoom</td><td>You can't tell which way the character faces</td></tr>
-              <tr><td>Silhouette</td><td>Set <code>modulate</code> to black in the inspector while it runs</td><td>Idle and run are indistinguishable as shapes</td></tr>
-              <tr><td>Transition</td><td>Run, then stop, then jump from standing, then jump while running</td><td>A visible pop, or a frame of the wrong animation</td></tr>
-              <tr><td>Flip</td><td>Run left, stop, run right</td><td>The character faces right the moment it stops</td></tr>
+              <tr><td>Silhouette</td><td>Set <code>modulate</code> to black in the inspector while it runs</td><td>Idle and walk are indistinguishable as shapes</td></tr>
+              <tr><td>Transition</td><td>Walk, then stop, then jump from standing, then jump while walking</td><td>A visible pop, or a frame of the wrong animation</td></tr>
+              <tr><td>Flip</td><td>Walk left, stop, walk right</td><td>The character faces right the moment it stops</td></tr>
               <tr><td>Timing</td><td>Halve then double every duration in Aseprite, re-import</td><td>You can't tell which version is better — look again</td></tr>
-              <tr><td>Loop seam</td><td>Watch the run for 20 seconds without blinking</td><td>A hitch where frame 4 meets frame 1</td></tr>
+              <tr><td>Loop seam</td><td>Watch the walk for 20 seconds without blinking</td><td>A hitch where frame 4 meets frame 1</td></tr>
             </tbody>
           </table>
         </div>
 
         <p>Then break it on purpose, because that's where the learning is. Set the idle to 40 ms — a
-          character having a panic attack. Set the run to 400 ms — underwater. Delete the crouch frame
+          character having a panic attack. Set the walk to 400 ms — underwater. Delete the crouch frame
           from the jump and see how much anticipation was doing. Put them back when you're done, or
           don't.</p>
 
         <div class="feel">
           <h4>The one that surprises people</h4>
           <p>The silhouette test. Colour hides an enormous amount of ambiguity, and a character that
-            reads beautifully in full colour can be completely illegible in black. If idle and run
-            look the same in silhouette, the run needs more extreme leg positions — not more shading.</p>
+            reads beautifully in full colour can be completely illegible in black. If idle and walk
+            look the same in silhouette, the walk needs more extreme leg positions — not more shading.</p>
         </div>
 
         <p><b>Write down what you changed in the tuning pass.</b> Frame durations especially — next time
