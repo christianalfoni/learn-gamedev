@@ -75,8 +75,8 @@ def check_body_attrs(src, path):
 
     if not sketch:
         err('<body> is missing data-sketch — without it the "Log this session" button does nothing')
-    elif not re.fullmatch(r"[A-F][1-9]", sketch.group(1)):
-        warn(f'data-sketch="{sketch.group(1)}" does not look like a sketch ID (A1–F4)')
+    elif not re.fullmatch(r"[A-G][1-9]", sketch.group(1)):
+        warn(f'data-sketch="{sketch.group(1)}" does not look like a sketch ID (A1–G9)')
 
 
 def check_assets(src, path):
@@ -215,8 +215,9 @@ def check_video_claims(src, url, label, title_m, secs_m, ch_m):
             warn(f"no runtime shown for {url} — he needs it to budget the session")
 
     if ch_m:
-        channel = html.unescape(ch_m.group(1))
-        if channel.lower() not in body.lower():
+        # Channel names sometimes carry trailing spaces or non-breaking ones.
+        channel = " ".join(html.unescape(ch_m.group(1)).split())
+        if channel.lower() not in " ".join(body.split()).lower():
             warn(f'guide does not credit "{channel}" for {url} — check the byline')
 
 

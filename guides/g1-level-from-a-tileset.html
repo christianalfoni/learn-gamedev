@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="color-scheme" content="light dark" />
+<meta name="description" content="Sketch G1 — turn a tileset PNG into a playable level in Godot 4: TileMapLayer, physics layers, terrain autotiling, parallax layers and camera limits." />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ctext y='26' font-size='26'%3E%F0%9F%8E%9B%EF%B8%8F%3C/text%3E%3C/svg%3E" />
+<link rel="stylesheet" href="../assets/guide.css" />
+<title>G1 · A level from a tileset — The Gamedev Sketchbook</title>
+</head>
+
+<body data-guide="g1-level-from-a-tileset" data-sketch="G1">
+
+<div class="rail">
+  <div class="rail-inner">
+    <a class="back" href="../">← Sketchbook</a>
+    <span class="bar"><i></i></span>
+    <span class="pct">0/8 steps</span>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <header class="head">
+    <span class="eyebrow">Sketch G1 · Godot 4</span>
+    <h1>A level from a tileset</h1>
+    <p class="standfirst">A tileset PNG goes in; a level you can walk around comes out. Autotiling that
+      picks the right edge pieces as you paint, collision that comes from the tiles themselves, and a
+      camera that knows where the level stops.</p>
+    <div class="meta">
+      <span class="pill" style="--tone: var(--c-godot)">Godot 4.3+</span>
+      <span class="pill">75–100 min</span>
+      <span class="pill">8 steps</span>
+      <span class="pill">TileMapLayer</span>
+    </div>
+
+    <div class="outcome">
+      <h2>What you'll have at the end</h2>
+      <ul>
+        <li>A <b>TileSet resource</b> with a physics layer, so collision is a property of the tile
+          rather than something you place by hand.</li>
+        <li><b>Terrain autotiling</b> configured — you paint a blob of ground and Godot picks the
+          corners and edges for you.</li>
+        <li>Three <b>TileMapLayer</b> nodes — background, ground, foreground — which is what the
+          node was designed for.</li>
+        <li>A level with <b>camera limits</b>, walked end to end by a placeholder character.</li>
+      </ul>
+    </div>
+
+    <div class="trap" style="margin-top:4px">
+      <h4>You need a tileset PNG to start</h4>
+      <p>Use your own if you have one. If not, grab a free pack — <a href="https://kenney.nl/assets/category:2D?sort=update" target="_blank" rel="noopener noreferrer">Kenney</a>
+        has CC0 tilesets that need no attribution, and using someone else's art is not cheating in a
+        sketch about level building. What matters is that it's a <b>uniform grid with no padding</b>;
+        16 × 16 or 32 × 32 both work fine.</p>
+    </div>
+  </header>
+
+  <section class="prep">
+    <div class="prep-head">
+      <h2>Prep</h2>
+      <span>Optional — the steps below are self-contained. Useful if you'd rather watch someone click.</span>
+    </div>
+
+    <a class="vid optional" href="https://www.youtube.com/watch?v=ZutpG0_CYrQ" target="_blank" rel="noopener noreferrer">
+      <span class="n">01</span>
+      <span class="t">In Depth TILEMAP Tutorial For Godot 4.3+</span>
+      <span class="len">39:13 · optional</span>
+      <span class="by">DevWorm · Aug 2024 · 138k views · Godot 4.3+</span>
+      <span class="why">Thorough and correct for the current node — it's built around TileMapLayer
+        rather than the deprecated TileMap, which rules out most older tutorials. Long, so treat it as
+        a reference rather than homework: the collision and terrain sections map onto steps 3 and 4,
+        which are the two fiddliest parts of this sketch.</span>
+    </a>
+  </section>
+
+  <main class="steps">
+
+    <section class="step" id="s1">
+      <div class="step-head">
+        <button class="step-check" type="button"><i></i><i></i><i></i><i></i></button>
+        <div class="step-title"><span class="n">Step 1</span><h2>Import settings, before anything else</h2></div>
+        <span class="step-time">8 min</span>
+      </div>
+      <div class="step-body">
+        <p>New 2D project. Drop your tileset PNG into the project, then select it in the FileSystem
+          dock and open the <b>Import</b> tab. This is the step people skip and then spend an hour
+          debugging.</p>
+        <ul>
+          <li><b>Filter: off.</b> Or set the project-wide default: <b>Project Settings → Rendering →
+            Textures → Canvas Textures → Default Texture Filter</b> → <b>Nearest</b>. Linear filtering
+            turns pixel art into mush and, worse, bleeds neighbouring tiles into each other.</li>
+          <li><b>Mipmaps: off.</b> They cause tile edges to sample from the wrong place when the camera
+            zooms.</li>
+          <li>Click <b>Reimport</b>. It won't apply otherwise.</li>
+        </ul>
+        <p>While you're in Project Settings, set the window size to something small and honest —
+          <b>640 × 360</b> with <b>Stretch Mode: canvas_items</b> and <b>Aspect: keep</b>. Pixel art at a
+          1080p window is drawn so small you can't judge it.</p>
+
+        <div class="trap">
+          <h4>The one-pixel seam</h4>
+          <p>If you later see thin lines of the neighbouring tile along tile edges, it's almost always
+            this step: filtering on, mipmaps on, or a fractional camera zoom. Fix it here rather than
+            by adding padding to your texture.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="step" id="s2">
+      <div class="step-head">
+        <button class="step-check" type="button"><i></i><i></i><i></i><i></i></button>
+        <div class="step-title"><span class="n">Step 2</span><h2>TileMapLayer and the TileSet resource</h2></div>
+        <span class="step-time">12 min</span>
+      </div>
+      <div class="step-body">
+        <p>New 2D Scene, save it as <code class="inline">level.tscn</code>. Add a <b>TileMapLayer</b> node
+          and rename it <code class="inline">Ground</code>.</p>
+        <p>In the inspector, on <b>Tile Set</b>, choose <b>New TileSet</b>. Click it to open it, and set
+          the tile size to match your PNG — 16 × 16 or 32 × 32.</p>
+        <p>Now the bottom panel has <b>TileSet</b> and <b>TileMap</b> tabs. In <b>TileSet</b>, add an
+          <b>Atlas</b> source with the <b>+</b>, and pick your PNG. Godot offers to auto-create tiles
+          for every non-empty cell — say yes.</p>
+
+        <figure class="fig">
+          <svg viewBox="0 0 600 150" role="img" aria-label="Diagram: a PNG becomes an atlas source inside a TileSet resource, which is shared by several TileMapLayer nodes.">
+            <g class="svg-line">
+              <rect x="14" y="52" width="104" height="44" />
+              <rect x="160" y="52" width="120" height="44" />
+              <rect x="330" y="14" width="130" height="34" />
+              <rect x="330" y="58" width="130" height="34" />
+              <rect x="330" y="102" width="130" height="34" />
+            </g>
+            <text class="svg-label" x="26" y="72">tileset.png</text>
+            <text class="svg-label" x="26" y="88">a plain image</text>
+            <text class="svg-label" x="172" y="72">TileSet resource</text>
+            <text class="svg-label" x="172" y="88">atlas + layers + terrains</text>
+            <text class="svg-label" x="342" y="34">TileMapLayer · Background</text>
+            <text class="svg-label" x="342" y="78">TileMapLayer · Ground</text>
+            <text class="svg-label" x="342" y="122">TileMapLayer · Foreground</text>
+            <g class="svg-plot">
+              <path d="M118,74 L158,74 M280,74 L328,31 M280,74 L328,75 M280,74 L328,119" />
+              <path d="M152,69 l8,5 -8,5" />
+            </g>
+            <text class="svg-label" x="480" y="60">one resource,</text>
+            <text class="svg-label" x="480" y="76">shared by every</text>
+            <text class="svg-label" x="480" y="92">layer node</text>
+          </svg>
+          <figcaption>The TileSet holds everything the tiles know about themselves. The layers just place them.</figcaption>
+        </figure>
+
+        <p>Switch to the <b>TileMap</b> tab and paint a few tiles into the viewport, just to confirm the
+          pipeline works. Delete them afterwards — step 5 is where the level actually gets built.</p>
+
+        <div class="why">
+          <h4>Why one node per layer</h4>
+          <p>Before Godot 4.3 a single TileMap node held every layer internally. Now each layer is its
+            own node, which means you can hide one while you work, move it, give it its own modulate or
+            z-index, or script it independently. It also means any tutorial showing one TileMap with a
+            layers list inside it predates 4.3 — a quick way to date what you're watching.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="step" id="s3">
+      <div class="step-head">
+        <button class="step-check" type="button"><i></i><i></i><i></i><i></i></button>
+        <div class="step-title"><span class="n">Step 3</span><h2>Collision, as a property of the tile</h2></div>
+        <span class="step-time">14 min</span>
+      </div>
+      <div class="step-body">
+        <p>In the <b>TileSet</b> tab, select the TileSet resource itself and add a <b>Physics Layer</b>
+          with <b>+</b>. Leave the collision layer and mask at their defaults for now.</p>
+        <p>Then select your atlas source, switch the tile editor to <b>Select</b> mode, and choose the
+          tiles that should be solid. In the inspector for the selected tiles you'll now see
+          <b>Physics → Physics Layer 0</b>, with a small polygon editor. There's a button to reset the
+          polygon to a full rectangle — for square ground tiles that's all you need, and it's one click
+          per tile.</p>
+        <p>Do the fill and all the edge tiles. Skip decorative tiles, background tiles, and anything the
+          player should walk through.</p>
+
+        <div class="feel">
+          <h4>Why this is worth the fifteen minutes</h4>
+          <p>Collision now travels with the tile. Paint a platform anywhere in any level, and it's
+            solid — no StaticBody2D, no CollisionShape2D, nothing to keep in sync when you move things
+            around. Coming from hand-placed collision this feels like cheating the first time you see
+            it work.</p>
+        </div>
+
+        <div class="trap">
+          <h4>Select multiple tiles first</h4>
+          <p>You can drag-select a whole run of tiles in the atlas and apply the collision polygon to
+            all of them at once. Doing it one at a time for a 13-tile set is twenty minutes of clicking
+            that a rectangle-drag turns into one.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="step" id="s4">
+      <div class="step-head">
+        <button class="step-check" type="button"><i></i><i></i><i></i><i></i></button>
+        <div class="step-title"><span class="n">Step 4</span><h2>Terrain autotiling and peering bits</h2></div>
+        <span class="step-time">18 min</span>
+      </div>
+      <div class="step-body">
+        <p>This is the fiddliest part of the sketch and the one that pays off most. Configured properly,
+          you paint a rough blob and Godot picks the correct corner, edge and fill tiles as you go.</p>
+        <p>On the TileSet resource, add a <b>Terrain Set</b>, then add one <b>terrain</b> inside it and
+          name it after your material. Set the terrain set's <b>Mode</b> to <b>Corners and Sides</b> —
+          it's the most flexible and matches a 13-tile set.</p>
+        <p>Now the part that confuses everyone. Select your tiles, switch the tile editor to the
+          <b>Terrains</b> section, and paint <b>peering bits</b> onto each tile. You are not saying
+          "this is a corner tile". You're saying, for each of its edges and corners, <em>what material
+          is on that side</em>.</p>
+
+        <figure class="fig">
+          <svg viewBox="0 0 600 190" role="img" aria-label="A tile divided into centre, four sides and four corners, showing which peering bits are marked for a top-edge tile.">
+            <g class="svg-line"><rect x="150" y="30" width="130" height="130" /></g>
+            <g class="svg-plot" opacity=".45">
+              <path d="M193,30 L193,160 M237,30 L237,160 M150,73 L280,73 M150,117 L280,117" />
+            </g>
+            <g fill="currentColor" class="svg-ink" opacity=".75">
+              <rect x="195" y="75" width="40" height="40" />
+              <rect x="152" y="75" width="39" height="40" /><rect x="239" y="75" width="39" height="40" />
+              <rect x="195" y="119" width="40" height="39" />
+              <rect x="152" y="119" width="39" height="39" /><rect x="239" y="119" width="39" height="39" />
+            </g>
+            <text class="svg-label" x="300" y="50">marked = "my material continues this way"</text>
+            <text class="svg-label" x="300" y="72">This is a TOP EDGE tile:</text>
+            <text class="svg-label" x="300" y="90">· centre, left, right marked</text>
+            <text class="svg-label" x="300" y="108">· bottom and lower corners marked</text>
+            <text class="svg-label" x="300" y="126">· top and upper corners left empty</text>
+            <text class="svg-label" x="300" y="152">Godot then knows to use this tile wherever</text>
+            <text class="svg-label" x="300" y="168">ground has open air directly above it.</text>
+            <text class="svg-label" x="150" y="24">one tile, nine peering regions</text>
+          </svg>
+          <figcaption>Describe the tile's surroundings, not its name. That inversion is the whole concept.</figcaption>
+        </figure>
+
+        <p>Work through the set: the fill tile has everything marked; a top edge has everything except
+          the top row; an outer top-left corner has everything except the top and left. Once done,
+          switch to the <b>TileMap</b> tab, pick the <b>Terrains</b> tab in the tile palette, and paint
+          with the terrain rather than an individual tile.</p>
+
+        <div class="trap">
+          <h4>If it paints the wrong tiles, the bits are wrong — not the tileset</h4>
+          <p>The usual symptom is a tile that looks right in isolation but produces gaps or wrong
+            corners in a run. Go back and check that tile's peering bits against its neighbours' — the
+            most common mistake is marking the four sides but forgetting the corners in
+            <b>Corners and Sides</b> mode.</p>
+        </div>
+
+        <div class="why">
+          <h4>When to stop fighting it</h4>
+          <p>Godot 4's terrain matching is less forgiving than Godot 3's autotiles were, and for
+            irregular sets it can be genuinely stubborn. If you've checked the bits twice and it still
+            misbehaves, <a href="https://github.com/Portponky/better-terrain" target="_blank" rel="noopener noreferrer">Better Terrain</a>
+            is a well-regarded plugin that replaces this system with a more predictable one. Reaching
+            for it isn't giving up — but do try the built-in one first, since it's what every tutorial
+            and every collaborator will assume.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="step" id="s5">
+      <div class="step-head">
+        <button class="step-check" type="button"><i></i><i></i><i></i><i></i></button>
+        <div class="step-title"><span class="n">Step 5</span><h2>Paint a level worth walking</h2></div>
+        <span class="step-time">14 min</span>
+      </div>
+      <div class="step-body">
+        <p>Now the fun part, and the reason for all that setup. Paint with the terrain and build
+          something roughly <b>60 tiles wide</b> — wide enough that the camera has to move.</p>
+        <p>Include these deliberately, because each one tests a different part of what you just
+          configured:</p>
+        <ul>
+          <li>A long flat run, to check the fill and top edge</li>
+          <li>A staircase of single-tile steps, which is where corner bits fail if they're wrong</li>
+          <li>A floating platform, enclosed on all four sides</li>
+          <li>A pit with vertical walls, exercising the side edges</li>
+          <li>A narrow one-tile gap, to find out whether your set can even do it</li>
+        </ul>
+
+        <div class="feel">
+          <h4>The moment it clicks</h4>
+          <p>Drag the terrain brush across an area and watch the edges resolve themselves behind the
+            cursor. If the setup is right this is genuinely satisfying — and if any shape produces a
+            wrong tile, you've found a peering-bit error in the most efficient way available.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="step" id="s6">
+      <div class="step-head">
+        <button class="step-check" type="button"><i></i><i></i><i></i><i></i></button>
+        <div class="step-title"><span class="n">Step 6</span><h2>Depth — background and foreground layers</h2></div>
+        <span class="step-time">10 min</span>
+      </div>
+      <div class="step-body">
+        <p>Add two more <b>TileMapLayer</b> nodes as siblings: <code class="inline">Background</code> above
+          <code class="inline">Ground</code> in the tree, and <code class="inline">Foreground</code> below it.
+          In Godot's 2D rendering, later siblings draw on top.</p>
+        <p>Assign the <b>same TileSet resource</b> to both — drag it from Ground's inspector, or pick it
+          from the resource dropdown. One tileset, three layers.</p>
+        <ul>
+          <li><b>Background</b>: distant walls, cave interior, sky detail. Set its <b>Modulate</b> to a
+            dimmer, slightly blue-shifted colour — the cheapest possible atmospheric perspective, and
+            it does more than any amount of extra art.</li>
+          <li><b>Foreground</b>: a few tiles in front of the player — grass tufts at the bottom of the
+            screen, an overhanging branch. Use sparingly; it's seasoning.</li>
+        </ul>
+
+        <div class="why">
+          <h4>Why the same TileSet</h4>
+          <p>Reusing one resource across all three layers means editing a tile's collision or terrain
+            once updates everywhere, and it keeps the level to a single texture. Three separate TileSets
+            is the setup that seems tidier for about a day and then becomes three places to fix
+            everything.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="step" id="s7">
+      <div class="step-head">
+        <button class="step-check" type="button"><i></i><i></i><i></i><i></i></button>
+        <div class="step-title"><span class="n">Step 7</span><h2>Something to walk it with, and a camera that stops</h2></div>
+        <span class="step-time">12 min</span>
+      </div>
+      <div class="step-body">
+        <p>Add a <b>CharacterBody2D</b> with a <b>CollisionShape2D</b> (a capsule, slightly narrower
+          than one tile) and a <b>Sprite2D</b> using <code class="inline">icon.svg</code> scaled down. Add a
+          <b>Camera2D</b> as a child of it.</p>
+        <p>Set up three input actions in <b>Project Settings → Input Map</b>:
+          <code class="inline">move_left</code>, <code class="inline">move_right</code>, <code class="inline">jump</code>.
+          Then attach this script. It's deliberately plain — this sketch is about the level, not the
+          feel, so paste it and don't tune it:</p>
+
+        <figure class="code">
+          <figcaption>player.gd<span class="sp"></span><button class="copy" type="button">copy</button></figcaption>
+          <pre><code>
+extends CharacterBody2D
+
+const SPEED := 160.0
+const JUMP_VELOCITY := -330.0
+const GRAVITY := 980.0
+
+
+func _physics_process(delta: float) -&gt; void:
+	if not is_on_floor():
+		velocity.y += GRAVITY * delta
+
+	if Input.is_action_just_pressed("jump") and is_on_floor():
+		velocity.y = JUMP_VELOCITY
+
+	velocity.x = Input.get_axis("move_left", "move_right") * SPEED
+	move_and_slide()
+</code></pre>
+        </figure>
+
+        <p>Now the camera. Select the <b>Camera2D</b> and set:</p>
+        <ul>
+          <li><b>Zoom</b> to <code class="inline">(3, 3)</code> or <code class="inline">(4, 4)</code> — whole
+            numbers only. A fractional zoom on pixel art produces shimmering edges as it moves.</li>
+          <li><b>Position Smoothing → Enabled</b>, speed around 5. Instantly better, one checkbox.</li>
+          <li><b>Limit</b> → left, top, right, bottom, in pixels. For a 60-tile-wide level of 16-pixel
+            tiles, the right limit is 60 × 16 = <b>960</b>. Set the others to match your level's extent.</li>
+        </ul>
+
+        <div class="trap">
+          <h4>Limits are in pixels, not tiles</h4>
+          <p>Everyone types 60 the first time and wonders why the camera won't move. Multiply by your
+            tile size. If you're unsure of the extent, click the last tile in the TileMap editor and
+            read its coordinates in the status bar.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="step" id="s8">
+      <div class="step-head">
+        <button class="step-check" type="button"><i></i><i></i><i></i><i></i></button>
+        <div class="step-title"><span class="n">Step 8</span><h2>Walk the whole thing</h2></div>
+        <span class="step-time">12 min</span>
+      </div>
+      <div class="step-body">
+        <p>This is the sketch. A level looks finished in the editor and reveals itself in play, and
+          fifteen minutes of walking teaches more than an hour of painting.</p>
+        <p>Run it and go end to end. Look for these specifically:</p>
+
+        <div class="tablewrap">
+          <table>
+            <thead><tr><th>Check</th><th>What you're looking for</th><th>Usual cause</th></tr></thead>
+            <tbody>
+              <tr><td>Seams</td><td>Thin lines between tiles as the camera moves</td><td>Texture filtering on, or a fractional camera zoom</td></tr>
+              <tr><td>Invisible walls</td><td>Getting stuck where nothing is drawn</td><td>Collision left on a decorative tile</td></tr>
+              <tr><td>Ghost floors</td><td>Falling through something solid-looking</td><td>Collision polygon missing on an edge tile</td></tr>
+              <tr><td>Camera drift</td><td>Level edge scrolling past into empty space</td><td>Limits unset, or set in tiles instead of pixels</td></tr>
+              <tr><td>Wrong corners</td><td>A notch or mismatched tile on the staircase</td><td>Peering bits on that tile</td></tr>
+              <tr><td>Depth reads flat</td><td>Background indistinguishable from ground</td><td>Background modulate not dimmed enough</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p>Then push it: set the camera zoom to 2 and walk again. A level built at 4× zoom often looks
+          sparse when you can see more of it, and that's useful to know before you spend an evening
+          decorating.</p>
+
+        <div class="feel">
+          <h4>The one worth dwelling on</h4>
+          <p>Turn the Background layer off and on while the game runs, from the Remote scene tree.
+            The difference a dimmed duplicate of your own tiles makes is out of all proportion to the
+            ten minutes it took, and it's the cheapest depth you will ever add to anything.</p>
+        </div>
+
+        <p><b>Write down the one thing that broke.</b> Level-building bugs are extremely repeatable —
+          whatever caught you here will catch you again, and knowing your own is worth more than the
+          level.</p>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="done">
+    <h2>That's the sketch</h2>
+    <p>You've turned a grid of pixels into somewhere you can walk, and the useful part is knowing that
+      collision and edge-matching are properties of the tileset rather than work you do per level. Set
+      that up once and every level after this one is just painting. The level is disposable.</p>
+
+    <p data-when-finished hidden><b>All eight steps done.</b> Log the session and it'll show up on the
+      sketchbook with today's date.</p>
+
+    <div class="actions">
+      <button class="btn" type="button" id="logSession">Log this session</button>
+      <a class="btn ghost" href="../">Back to the sketchbook</a>
+      <span class="logmsg" id="logMsg"></span>
+    </div>
+
+    <div class="next" style="margin-top:6px">
+      <span class="eyebrow">Reference</span>
+      <a href="https://docs.godotengine.org/en/stable/classes/class_tilemaplayer.html" target="_blank" rel="noopener noreferrer"><span class="id">docs</span><span>TileMapLayer class reference</span></a>
+      <a href="https://docs.godotengine.org/en/stable/tutorials/2d/using_tilesets.html" target="_blank" rel="noopener noreferrer"><span class="id">docs</span><span>Using TileSets — the official walkthrough</span></a>
+      <a href="https://docs.godotengine.org/en/stable/classes/class_camera2d.html" target="_blank" rel="noopener noreferrer"><span class="id">docs</span><span>Camera2D class reference</span></a>
+      <a href="https://kenney.nl/assets/category:2D?sort=update" target="_blank" rel="noopener noreferrer"><span class="id">web</span><span>Kenney's CC0 2D asset packs</span></a>
+    </div>
+  </footer>
+
+</div>
+
+<script src="../assets/guide.js"></script>
+</body>
+</html>

@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="color-scheme" content="light dark" />
+<meta name="description" content="Sketch B7 — draw a pixel-art character that reads clearly at actual size: silhouette first, a locked palette, one light source, and a hue-shifted ramp." />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ctext y='26' font-size='26'%3E%F0%9F%8E%9B%EF%B8%8F%3C/text%3E%3C/svg%3E" />
+<link rel="stylesheet" href="../assets/guide.css" />
+<title>B7 · The character that reads — The Gamedev Sketchbook</title>
+</head>
+
+<body data-guide="b7-character-that-reads" data-sketch="B7">
+
+<div class="rail">
+  <div class="rail-inner">
+    <a class="back" href="../">← Sketchbook</a>
+    <span class="bar"><i></i></span>
+    <span class="pct">0/8 steps</span>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <header class="head">
+    <span class="eyebrow">Sketch B7 · Aseprite</span>
+    <h1>The character that reads</h1>
+    <p class="standfirst">One character, drawn in the order that actually works: silhouette, flats,
+      light, ramp, outline. No animation, no engine, no export. The whole sketch is about whether the
+      thing is legible at the size it will really be seen.</p>
+    <div class="meta">
+      <span class="pill" style="--tone: var(--c-aseprite)">Aseprite</span>
+      <span class="pill">75–100 min</span>
+      <span class="pill">8 steps</span>
+      <span class="pill">32 × 32</span>
+    </div>
+
+    <div class="outcome">
+      <h2>What you'll have at the end</h2>
+      <ul>
+        <li>One finished 32 × 32 character built in <b>five deliberate passes</b> rather than drawn
+          all at once and fiddled with.</li>
+        <li>An <b>eight-colour palette with hue-shifted ramps</b> that you chose, and can explain.</li>
+        <li>A repeatable <b>squint test</b> for catching a shape that doesn't read, while it's still
+          cheap to fix.</li>
+        <li>Three deliberately broken copies, so you know what each rule is actually buying you.</li>
+      </ul>
+    </div>
+
+    <div class="trap" style="margin-top:4px">
+      <h4>How this guide is built</h4>
+      <p>Drawing is taught by video here, not by me — I can't show you a brush stroke in prose, and
+        prep video 01 is a pixel artist doing this exact process on screen. What this guide adds is the
+        order of operations, the constraints, and a way to check your own work when there's nobody to
+        critique it.</p>
+    </div>
+  </header>
+
+  <section class="prep">
+    <div class="prep-head">
+      <h2>Prep</h2>
+      <span>11 minutes required. Watch it before you open Aseprite.</span>
+    </div>
+
+    <a class="vid" href="https://www.youtube.com/watch?v=vXm5VjZA4Ys" target="_blank" rel="noopener noreferrer">
+      <span class="n">01</span>
+      <span class="t">Pixel Art Character Design Tutorial — Step By Step!</span>
+      <span class="len">10:35</span>
+      <span class="by">Saultoons · Jun 2020 · 938k views</span>
+      <span class="why">The whole sketch in video form, by someone who says "silhouette" thirteen
+        times in ten minutes — which is the correct ratio. Watch it once through, don't draw along;
+        the steps below are the same process broken into checkable pieces.</span>
+    </a>
+
+    <a class="vid optional" href="https://www.youtube.com/watch?v=jO9ruYaCJmU" target="_blank" rel="noopener noreferrer">
+      <span class="n">02</span>
+      <span class="t">Pixel Art 101: Shading Tutorial</span>
+      <span class="len">19:20 · optional</span>
+      <span class="by">Pixel Pete - Sad Slime Games · Oct 2019 · 321k views</span>
+      <span class="why">Nineteen minutes on light and shade alone, including hue shifting. Save it for
+        when steps 5 and 6 leave you wanting more than "make it darker" — it's the deeper version of
+        exactly those two steps.</span>
+    </a>
+  </section>
+
+  <main class="steps">
+
+    <section class="step" id="s1">
+      <div class="step-head">
+        <button class="step-check" type="button"><i></i><i></i><i></i><i></i></button>
+        <div class="step-title"><span class="n">Step 1</span><h2>Decide everything you can before drawing</h2></div>
+        <span class="step-time">8 min</span>
+      </div>
+      <div class="step-body">
+        <p>New file, <b>32 × 32</b>. Then commit to four things and write them somewhere you can see:</p>
+        <ul>
+          <li><b>Eight colours, maximum.</b> You'll build them properly in step 4 — for now just accept
+            the ceiling.</li>
+          <li><b>One light source</b>, upper-left. Not "generally lit". A specific direction.</li>
+          <li><b>One character concept in five words.</b> "Short angry blacksmith with hammer" is a
+            design. "A guy" is not, and it'll show.</li>
+          <li><b>Facing three-quarter or side-on</b>, whichever suits the concept. Front-on is the
+            hardest to make readable and the most tempting to start with.</li>
+        </ul>
+        <p>In Aseprite: turn on <b>Pixel-Perfect</b> in the pencil options, and set <b>View → Grid →
+          Grid Settings</b> to 1 × 1 so you can toggle a pixel grid when you need it.</p>
+
+        <div class="why">
+          <h4>Why the light direction is a decision, not a detail</h4>
+          <p>Every shading choice for the rest of the sketch is downstream of it. Pick it now and every
+            later "should this be lighter?" has an answer you can check rather than feel. Change it
+            halfway and you'll repaint everything — which is exactly the loop this sketch exists to
+            break you out of.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="step" id="s2">
+      <div class="step-head">
+        <button class="step-check" type="button"><i></i><i></i><i></i><i></i></button>
+        <div class="step-title"><span class="n">Step 2</span><h2>Silhouette only — one colour, no detail</h2></div>
+        <span class="step-time">15 min</span>
+      </div>
+      <div class="step-body">
+        <p>Draw the character as a <b>solid black shape</b>. No face, no outline, no interior lines.
+          Just the mass. Spend the full fifteen minutes here even if it feels like nothing is
+          happening — this is where the character is actually decided.</p>
+        <p>Things that make a silhouette read at 32 pixels:</p>
+        <ul>
+          <li><b>Distinct proportions.</b> An oversized head, a wide stance, a hunched back. Realistic
+            proportions turn to mush at this size.</li>
+          <li><b>Gaps.</b> Space between an arm and the body is what tells you there <em>is</em> an
+            arm. Two pixels of background beat ten of shading.</li>
+          <li><b>One strong outward feature.</b> A hat, a hammer, a ponytail, a hunch — one thing that
+            makes the shape unmistakable from across the room.</li>
+        </ul>
+
+        <figure class="fig">
+          <svg viewBox="0 0 600 190" role="img" aria-label="Two silhouettes side by side: one with clear gaps and distinct proportions, one with limbs merged into the body.">
+            <g class="svg-line"><rect x="60" y="24" width="180" height="140" /><rect x="360" y="24" width="180" height="140" /></g>
+            <g fill="currentColor" class="svg-ink">
+              <rect x="132" y="44" width="36" height="30" /><rect x="120" y="78" width="60" height="44" />
+              <rect x="104" y="82" width="12" height="34" /><rect x="184" y="70" width="12" height="46" />
+              <rect x="126" y="126" width="18" height="28" /><rect x="156" y="126" width="18" height="28" />
+              <rect x="196" y="58" width="10" height="60" />
+            </g>
+            <g fill="currentColor" class="svg-ink" opacity=".55">
+              <rect x="432" y="44" width="30" height="30" /><rect x="420" y="72" width="60" height="52" />
+              <rect x="424" y="124" width="52" height="30" />
+            </g>
+            <text class="svg-label" x="60" y="182">gaps, a wide stance, one outward feature</text>
+            <text class="svg-label" x="360" y="182">arms merged into the body — a blob</text>
+          </svg>
+          <figcaption>Both are the same number of pixels. Only one of them is a character.</figcaption>
+        </figure>
+
+        <div class="feel">
+          <h4>The squint test</h4>
+          <p>Zoom to <b>100%</b> and squint until the shape is blurry, or step back from the screen.
+            Can you still tell what it is and which way it faces? If not, no amount of colour will fix
+            it — go back and exaggerate the proportions. This test costs three seconds and you should
+            run it after every step from here on.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="step" id="s3">
+      <div class="step-head">
+        <button class="step-check" type="button"><i></i><i></i><i></i><i></i></button>
+        <div class="step-title"><span class="n">Step 3</span><h2>Build the palette before you use it</h2></div>
+        <span class="step-time">12 min</span>
+      </div>
+      <div class="step-body">
+        <p>Open the palette panel, make a new palette, and build <b>eight swatches</b> deliberately:
+          three ramps of two (skin, clothing, metal or hair), plus a dark for the outline and one
+          saturated accent.</p>
+        <p>A ramp is a base colour and a shadow that belong together. Here's the rule that separates
+          amateur pixel art from the rest, and it's the one thing to take from this whole sketch:</p>
+
+        <figure class="fig">
+          <svg viewBox="0 0 600 168" role="img" aria-label="Two colour ramps: one darkened by reducing brightness only, one darkened with a hue shift toward blue and increased saturation.">
+            <g>
+              <rect x="60" y="30" width="70" height="46" fill="#d98b5e" /><rect x="130" y="30" width="70" height="46" fill="#a06845" />
+              <rect x="200" y="30" width="70" height="46" fill="#66422b" />
+            </g>
+            <g>
+              <rect x="60" y="92" width="70" height="46" fill="#e8a065" /><rect x="130" y="92" width="70" height="46" fill="#b0603f" />
+              <rect x="200" y="92" width="70" height="46" fill="#6b2f43" />
+            </g>
+            <text class="svg-label" x="290" y="52">brightness only</text>
+            <text class="svg-label" x="290" y="68">— reads muddy and flat</text>
+            <text class="svg-label" x="290" y="114">hue shifted toward blue as it darkens,</text>
+            <text class="svg-label" x="290" y="130">saturation up — reads as light and air</text>
+            <text class="svg-label" x="60" y="22">the same base colour, darkened two ways</text>
+            <text class="svg-label" x="60" y="158">Shift roughly 15–30° of hue per step. Warm light means cool shadow.</text>
+          </svg>
+          <figcaption>The swatches on the bottom row aren't more colours — they're better chosen ones.</figcaption>
+        </figure>
+
+        <div class="why">
+          <h4>Why shadows shift hue</h4>
+          <p>A shadow isn't the absence of light, it's a different light — sky bounce, usually cooler
+            and bluer. Darkening by brightness alone produces the grey-brown mush that makes pixel art
+            look cheap. Rotate the hue toward blue or purple on the way down and toward yellow on the
+            way up, and the same eight colours suddenly look like a lit scene.</p>
+        </div>
+
+        <div class="trap">
+          <h4>Lock it</h4>
+          <p>Once the eight are in the palette, use <b>only</b> the palette. The moment you colour-pick
+            something "close enough" from the colour wheel you have nine colours, then twelve, and the
+            piece loses the coherence that made the constraint worth having.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="step" id="s4">
+      <div class="step-head">
+        <button class="step-check" type="button"><i></i><i></i><i></i><i></i></button>
+        <div class="step-title"><span class="n">Step 4</span><h2>Flats — colour, still no shading</h2></div>
+        <span class="step-time">10 min</span>
+      </div>
+      <div class="step-body">
+        <p>On a new layer above the silhouette, block in the <b>base colour of each ramp</b> — skin,
+          shirt, trousers, metal. Flat fills only. Nothing lighter, nothing darker.</p>
+        <p>This is the step where the character stops being a shape and starts being a person, and
+          it's also the last easy chance to fix a proportion. Do the squint test again: with colour
+          added, does the head still read as a head?</p>
+
+        <div class="trap">
+          <h4>Keep the silhouette layer</h4>
+          <p>Don't paint over it — keep it underneath, hidden. In step 8 you'll want to toggle it back
+            on to check the shape hasn't drifted while you were adding detail, and re-deriving it later
+            is a waste of ten minutes.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="step" id="s5">
+      <div class="step-head">
+        <button class="step-check" type="button"><i></i><i></i><i></i><i></i></button>
+        <div class="step-title"><span class="n">Step 5</span><h2>One light source, two tones</h2></div>
+        <span class="step-time">15 min</span>
+      </div>
+      <div class="step-body">
+        <p>Now the shadow half of each ramp, and nothing else. Light comes from upper-left, so:</p>
+        <ul>
+          <li>Every surface facing <b>down and right</b> takes the shadow colour.</li>
+          <li>Surfaces facing <b>up and left</b> stay on the base colour.</li>
+          <li><b>Under</b> overhangs — the chin, the brim of a hat, an arm across the chest — take
+            shadow regardless of which way they face. Contact shadow does more for readability than
+            any other single choice.</li>
+        </ul>
+        <p>Resist adding a third tone. Two tones per ramp forces you to decide where the form actually
+          turns, which is the skill; three tones lets you blur that decision.</p>
+
+        <div class="feel">
+          <h4>What to look for</h4>
+          <p>The character should suddenly have volume — arms in front of a torso rather than glued
+            onto it. If it looks noisy instead of solid, you've shaded detail rather than form: the
+            shadow should follow the big shapes, not outline every small one.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="step" id="s6">
+      <div class="step-head">
+        <button class="step-check" type="button"><i></i><i></i><i></i><i></i></button>
+        <div class="step-title"><span class="n">Step 6</span><h2>The outline decision</h2></div>
+        <span class="step-time">10 min</span>
+      </div>
+      <div class="step-body">
+        <p>Three options, and this sketch is about knowing the difference rather than always picking
+          the same one. Try all three on copies — <kbd>Ctrl</kbd>+<kbd>D</kbd> duplicates the sprite in
+          a new frame, which makes comparison instant.</p>
+        <ul>
+          <li><b>Solid dark outline.</b> Maximum readability against any background. Reads as cartoon,
+            slightly stickerish, and eats two of your eight colours' worth of visual weight.</li>
+          <li><b>Selective outline.</b> Outline only where the character meets the background, dropped
+            or lightened where light hits the top edge. Most modern pixel art does this.</li>
+          <li><b>No outline.</b> Shapes defined by colour alone. Elegant, and fragile — it fails the
+            moment the background is a similar value.</li>
+        </ul>
+
+        <div class="why">
+          <h4>Outlines are a background decision</h4>
+          <p>Which one is right depends entirely on what the character will sit on. A sprite that will
+            move across grass, stone and sky needs a dark outline to survive all three. A sprite on a
+            known dark background can go without and look far better for it. There's no correct answer
+            in the abstract, which is why picking one deliberately is the exercise.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="step" id="s7">
+      <div class="step-head">
+        <button class="step-check" type="button"><i></i><i></i><i></i><i></i></button>
+        <div class="step-title"><span class="n">Step 7</span><h2>Details, and the one that earns its place</h2></div>
+        <span class="step-time">10 min</span>
+      </div>
+      <div class="step-body">
+        <p>Eyes, a belt buckle, a highlight on the hammer. At 32 × 32 you get perhaps <b>three</b> of
+          these before the sprite turns to noise, so choose them.</p>
+        <p>Use the accent colour from step 3 exactly once, on the thing you most want the eye to land
+          on. A single saturated pixel in an otherwise muted piece is the cheapest focal point
+          available.</p>
+
+        <div class="trap">
+          <h4>Eyes at this scale are two pixels</h4>
+          <p>Usually one dark pixel each, sometimes a single wide one. Anything more and you've spent
+            your detail budget on a face nobody sees at actual size. If the character needs an
+            expression, put it in the silhouette — a tilted head says more than a pixel eyebrow.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="step" id="s8">
+      <div class="step-head">
+        <button class="step-check" type="button"><i></i><i></i><i></i><i></i></button>
+        <div class="step-title"><span class="n">Step 8</span><h2>Break it three ways</h2></div>
+        <span class="step-time">15 min</span>
+      </div>
+      <div class="step-body">
+        <p>This is the sketch. Everything above was so this step has something to work on.</p>
+        <p>Duplicate the finished sprite into three more frames and deliberately ruin each one. You're
+          not looking for which is better — you already know. You're building the ability to
+          <em>see</em> what each rule was doing:</p>
+
+        <div class="tablewrap">
+          <table>
+            <thead><tr><th>Break it</th><th>How</th><th>What you should see</th></tr></thead>
+            <tbody>
+              <tr><td>Kill the hue shift</td><td>Replace each shadow with the base colour darkened by brightness only</td><td>Flat, muddy, lifeless — the same drawing with the air removed</td></tr>
+              <tr><td>Move the light</td><td>Shade as if lit from the lower-right instead</td><td>Uncanny and slightly sinister; up-lighting reads as horror for a reason</td></tr>
+              <tr><td>Shade the detail</td><td>Add a third and fourth tone everywhere you can</td><td>Noise. More information, less readable — the core trade of pixel art</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p>Then the final check: put all four on backgrounds of very different values — near-black,
+          mid-grey, near-white — and view at <b>100%</b>. Set the canvas background colour in Aseprite
+          or drop a filled layer underneath. The one that survives all three is the one that would
+          survive a real game.</p>
+
+        <div class="feel">
+          <h4>The one that surprises people</h4>
+          <p>The mid-grey background. Sprites are usually drawn on dark or transparent canvases, and
+            plenty of them fall apart on mid-grey because their values sit too close to it. If yours
+            vanishes, the fix is contrast in the silhouette, not more shading.</p>
+        </div>
+
+        <p><b>Write down which break bothered you most.</b> That's the rule you'd been applying by
+          habit rather than by choice, and it's the one worth watching next time.</p>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="done">
+    <h2>That's the sketch</h2>
+    <p>You've drawn one character, and more usefully you've drawn it in an order that makes each
+      decision checkable instead of a matter of taste. The squint test and the hue-shifted ramp are
+      the two things worth keeping; the character is disposable.</p>
+
+    <p data-when-finished hidden><b>All eight steps done.</b> Log the session and it'll show up on the
+      sketchbook with today's date.</p>
+
+    <div class="actions">
+      <button class="btn" type="button" id="logSession">Log this session</button>
+      <a class="btn ghost" href="../">Back to the sketchbook</a>
+      <span class="logmsg" id="logMsg"></span>
+    </div>
+
+    <div class="next" style="margin-top:6px">
+      <span class="eyebrow">Reference</span>
+      <a href="https://saint11.art/pixel_articles/" target="_blank" rel="noopener noreferrer"><span class="id">web</span><span>Saint11's pixel-art articles — shading, colour, anti-aliasing, banding</span></a>
+      <a href="https://lospec.com/palette-list" target="_blank" rel="noopener noreferrer"><span class="id">web</span><span>Lospec palette list — ready-made palettes worth studying</span></a>
+      <a href="https://www.aseprite.org/docs/" target="_blank" rel="noopener noreferrer"><span class="id">docs</span><span>Aseprite documentation</span></a>
+    </div>
+  </footer>
+
+</div>
+
+<script src="../assets/guide.js"></script>
+</body>
+</html>

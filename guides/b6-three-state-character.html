@@ -4,7 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <meta name="color-scheme" content="light dark" />
-<meta name="description" content="Sketch B6 — draw a character with idle, run and jump animations in Aseprite, tag them, import with Aseprite Wizard, and drive the states from Godot." />
+<meta name="description" content="Sketch B6 — draw a character with idle, walk and jump animations in Aseprite, tag them, import with Aseprite Wizard, and drive the states from Godot." />
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ctext y='26' font-size='26'%3E%F0%9F%8E%9B%EF%B8%8F%3C/text%3E%3C/svg%3E" />
 <link rel="stylesheet" href="../assets/guide.css" />
 <title>B6 · The three-state character — The Gamedev Sketchbook</title>
@@ -296,9 +296,10 @@
 
         <div class="why">
           <h4>Squash and stretch, three frames deep</h4>
-          <p>The crouch is <em>squash</em>, the rise is <em>stretch</em>. It's the same principle
-            sketch A4 does with a damped spring on a sprite's scale, except here you're drawing it by
-            hand — which is a better way to understand what the spring is imitating.</p>
+          <p>The crouch is <em>squash</em>, the rise is <em>stretch</em> — Disney's first principle,
+            drawn by hand. Doing it in three frames of pixels teaches it better than any amount of
+            reading about easing curves, because you have to decide exactly how many pixels of
+            compression read as weight.</p>
         </div>
       </div>
     </section>
@@ -454,8 +455,8 @@ func _animate() -&gt; void:
         </figure>
 
         <p>Call <code class="inline">_animate()</code> from <code class="inline">_physics_process</code>, just
-          before <code class="inline">move_and_slide()</code>. If you've done sketch A1, paste that movement
-          code in and you're finished — otherwise the minimum that makes this testable:</p>
+          before <code class="inline">move_and_slide()</code>. The movement itself is deliberately plain here —
+          this sketch is about the art pipeline, not the feel — so paste this in and don't tune it:</p>
 
         <figure class="code">
           <figcaption>player.gd — placeholder movement, if you don't have A1's<span class="sp"></span><button class="copy" type="button">copy</button></figcaption>
@@ -568,13 +569,6 @@ func _physics_process(delta: float) -&gt; void:
       <button class="btn" type="button" id="logSession">Log this session</button>
       <a class="btn ghost" href="../">Back to the sketchbook</a>
       <span class="logmsg" id="logMsg"></span>
-    </div>
-
-    <div class="next">
-      <span class="eyebrow">Natural next sketches</span>
-      <a href="../#e-A1"><span class="id">A1</span><span>The good-movement character — give this character movement worth animating.</span></a>
-      <a href="../#e-B3"><span class="id">B3</span><span>One palette, one scene — the same discipline, pushed to a locked 16 colours.</span></a>
-      <a href="../#e-A4"><span class="id">A4</span><span>Squash &amp; stretch on landing — the jump's crouch frame, done in code instead.</span></a>
     </div>
 
     <div class="next" style="margin-top:6px">

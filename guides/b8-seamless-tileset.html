@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="color-scheme" content="light dark" />
+<meta name="description" content="Sketch B8 — draw a seamless texture and a small edge-aware tileset in Aseprite's tilemap mode, ready to import into an engine." />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ctext y='26' font-size='26'%3E%F0%9F%8E%9B%EF%B8%8F%3C/text%3E%3C/svg%3E" />
+<link rel="stylesheet" href="../assets/guide.css" />
+<title>B8 · A seamless tileset — The Gamedev Sketchbook</title>
+</head>
+
+<body data-guide="b8-seamless-tileset" data-sketch="B8">
+
+<div class="rail">
+  <div class="rail-inner">
+    <a class="back" href="../">← Sketchbook</a>
+    <span class="bar"><i></i></span>
+    <span class="pct">0/8 steps</span>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <header class="head">
+    <span class="eyebrow">Sketch B8 · Aseprite</span>
+    <h1>A seamless tileset</h1>
+    <p class="standfirst">One texture that tiles without a visible seam, then the edge pieces that let
+      it end. Drawn in Aseprite's tilemap mode, which was built for exactly this and which most people
+      never turn on. No engine in this sketch — just the art, done properly.</p>
+    <div class="meta">
+      <span class="pill" style="--tone: var(--c-aseprite)">Aseprite 1.3+</span>
+      <span class="pill">90–120 min</span>
+      <span class="pill">8 steps</span>
+      <span class="pill">16 × 16 tiles</span>
+    </div>
+
+    <div class="outcome">
+      <h2>What you'll have at the end</h2>
+      <ul>
+        <li>A <b>seamless 16 × 16 base texture</b> you verified by tiling it, not by hoping.</li>
+        <li>A <b>13-tile edge set</b> — the smallest set that can enclose any blob shape — plus two
+          variants to break up repetition.</li>
+        <li>A working understanding of <b>Aseprite's tilemap layers</b>: draw once, and every instance
+          of that tile updates everywhere.</li>
+        <li>A PNG export laid out on a regular grid, ready for any engine's tileset importer.</li>
+      </ul>
+    </div>
+
+    <div class="trap" style="margin-top:4px">
+      <h4>How this guide is built</h4>
+      <p>The drawing is taught by video; the structure is taught here. Prep video 01 is a working
+        pixel artist using Aseprite's tileset features for half an hour — it's the best demonstration
+        of the tooling that exists. These steps give you the tile-count logic, the seam test and the
+        export discipline that the video doesn't spell out.</p>
+    </div>
+  </header>
+
+  <section class="prep">
+    <div class="prep-head">
+      <h2>Prep</h2>
+      <span>One video, and it's a long one — but this sketch leans on it heavily.</span>
+    </div>
+
+    <a class="vid" href="https://www.youtube.com/watch?v=_onhfikMN8k" target="_blank" rel="noopener noreferrer">
+      <span class="n">01</span>
+      <span class="t">Revisiting my tileset workflow for Aseprite's new 1.3 release</span>
+      <span class="len">27:54</span>
+      <span class="by">AdamCYounis · Dec 2023 · 112k views</span>
+      <span class="why">The reference for Aseprite's tileset features, by the person most associated
+        with them. The first ten minutes cover creating a tilemap layer and the relationship between
+        tiles and the canvas — that's steps 3 and 4, and it's the part to watch before you start. The
+        rest is him drawing stone and grass, which is worth having on while you work through steps 5
+        to 7 rather than watching up front.</span>
+    </a>
+  </section>
+
+  <main class="steps">
+
+    <section class="step" id="s1">
+      <div class="step-head">
+        <button class="step-check" type="button"><i></i><i></i><i></i><i></i></button>
+        <div class="step-title"><span class="n">Step 1</span><h2>Grid, palette, and one material</h2></div>
+        <span class="step-time">8 min</span>
+      </div>
+      <div class="step-body">
+        <p>New file, <b>256 × 256</b> — room for a grid of tiles with space to experiment. Then:</p>
+        <ul>
+          <li><b>View → Grid → Grid Settings</b>: 16 × 16, and turn the grid on. Every decision from
+            here is relative to that cell.</li>
+          <li><b>Five colours.</b> A three-step ramp for the material plus two accents. Tilesets show
+            their palette far more than characters do, because there's so much more of them on screen.</li>
+          <li><b>One material.</b> Grass, stone, dirt or sand — pick the one you find least
+            interesting. Interesting materials tempt you into detail, and detail is what breaks tiling.</li>
+        </ul>
+
+        <div class="why">
+          <h4>Why 16 × 16 rather than 32</h4>
+          <p>Tile size sets the resolution of your entire level geometry — a 32-pixel tile means the
+            smallest ledge you can build is 32 pixels. 16 is the classic compromise: fine enough to
+            build interesting shapes, coarse enough that a full set is an evening's work rather than a
+            week's.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="step" id="s2">
+      <div class="step-head">
+        <button class="step-check" type="button"><i></i><i></i><i></i><i></i></button>
+        <div class="step-title"><span class="n">Step 2</span><h2>The seamless base, using tiled mode</h2></div>
+        <span class="step-time">18 min</span>
+      </div>
+      <div class="step-body">
+        <p>This is the tile that fills the middle of everything, so it has to survive being repeated
+          hundreds of times. Draw it in one 16 × 16 cell, then turn on <b>View → Tiled Mode → Tiled in
+          Both Axes</b>.</p>
+        <p>Tiled mode is the whole trick: the canvas now repeats as you draw, so you're editing the
+          texture and previewing the repetition at the same time. A stroke that runs off the right edge
+          appears on the left.</p>
+
+        <figure class="fig">
+          <svg viewBox="0 0 600 190" role="img" aria-label="A tile repeated in a three by three grid, showing how edge features must continue across the seam.">
+            <g class="svg-line">
+              <rect x="150" y="20" width="50" height="50" /><rect x="200" y="20" width="50" height="50" /><rect x="250" y="20" width="50" height="50" />
+              <rect x="150" y="70" width="50" height="50" /><rect x="200" y="70" width="50" height="50" /><rect x="250" y="70" width="50" height="50" />
+              <rect x="150" y="120" width="50" height="50" /><rect x="200" y="120" width="50" height="50" /><rect x="250" y="120" width="50" height="50" />
+            </g>
+            <g class="svg-plot">
+              <path d="M150,95 L200,95 M200,95 L250,95 M250,95 L300,95" />
+              <path d="M175,70 L175,120 M225,70 L225,120 M275,70 L275,120" opacity=".35" />
+            </g>
+            <rect x="200" y="70" width="50" height="50" fill="none" stroke="currentColor" class="svg-ink" stroke-width="2" opacity=".6" />
+            <text class="svg-label" x="320" y="60">the centre cell is the only one you draw</text>
+            <text class="svg-label" x="320" y="80">— tiled mode shows you the other eight</text>
+            <text class="svg-label" x="320" y="108">a feature crossing an edge must arrive</text>
+            <text class="svg-label" x="320" y="124">at the same pixel row on the far side</text>
+            <text class="svg-label" x="150" y="186">Draw across the boundary deliberately; it is the only way to hide it.</text>
+          </svg>
+          <figcaption>The seam isn't hidden by avoiding the edges — it's hidden by committing to them.</figcaption>
+        </figure>
+
+        <p>Two rules that decide whether a texture tiles well:</p>
+        <ul>
+          <li><b>Nothing lands in the exact centre</b> of the cell, and nothing sits perfectly in a
+            corner. Both create a grid pattern the eye locks onto immediately.</li>
+          <li><b>No feature large enough to recognise.</b> If there's one distinctive rock, you'll see
+            that rock forty times. Keep the texture below the threshold where any element becomes
+            memorable.</li>
+        </ul>
+
+        <div class="feel">
+          <h4>The test that matters</h4>
+          <p>Zoom out until you can see roughly eight by eight repetitions at 100%. Now look for a
+            pattern — a diagonal line of similar pixels, a repeated bright spot, a visible grid. Your
+            eye will find it in about two seconds if it's there, and once seen it can't be unseen. Fix
+            it by moving the offending detail off-centre, or by dimming it.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="step" id="s3">
+      <div class="step-head">
+        <button class="step-check" type="button"><i></i><i></i><i></i><i></i></button>
+        <div class="step-title"><span class="n">Step 3</span><h2>Turn the layer into a tilemap layer</h2></div>
+        <span class="step-time">12 min</span>
+      </div>
+      <div class="step-body">
+        <p>Here's the feature almost nobody turns on. <b>Layer → New → New Tilemap Layer</b>, with the
+          grid set to 16 × 16. From now on every cell you draw into is a <em>reference</em> to a tile in
+          a tileset, not loose pixels.</p>
+        <p>What that buys you is the reason to bother: <b>edit a tile once and every placement of it
+          updates.</b> Change the grass texture in one cell and all forty cells using it change with it.
+          For a tileset — where the entire point is reuse — that turns a tedious asset into something
+          you can iterate on.</p>
+        <p>Copy your base texture into the tilemap layer, and you'll see it register as tile 1 in the
+          tileset panel.</p>
+
+        <div class="trap">
+          <h4>Tilemap layers and normal layers are different things</h4>
+          <p>You can't paint freehand across cell boundaries on a tilemap layer the way you can on a
+            normal one — every stroke is confined to the tile you're editing. That's the point, but
+            it's disorienting for the first ten minutes. If you want a sketch layer to draw over the
+            whole canvas, keep it as a separate normal layer above.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="step" id="s4">
+      <div class="step-head">
+        <button class="step-check" type="button"><i></i><i></i><i></i><i></i></button>
+        <div class="step-title"><span class="n">Step 4</span><h2>Work out how many tiles you actually need</h2></div>
+        <span class="step-time">10 min</span>
+      </div>
+      <div class="step-body">
+        <p>Before drawing thirty tiles, count. For a material that needs to end — grass with edges
+          where it meets air — the tile you need depends on which <b>sides</b> are occupied by the same
+          material. Four sides, each either filled or empty, gives sixteen combinations.</p>
+
+        <figure class="fig">
+          <svg viewBox="0 0 600 176" role="img" aria-label="A grid showing the sixteen side combinations that produce the thirteen distinct edge tiles plus corners.">
+            <g class="svg-line">
+              <rect x="70" y="30" width="44" height="44" /><rect x="134" y="30" width="44" height="44" /><rect x="198" y="30" width="44" height="44" /><rect x="262" y="30" width="44" height="44" />
+              <rect x="70" y="90" width="44" height="44" /><rect x="134" y="90" width="44" height="44" /><rect x="198" y="90" width="44" height="44" /><rect x="262" y="90" width="44" height="44" />
+            </g>
+            <g class="svg-plot" stroke-width="3">
+              <path d="M70,30 L114,30" /><path d="M134,30 L178,30 M178,30 L178,74" />
+              <path d="M198,30 L242,30 M242,30 L242,74 M198,74 L242,74" />
+              <path d="M262,30 L306,30 M306,30 L306,74 M262,74 L306,74 M262,30 L262,74" />
+              <path d="M70,90 L70,134" /><path d="M134,90 L178,90 M134,90 L134,134" />
+            </g>
+            <text class="svg-label" x="70" y="24">1 edge</text>
+            <text class="svg-label" x="134" y="24">corner</text>
+            <text class="svg-label" x="198" y="24">3 edges</text>
+            <text class="svg-label" x="262" y="24">island</text>
+            <text class="svg-label" x="70" y="150">side</text>
+            <text class="svg-label" x="134" y="150">corner</text>
+            <text class="svg-label" x="340" y="60">16 combinations of four sides,</text>
+            <text class="svg-label" x="340" y="78">but rotations and mirrors mean</text>
+            <text class="svg-label" x="340" y="96">you draw far fewer than 16 —</text>
+            <text class="svg-label" x="340" y="114">1 fill, 4 sides, 4 outer corners,</text>
+            <text class="svg-label" x="340" y="132">4 inner corners = 13 tiles.</text>
+          </svg>
+          <figcaption>Thirteen tiles will enclose any shape you can build. Everything beyond that is variation, not necessity.</figcaption>
+        </figure>
+
+        <p>So the shopping list is: <b>1 fill + 4 sides + 4 outer corners + 4 inner corners = 13</b>.
+          Draw them in that order — fill first, then sides, then corners — because each one is derived
+          from the previous.</p>
+
+        <div class="why">
+          <h4>Why inner corners are the ones people forget</h4>
+          <p>An outer corner is where the material ends and turns — the corner of a platform. An inner
+            corner is where two runs of material meet in an L, and the join needs its own tile or you
+            get a visible notch. It's the most common hole in a homemade tileset, and you only notice
+            when you paint a shape that needs it.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="step" id="s5">
+      <div class="step-head">
+        <button class="step-check" type="button"><i></i><i></i><i></i><i></i></button>
+        <div class="step-title"><span class="n">Step 5</span><h2>The four sides</h2></div>
+        <span class="step-time">20 min</span>
+      </div>
+      <div class="step-body">
+        <p>Start with the <b>top</b> edge — the one that gets seen most, because it's what the player
+          walks on. Take a copy of the fill tile and give the top few pixels the treatment that says
+          "this is where the material stops": lighter grass blades, a lip of brighter stone, a darker
+          soil line beneath.</p>
+        <p>Then left, right and bottom. Left and right are usually mirrors of each other, and Aseprite
+          will flip a selection for you — but check the light direction afterwards. If your light comes
+          from upper-left, a mirrored right edge has its highlight on the wrong side, and that reads as
+          wrong even when nobody can say why.</p>
+
+        <div class="trap">
+          <h4>Edges must still tile with themselves</h4>
+          <p>A run of ten top-edge tiles sits side by side, so the top tile has to be seamless
+            left-to-right just like the fill was. Turn tiled mode back on and check a row of them. The
+            most common failure is a grass blade that only works in isolation and produces an obvious
+            repeating comb when placed in a row.</p>
+        </div>
+
+        <div class="feel">
+          <h4>Where the time goes</h4>
+          <p>The top edge takes half of this step and the other three take the rest. That's correct —
+            the top edge carries the visual identity of the whole material. Bottom edges are frequently
+            barely visible and can be much simpler than they feel like they should be.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="step" id="s6">
+      <div class="step-head">
+        <button class="step-check" type="button"><i></i><i></i><i></i><i></i></button>
+        <div class="step-title"><span class="n">Step 6</span><h2>Corners, outer then inner</h2></div>
+        <span class="step-time">15 min</span>
+      </div>
+      <div class="step-body">
+        <p>Each outer corner is the intersection of two edge tiles you've already drawn. Copy the top
+          edge, copy the left edge, and reconcile them where they meet — that reconciliation is the
+          whole tile. Do the top-left, then mirror and adjust for the other three.</p>
+        <p>Inner corners are the opposite: mostly fill, with the edge treatment appearing only in one
+          corner where two runs meet. They're quicker than they look once you've done one.</p>
+
+        <div class="why">
+          <h4>Consistency beats correctness here</h4>
+          <p>Nobody can tell whether a 16-pixel corner is anatomically right. What they can tell
+            instantly is whether the corner uses the same lip thickness and highlight colour as the
+            edges either side of it. Copy from the neighbouring tiles rather than drawing fresh, and
+            the set stays coherent by construction.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="step" id="s7">
+      <div class="step-head">
+        <button class="step-check" type="button"><i></i><i></i><i></i><i></i></button>
+        <div class="step-title"><span class="n">Step 7</span><h2>Two variants, and the export</h2></div>
+        <span class="step-time">12 min</span>
+      </div>
+      <div class="step-body">
+        <p>Duplicate the fill tile twice and change each one slightly — a couple of pebbles, a patch of
+          darker grass, a crack. Not a feature; a difference. These get sprinkled among the plain fill
+          to break the eye's pattern-matching.</p>
+        <p>Then export. <b>File → Export</b>, PNG, at <b>100%</b> scale with no border padding. Lay the
+          tiles out on a regular grid — fill and variants on one row, sides on the next, corners on the
+          third — because every engine's tileset importer wants a uniform grid and a tidy one makes the
+          later setup obvious rather than a puzzle.</p>
+
+        <div class="trap">
+          <h4>No padding, no scaling, nothing clever</h4>
+          <p>Exporting at 2× or adding extra spacing between tiles will make an engine's grid settings
+            not line up, and the symptom — one-pixel slivers of the neighbouring tile appearing along
+            edges — looks like a rendering bug rather than an export mistake. Keep the source at 1×,
+            and scale in the engine if you need to.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="step" id="s8">
+      <div class="step-head">
+        <button class="step-check" type="button"><i></i><i></i><i></i><i></i></button>
+        <div class="step-title"><span class="n">Step 8</span><h2>Build something with it</h2></div>
+        <span class="step-time">15 min</span>
+      </div>
+      <div class="step-body">
+        <p>This is the sketch. A tileset is only as good as the shapes it can make, and the only way to
+          find the holes is to paint with it.</p>
+        <p>On the tilemap layer, build a small level fragment by hand — no engine, just placing tiles.
+          Include all of these deliberately, because each one exercises a different tile:</p>
+        <ul>
+          <li>A long flat platform (fill + top edge + two outer corners)</li>
+          <li>A one-tile-wide pillar (needs both side edges on the same tile — do you have it?)</li>
+          <li>An L-shaped ledge (inner corner)</li>
+          <li>A floating island, enclosed on all four sides</li>
+          <li>A large solid mass, at least 6 × 6, to check the fill and variants at scale</li>
+        </ul>
+
+        <div class="feel">
+          <h4>What you're looking for</h4>
+          <p>Two failure modes, and both are normal on a first set. <b>Missing tiles</b> — a shape you
+            can't build without an ugly compromise, usually the one-tile-wide pillar or a diagonal.
+            <b>Visible repetition</b> — the six-by-six mass showing a pattern that the single tile
+            never revealed. Fix the first by drawing the missing tile; fix the second by adjusting the
+            fill, which now updates everywhere at once because you're on a tilemap layer.</p>
+        </div>
+
+        <p><b>Write down which tile you found missing.</b> It'll be the same category next time — most
+          people have a consistent blind spot, and knowing yours is worth more than the tileset.</p>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="done">
+    <h2>That's the sketch</h2>
+    <p>You've got a tileset that can enclose any shape, and the more valuable thing: the habit of
+      counting the tiles before drawing them, and of testing a texture by repeating it rather than by
+      admiring it alone. The tileset is disposable; the seam test isn't.</p>
+
+    <p data-when-finished hidden><b>All eight steps done.</b> Log the session and it'll show up on the
+      sketchbook with today's date.</p>
+
+    <div class="actions">
+      <button class="btn" type="button" id="logSession">Log this session</button>
+      <a class="btn ghost" href="../">Back to the sketchbook</a>
+      <span class="logmsg" id="logMsg"></span>
+    </div>
+
+    <div class="next" style="margin-top:6px">
+      <span class="eyebrow">Reference</span>
+      <a href="https://www.aseprite.org/docs/tilemap/" target="_blank" rel="noopener noreferrer"><span class="id">docs</span><span>Aseprite — tilemap layers and tilesets</span></a>
+      <a href="https://www.aseprite.org/docs/tiled-mode/" target="_blank" rel="noopener noreferrer"><span class="id">docs</span><span>Aseprite — tiled mode, for seamless textures</span></a>
+      <a href="https://saint11.art/pixel_articles/" target="_blank" rel="noopener noreferrer"><span class="id">web</span><span>Saint11's pixel-art articles</span></a>
+    </div>
+  </footer>
+
+</div>
+
+<script src="../assets/guide.js"></script>
+</body>
+</html>

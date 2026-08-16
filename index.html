@@ -256,7 +256,8 @@ const MODULES = [
     { id: "C", title: "Audacity + SFX sketches",   blurb: "The generators create, Audacity shapes. Each one ends in a file you could drop into a game." },
     { id: "D", title: "FL Studio game-music sketches", blurb: "Loops, layers and stingers — the game-music idioms your theory background doesn't already cover." },
     { id: "E", title: "Shader sketches",           blurb: "GDShader, one effect at a time, on a sprite you already have." },
-    { id: "F", title: "Toy sketches — all tools",  blurb: "The payoff: one sprite, one sound and one bit of code that together feel great." }
+    { id: "F", title: "Toy sketches — all tools",  blurb: "The payoff: one sprite, one sound and one bit of code that together feel great." },
+    { id: "G", title: "Godot levels & environments", blurb: "Tilesets, tilemaps and the craft of building somewhere to be, rather than something to do." }
   ];
 
   // The full catalogue stays here as the list of sketches a guide could be
@@ -318,6 +319,18 @@ const SKETCHES = [
       blurb: "One character with idle, walk and jump animations — drawn in Aseprite with tags, imported into Godot with Aseprite Wizard, and switching states from code. The whole pipeline, end to end.",
       teach: "Tag discipline, frame economy across three loops, the .aseprite → SpriteFrames pipeline, driving animation from movement state.",
       links: [L("Aseprite Wizard", "https://github.com/viniciusgerevini/godot-aseprite-wizard"), L("AnimatedSprite2D docs", "https://docs.godotengine.org/en/stable/classes/class_animatedsprite2d.html"), L("Aseprite docs — tags", "https://www.aseprite.org/docs/tags/")] },
+
+    { id: "B7", m: "B", t: "The character that reads", time: "75–100 min", mins: 100, tools: ["aseprite"],
+      guide: "guides/b7-character-that-reads.html", guideSteps: 8,
+      blurb: "One 32×32 character drawn in the order that works — silhouette, palette, flats, light, outline — then deliberately broken three ways so you can see what each rule was doing.",
+      teach: "Silhouette-first thinking, the squint test, hue-shifted ramps, one light source, and what an outline is actually for.",
+      links: [L("Saint11's pixel-art articles", "https://saint11.art/pixel_articles/"), L("Lospec palette list", "https://lospec.com/palette-list")] },
+
+    { id: "B8", m: "B", t: "A seamless tileset", time: "90–120 min", mins: 120, tools: ["aseprite"],
+      guide: "guides/b8-seamless-tileset.html", guideSteps: 8,
+      blurb: "A texture that tiles without a seam, plus the 13 edge pieces that let it end — drawn in Aseprite's tilemap mode, where editing one tile updates every placement of it.",
+      teach: "Tiled mode, tilemap layers and tilesets, counting tiles before drawing them, and testing a texture by repeating it.",
+      links: [L("Aseprite — tilemap layers", "https://www.aseprite.org/docs/tilemap/"), L("Aseprite — tiled mode", "https://www.aseprite.org/docs/tiled-mode/")] },
 
     { id: "B5", m: "B", t: "9-slice a panel", time: "20 min", mins: 20, tools: ["aseprite", "godot"],
       blurb: "A UI panel drawn with slices in Aseprite, imported as a 9-patch StyleBox in Godot.",
@@ -397,7 +410,13 @@ const SKETCHES = [
     { id: "F4", m: "F", t: "The living torch", time: "30 min", mins: 30, tools: ["godot", "aseprite", "audacity"],
       blurb: "Your six-frame torch (B1) + a looping crackle + a subtle light flicker. One atmospheric object, nothing around it.",
       teach: "Sprite, audio and code atmosphere; looping across two different media at once.",
-      links: [L("PointLight2D docs", "https://docs.godotengine.org/en/stable/classes/class_pointlight2d.html"), L("freesound.org", "https://freesound.org/")] }
+      links: [L("PointLight2D docs", "https://docs.godotengine.org/en/stable/classes/class_pointlight2d.html"), L("freesound.org", "https://freesound.org/")] },
+
+    { id: "G1", m: "G", t: "A level from a tileset", time: "75–100 min", mins: 100, tools: ["godot"],
+      guide: "guides/g1-level-from-a-tileset.html", guideSteps: 8,
+      blurb: "A tileset PNG goes in, a level you can walk around comes out — TileMapLayer, collision that lives on the tile, terrain autotiling, and a camera that knows where the level stops.",
+      teach: "TileSet resources, physics layers, peering bits and terrain sets, layered TileMapLayers, and camera limits.",
+      links: [L("TileMapLayer docs", "https://docs.godotengine.org/en/stable/classes/class_tilemaplayer.html"), L("Using TileSets", "https://docs.godotengine.org/en/stable/tutorials/2d/using_tilesets.html")] }
   ];
 
   /* ── State ───────────────────────────────────────────────── */

@@ -63,6 +63,8 @@ he's already typing.
 - **Unverified links.** See the rule in SKILL.md.
 - **Shipping talk.** No "now you could turn this into a game", no roadmaps, no scope. The sketch is
   complete when he stops.
+- **References to other sketches.** No "if you did A1", no "next sketches" footer, no assumed
+  earlier project. Each guide starts from an empty project and ends when it ends.
 - **"Études".** They're sketches.
 - **External images or CDN assets.** Diagrams are inline SVG; everything is offline-capable.
 - **Fake encouragement or filler transitions** ("Now that we've got that out of the way…").

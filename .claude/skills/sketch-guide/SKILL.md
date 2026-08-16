@@ -137,6 +137,22 @@ callout usage and step design. The overall arc:
 5. **Footer** — what he learned in one honest sentence, the log-session button, and links to the
    two or three sketches that naturally follow.
 
+## Every guide stands completely alone
+
+A guide assumes a **fresh, empty project** and a reader who has done none of the others. No "if you
+did A1, paste your movement code in", no "the same principle as A4", no *Natural next sketches*
+footer. If a guide needs code or an asset another sketch also produces, include it inline as
+something to paste and move past — and say it's deliberately plain so nobody wonders whether they
+should be tuning it.
+
+This is Christian's explicit preference and it's also just better: cross-references make a guide feel
+like chapter six of something, which is exactly the finish-the-course pressure this whole repo
+exists to avoid. He should be able to open any guide on any evening and start.
+
+The one thing that may point outward is the footer's **Reference** block — official docs, a tool's
+own manual, an archive worth bookmarking. Those are outside the sketchbook, so they carry no
+homework.
+
 ## Steps that produce the feeling of progress
 
 That phrase is Christian's brief, and it's the whole design constraint. What creates it:
