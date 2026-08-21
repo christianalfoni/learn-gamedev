@@ -4,30 +4,21 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <meta name="color-scheme" content="light dark" />
-<meta name="description" content="Step-by-step practice guides for small gamedev sketches across Godot 4, Aseprite, Audacity and FL Studio." />
+<meta name="description" content="A game design document, and the assignments derived from it." />
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ctext y='26' font-size='26'%3E%F0%9F%8E%9B%EF%B8%8F%3C/text%3E%3C/svg%3E" />
-<title>The Gamedev Sketchbook</title>
+<title>The Game — design document &amp; assignments</title>
 
 <style>
   :root {
-    --ground:      #F1F3F7;
-    --panel:       #FFFFFF;
-    --panel-2:     #E9ECF2;
-    --ink:         #14161B;
-    --ink-2:       #4C5261;
-    --ink-3:       #858C9C;
-    --rule:        #D8DCE5;
-    --rule-strong: #C2C8D4;
-    --focus:       #3B7FBF;
-    --shadow:      0 1px 2px rgba(20, 22, 27, .06), 0 8px 24px -16px rgba(20, 22, 27, .28);
-    --c-godot:    #3B7FBF;
-    --c-aseprite: #C24E7D;
-    --c-audacity: #17877C;
-    --c-fl:       #7452CC;
-    --c-shader:   #A96B12;
+    --ground: #F1F3F7; --panel: #FFFFFF; --panel-2: #E9ECF2;
+    --ink: #14161B; --ink-2: #4C5261; --ink-3: #858C9C;
+    --rule: #D8DCE5; --rule-strong: #C2C8D4; --focus: #3B7FBF;
+    --shadow: 0 1px 2px rgba(20,22,27,.06), 0 8px 24px -16px rgba(20,22,27,.28);
+    --c-godot: #3B7FBF; --c-aseprite: #C24E7D; --c-audacity: #17877C;
+    --c-fl: #7452CC; --c-shader: #A96B12; --c-done: #1F7A4D;
     --serif: "Iowan Old Style", "Charter", "Palatino Linotype", Palatino, Georgia, serif;
-    --sans:  "Avenir Next", "Segoe UI", system-ui, -apple-system, sans-serif;
-    --mono:  ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+    --sans: "Avenir Next", "Segoe UI", system-ui, -apple-system, sans-serif;
+    --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
   }
   @media (prefers-color-scheme: dark) {
     :root {
@@ -36,7 +27,7 @@
       --rule: #262C36; --rule-strong: #39414F; --focus: #79B4EA;
       --shadow: 0 1px 2px rgba(0,0,0,.4), 0 10px 30px -18px rgba(0,0,0,.9);
       --c-godot: #6FB0E8; --c-aseprite: #E886B4; --c-audacity: #45C4B6;
-      --c-fl: #A98CF0; --c-shader: #E0A44E;
+      --c-fl: #A98CF0; --c-shader: #E0A44E; --c-done: #4CC38A;
     }
   }
   :root[data-theme="dark"] {
@@ -45,7 +36,7 @@
     --rule: #262C36; --rule-strong: #39414F; --focus: #79B4EA;
     --shadow: 0 1px 2px rgba(0,0,0,.4), 0 10px 30px -18px rgba(0,0,0,.9);
     --c-godot: #6FB0E8; --c-aseprite: #E886B4; --c-audacity: #45C4B6;
-    --c-fl: #A98CF0; --c-shader: #E0A44E;
+    --c-fl: #A98CF0; --c-shader: #E0A44E; --c-done: #4CC38A;
   }
   :root[data-theme="light"] {
     --ground: #F1F3F7; --panel: #FFFFFF; --panel-2: #E9ECF2;
@@ -53,48 +44,33 @@
     --rule: #D8DCE5; --rule-strong: #C2C8D4; --focus: #3B7FBF;
     --shadow: 0 1px 2px rgba(20,22,27,.06), 0 8px 24px -16px rgba(20,22,27,.28);
     --c-godot: #3B7FBF; --c-aseprite: #C24E7D; --c-audacity: #17877C;
-    --c-fl: #7452CC; --c-shader: #A96B12;
+    --c-fl: #7452CC; --c-shader: #A96B12; --c-done: #1F7A4D;
   }
 
   * { box-sizing: border-box; }
-
   body {
     margin: 0; background: var(--ground); color: var(--ink);
-    font-family: var(--sans); font-size: 15px; line-height: 1.55;
+    font-family: var(--sans); font-size: 15px; line-height: 1.58;
     -webkit-font-smoothing: antialiased;
   }
-  .page { max-width: 940px; margin: 0 auto; padding: 44px 22px 96px; display: flex; flex-direction: column; gap: 30px; }
+  .page { max-width: 900px; margin: 0 auto; padding: 44px 22px 96px; display: flex; flex-direction: column; gap: 28px; }
   h1, h2, h3 { margin: 0; text-wrap: balance; font-weight: 600; }
   p { margin: 0; }
   a { color: inherit; }
   :focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+  .eyebrow { font-family: var(--mono); font-size: 10.5px; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3); }
 
-  .eyebrow {
-    font-family: var(--mono); font-size: 10.5px; letter-spacing: .14em;
-    text-transform: uppercase; color: var(--ink-3);
-  }
-
-  /* ── Masthead ─────────────────────────────────────────────── */
-  .masthead { display: flex; flex-direction: column; gap: 13px; }
+  /* Masthead */
+  .masthead { display: flex; flex-direction: column; gap: 12px; }
   .mast-top { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; flex-wrap: wrap; }
-  .masthead h1 {
-    font-family: var(--serif); font-weight: 400;
-    font-size: clamp(34px, 5.2vw, 52px); line-height: 1.02; letter-spacing: -.015em;
-  }
-  .masthead h1 em { font-style: italic; }
-  .standfirst { font-family: var(--serif); font-size: 17px; line-height: 1.5; color: var(--ink-2); max-width: 62ch; }
+  .masthead h1 { font-family: var(--serif); font-weight: 400; font-size: clamp(32px, 5vw, 48px); line-height: 1.03; letter-spacing: -.015em; }
+  .standfirst { font-family: var(--serif); font-size: 17px; color: var(--ink-2); max-width: 62ch; }
 
-  /* ── Stats ────────────────────────────────────────────────── */
-  .stats {
-    display: flex; background: var(--panel);
-    border: 1px solid var(--rule); box-shadow: var(--shadow);
-  }
-  .stat { padding: 14px 20px; display: flex; flex-direction: column; gap: 1px; flex: 1; }
+  /* Stats */
+  .stats { display: flex; background: var(--panel); border: 1px solid var(--rule); box-shadow: var(--shadow); }
+  .stat { padding: 13px 18px; display: flex; flex-direction: column; gap: 1px; flex: 1; }
   .stat + .stat { border-left: 1px solid var(--rule); }
-  .stat b {
-    font-family: var(--mono); font-size: 23px; font-weight: 500;
-    letter-spacing: -.02em; font-variant-numeric: tabular-nums; line-height: 1.15;
-  }
+  .stat b { font-family: var(--mono); font-size: 22px; font-weight: 500; letter-spacing: -.02em; font-variant-numeric: tabular-nums; line-height: 1.15; }
   .stat span { font-size: 11.5px; color: var(--ink-3); }
   @media (max-width: 620px) {
     .stats { flex-wrap: wrap; }
@@ -103,88 +79,63 @@
     .stat:nth-child(n+3) { border-top: 1px solid var(--rule); }
   }
 
-  /* ── Filters (only once there are enough guides to need them) ─ */
-  .chips { display: flex; gap: 8px; flex-wrap: wrap; }
-  .chips[hidden] { display: none; }
-  .chip {
-    position: relative; display: flex; align-items: center; gap: 8px;
-    padding: 7px 12px 9px; background: var(--panel); border: 1px solid var(--rule);
-    color: var(--ink-2); font-family: var(--sans); font-size: 13px; cursor: pointer; overflow: hidden;
-  }
-  .chip:hover { border-color: var(--rule-strong); color: var(--ink); }
-  .chip[aria-pressed="true"] {
-    color: var(--ink);
-    border-color: color-mix(in srgb, var(--tint) 60%, var(--rule));
-    background: color-mix(in srgb, var(--tint) 12%, var(--panel));
-  }
-  .chip .sw { width: 11px; height: 11px; background: var(--tint); flex: none; }
-  .chip .ct { font-family: var(--mono); font-size: 11.5px; color: var(--ink-3); font-variant-numeric: tabular-nums; }
-  .chip.plain .sw { display: none; }
+  /* GDD areas and features */
+  .area { display: flex; flex-direction: column; gap: 13px; }
+  .area-head { display: flex; align-items: baseline; gap: 12px; border-bottom: 1px solid var(--rule-strong); padding-bottom: 8px; }
+  .area-head h2 { font-family: var(--serif); font-size: 22px; font-weight: 400; letter-spacing: -.01em; }
+  .area-head .count { font-family: var(--mono); font-size: 10.5px; color: var(--ink-3); margin-left: auto; white-space: nowrap; }
 
-  /* ── Guide cards ──────────────────────────────────────────── */
-  .guides { display: flex; flex-direction: column; gap: 14px; }
-  .guides-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; border-bottom: 1px solid var(--rule-strong); padding-bottom: 10px; }
-  .guides-head h2 { font-family: var(--serif); font-size: 23px; font-weight: 400; }
-  .guides-head span { font-family: var(--mono); font-size: 11px; color: var(--ink-3); }
-
-  .guide-cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 15px; }
-  @media (max-width: 820px) { .guide-cards { grid-template-columns: 1fr; } }
-
-  a.guide-card {
-    display: flex; flex-direction: column; gap: 11px; padding: 18px 20px 16px;
-    background: var(--panel); text-decoration: none;
-    border: 1px solid color-mix(in srgb, var(--tint) 38%, var(--rule));
-    box-shadow: var(--shadow);
-    transition: border-color .15s ease, transform .12s ease;
+  .feature { background: var(--panel); border: 1px solid var(--rule); padding: 16px 18px 14px; display: flex; flex-direction: column; gap: 11px; }
+  .feature.undescribed { border-style: dashed; background: transparent; }
+  .f-head { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+  .f-head h3 { font-size: 16px; letter-spacing: -.005em; }
+  .f-id { font-family: var(--mono); font-size: 10px; color: var(--ink-3); }
+  .chip-state {
+    font-family: var(--mono); font-size: 9.5px; letter-spacing: .09em; text-transform: uppercase;
+    padding: 2px 7px; border: 1px solid; margin-left: auto; white-space: nowrap;
   }
-  a.guide-card:hover { border-color: var(--tint); transform: translateY(-2px); }
-  a.guide-card[hidden] { display: none; }
+  .chip-state.todo { color: var(--ink-3); border-color: var(--rule-strong); }
+  .chip-state.gap  { color: var(--c-shader); border-color: color-mix(in srgb, var(--c-shader) 45%, transparent); background: color-mix(in srgb, var(--c-shader) 10%, transparent); }
+  .chip-state.ok   { color: var(--c-done); border-color: color-mix(in srgb, var(--c-done) 45%, transparent); background: color-mix(in srgb, var(--c-done) 10%, transparent); }
 
-  .gc-top { display: flex; gap: 12px; align-items: flex-start; }
-  .gc-mark {
-    flex: none; width: 30px; height: 30px; padding: 2px;
-    display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 2px;
-    border: 1px solid color-mix(in srgb, var(--tint) 55%, transparent);
-  }
-  .gc-mark i { background: var(--px); }
-  .gc-headline { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
-  .gc-id { font-family: var(--mono); font-size: 11px; letter-spacing: .1em; color: var(--ink-3); }
-  .gc-headline h3 { font-size: 17.5px; letter-spacing: -.01em; line-height: 1.25; }
-  .gc-meta {
-    flex: none; font-family: var(--mono); font-size: 10.5px; color: var(--ink-2);
-    text-align: right; line-height: 1.7; font-variant-numeric: tabular-nums;
-  }
-  a.guide-card p.teach { font-size: 13.5px; color: var(--ink-2); }
-  .gc-tags { display: flex; gap: 6px; flex-wrap: wrap; }
-  .gc-tag {
-    font-family: var(--mono); font-size: 10.5px; padding: 2px 7px; color: var(--tone);
-    background: color-mix(in srgb, var(--tone) 13%, transparent);
-    border: 1px solid color-mix(in srgb, var(--tone) 26%, transparent);
-  }
-  .gc-foot { margin-top: auto; padding-top: 11px; border-top: 1px solid var(--rule); display: flex; align-items: center; gap: 11px; }
-  .gc-bar { flex: 1; height: 4px; background: var(--panel-2); position: relative; }
-  .gc-bar i { position: absolute; inset: 0 auto 0 0; background: var(--tint); display: block; }
-  .gc-progress { font-family: var(--mono); font-size: 10.5px; color: var(--ink-3); font-variant-numeric: tabular-nums; white-space: nowrap; }
-  .gc-open { font-family: var(--mono); font-size: 10.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--tint); white-space: nowrap; }
+  .prose { display: flex; flex-direction: column; gap: 8px; font-size: 14px; color: var(--ink-2); }
+  .prose p { max-width: 68ch; }
+  .prose em { color: var(--ink-3); }
+  .prose ul { margin: 0; padding-left: 19px; display: flex; flex-direction: column; gap: 4px; }
+  .prose code { font-family: var(--mono); font-size: 12.3px; background: var(--panel-2); padding: 1px 4px; color: var(--ink); }
+  .prose blockquote { margin: 0; padding: 10px 14px; border-left: 3px solid var(--rule-strong); color: var(--ink-3); font-size: 13.5px; background: var(--panel-2); }
+  .prose a { color: var(--ink); text-decoration-color: var(--rule-strong); text-underline-offset: 3px; }
 
-  .empty { padding: 30px 0; color: var(--ink-3); font-family: var(--serif); font-size: 16px; }
-  .empty[hidden] { display: none; }
-
-  /* ── Footer ───────────────────────────────────────────────── */
-  footer {
-    border-top: 1px solid var(--rule); padding-top: 16px;
-    display: flex; justify-content: space-between; gap: 14px 20px; flex-wrap: wrap;
-    font-size: 12px; color: var(--ink-3); align-items: center;
+  /* Assignments */
+  .assigns { display: flex; flex-direction: column; gap: 7px; border-top: 1px solid var(--rule); padding-top: 11px; }
+  a.assign {
+    display: flex; align-items: center; gap: 11px; text-decoration: none;
+    padding: 8px 10px; border: 1px solid var(--rule); background: var(--ground);
+    transition: border-color .15s ease, transform .1s ease;
   }
+  a.assign:hover { border-color: var(--tint); transform: translateX(2px); }
+  .a-mark { flex: none; width: 20px; height: 20px; padding: 1px; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 2px; border: 1px solid color-mix(in srgb, var(--tint) 50%, transparent); }
+  .a-mark i { background: var(--px); }
+  .a-id { font-family: var(--mono); font-size: 10.5px; color: var(--ink-3); flex: none; }
+  .a-title { font-size: 13.5px; color: var(--ink); flex: 1; min-width: 0; }
+  .a-prog { font-family: var(--mono); font-size: 10.5px; color: var(--ink-3); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .a-open { font-family: var(--mono); font-size: 10px; letter-spacing: .07em; text-transform: uppercase; color: var(--tint); white-space: nowrap; }
+  .a-bar { flex: none; width: 46px; height: 3px; background: var(--panel-2); position: relative; }
+  .a-bar i { position: absolute; inset: 0 auto 0 0; background: var(--tint); display: block; }
+  @media (max-width: 620px) { .a-bar, .a-prog { display: none; } }
+
+  .none { font-family: var(--mono); font-size: 11px; color: var(--ink-3); padding: 3px 0; }
+  .none b { color: var(--c-shader); font-weight: 400; }
+
+  /* Footer */
+  footer { border-top: 1px solid var(--rule); padding-top: 16px; display: flex; justify-content: space-between; gap: 14px 20px; flex-wrap: wrap; font-size: 12px; color: var(--ink-3); align-items: center; }
   footer .links { display: flex; gap: 16px; flex-wrap: wrap; align-items: center; }
   footer a { color: var(--ink); text-decoration-color: var(--rule-strong); text-underline-offset: 3px; }
-  .linkbtn {
-    background: none; border: 0; padding: 2px; font-family: var(--sans); font-size: 12px;
-    color: var(--ink-3); cursor: pointer; text-decoration: underline;
-    text-underline-offset: 3px; text-decoration-color: var(--rule-strong);
-  }
+  .linkbtn { background: none; border: 0; padding: 2px; font-family: var(--sans); font-size: 12px; color: var(--ink-3); cursor: pointer; text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--rule-strong); }
   .linkbtn:hover { color: var(--ink); }
 
+  .loading, .failed { font-family: var(--serif); font-size: 16px; color: var(--ink-3); padding: 30px 0; }
+  .failed code { font-family: var(--mono); font-size: 12.5px; background: var(--panel-2); padding: 1px 5px; }
   @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
 </style>
 </head>
@@ -195,41 +146,30 @@
 
   <header class="masthead">
     <div class="mast-top">
-      <span class="eyebrow">Godot 4 · Aseprite · Audacity · FL Studio</span>
+      <span class="eyebrow">Design document · assignments derived from it</span>
       <span class="eyebrow" id="lastSession">—</span>
     </div>
-    <h1>The Gamedev <em>Sketchbook</em></h1>
-    <p class="standfirst">Small self-contained sketches, each written up as a guide you can sit down
-      and follow. Pick by mood, size the session to the time you have, and re-do anything that felt
-      good. The doing is the point; nothing here needs shipping.</p>
+    <h1 id="gameTitle">…</h1>
+    <p class="standfirst" id="gamePitch"></p>
   </header>
 
-  <section class="stats" aria-label="Progress">
-    <div class="stat"><b id="statGuides">0</b><span>guides written</span></div>
+  <section class="stats" aria-label="Coverage">
+    <div class="stat"><b id="statDescribed">0/0</b><span>sections described</span></div>
+    <div class="stat"><b id="statAssign">0</b><span>assignments written</span></div>
     <div class="stat"><b id="statSteps">0/0</b><span>steps done</span></div>
-    <div class="stat"><b id="statReps">0</b><span>sessions logged</span></div>
   </section>
 
-  <div class="chips" id="toolChips" hidden></div>
-
-  <section class="guides">
-    <div class="guides-head">
-      <h2>Guides</h2>
-      <span id="guideCount"></span>
-    </div>
-    <div class="guide-cards" id="guideCards"></div>
-    <p class="empty" id="emptyState" hidden>No guide matches that filter.</p>
-  </section>
+  <div id="doc"><p class="loading">Reading the design document…</p></div>
 
   <footer>
     <div class="links">
-      <a href="setup.html">Tool setup &amp; practice notes</a>
+      <a href="gdd.md">gdd.md</a>
+      <a href="setup.html">Tool setup</a>
       <button type="button" class="linkbtn" id="btnExport">Export progress</button>
       <button type="button" class="linkbtn" id="btnImport">Import</button>
-      <button type="button" class="linkbtn" id="btnReset">Reset</button>
       <input type="file" id="fileInput" accept="application/json" hidden />
     </div>
-    <span id="footNote">Progress is stored in this browser only.</span>
+    <span>Progress is stored in this browser only.</span>
   </footer>
 
 </div>
@@ -238,400 +178,324 @@
 (() => {
   "use strict";
 
-const TOOLS = {
-    godot:    { name: "Godot 4",   sub: "engine, GDScript, scene tree", varName: "--c-godot" },
-    aseprite: { name: "Aseprite",  sub: "pixel art and animation",      varName: "--c-aseprite" },
-    audacity: { name: "Audacity",  sub: "SFX editing + free generators", varName: "--c-audacity" },
-    fl:       { name: "FL Studio", sub: "game music and chiptune",      varName: "--c-fl" },
-    shader:   { name: "Shaders",   sub: "GDShader — lives inside Godot", varName: "--c-shader" }
+  const TOOLS = {
+    godot:    { name: "Godot 4",   varName: "--c-godot" },
+    aseprite: { name: "Aseprite",  varName: "--c-aseprite" },
+    audacity: { name: "Audacity",  varName: "--c-audacity" },
+    fl:       { name: "FL Studio", varName: "--c-fl" },
+    shader:   { name: "Shaders",   varName: "--c-shader" }
   };
 
-const L = (label, url) => ({ label, url, kind: "link" });
-  const YT = (label, q) => ({ label, url: "https://www.youtube.com/results?search_query=" + encodeURIComponent(q), kind: "search" });
-  const WEB = (label, q) => ({ label, url: "https://www.google.com/search?q=" + encodeURIComponent(q), kind: "search" });
+  // Assignments. `gdd` lists the design-document section ids each one serves —
+  // that is what places it on this page, and what makes a gap visible when a
+  // section has none.
+  const ASSIGNMENTS = [
+    { id: "A1", t: "The good-movement character", time: "45–90 min", tools: ["godot"],
+      gdd: ["movement"], guide: "guides/a1-good-movement.html", steps: 8,
+      blurb: "Acceleration, friction, a jump derived from height and time, coyote time and input buffering — then a tuning session." },
 
-const MODULES = [
-    { id: "A", title: "Godot game-feel sketches",  blurb: "Make one thing feel good, and nothing else. No goal, no enemies, no game." },
-    { id: "B", title: "Aseprite sketches",         blurb: "Small finished pieces — frame economy, palette discipline, and the pipeline into Godot." },
-    { id: "C", title: "Audacity + SFX sketches",   blurb: "The generators create, Audacity shapes. Each one ends in a file you could drop into a game." },
-    { id: "D", title: "FL Studio game-music sketches", blurb: "Loops, layers and stingers — the game-music idioms your theory background doesn't already cover." },
-    { id: "E", title: "Shader sketches",           blurb: "GDShader, one effect at a time, on a sprite you already have." },
-    { id: "F", title: "Toy sketches — all tools",  blurb: "The payoff: one sprite, one sound and one bit of code that together feel great." },
-    { id: "G", title: "Godot levels & environments", blurb: "Tilesets, tilemaps and the craft of building somewhere to be, rather than something to do." }
+    { id: "B7", t: "The character that reads", time: "75–100 min", tools: ["aseprite"],
+      gdd: ["player-art"], guide: "guides/b7-character-that-reads.html", steps: 8,
+      blurb: "One 32×32 character in five passes — silhouette, palette, flats, light, outline — then broken three ways to see what each rule was doing." },
+
+    { id: "B6", t: "The three-state character", time: "90–120 min", tools: ["aseprite", "godot"],
+      gdd: ["player-art"], guide: "guides/b6-three-state-character.html", steps: 9,
+      blurb: "Idle, walk and jump animations, tagged in Aseprite, imported with Aseprite Wizard, and switched from movement state in code." },
+
+    { id: "B8", t: "A seamless tileset", time: "90–120 min", tools: ["aseprite"],
+      gdd: ["environment-art"], guide: "guides/b8-seamless-tileset.html", steps: 8,
+      blurb: "A texture that tiles without a seam plus the 13 edge pieces that let it end, drawn in Aseprite's tilemap mode." },
+
+    { id: "G1", t: "A level from a tileset", time: "75–100 min", tools: ["godot"],
+      gdd: ["levels"], guide: "guides/g1-level-from-a-tileset.html", steps: 8,
+      blurb: "TileMapLayer, collision that lives on the tile, terrain autotiling, layered depth and camera limits." }
   ];
 
-  // The full catalogue stays here as the list of sketches a guide could be
-  // written for — only the ones with a `guide` field are shown on this page.
-const SKETCHES = [
-    { id: "A1", m: "A", t: "The good-movement character", time: "45–90 min", mins: 90, tools: ["godot"],
-      guide: "guides/a1-good-movement.html", guideSteps: 8,
-      blurb: "A top-down or side-scroll character that feels great to move — acceleration, friction, coyote time, a touch of input buffering. Nothing else.",
-      teach: "_physics_process, the input map, tuning constants by feel, @export for live tweaking.",
-      links: [L("CharacterBody2D docs", "https://docs.godotengine.org/en/stable/classes/class_characterbody2d.html"), YT("Coding Quests — Game Juice in Godot 4", "Coding Quests Game Juice in Godot 4"), L("The Art of Screenshake", "https://www.youtube.com/watch?v=AJdEqssNZ-U")] },
-
-    { id: "A2", m: "A", t: "Screenshake that feels good", time: "30 min", mins: 30, tools: ["godot"],
-      blurb: "A decaying camera shake where a light action requests a little and a heavy one requests a lot — strongest request wins. Make it toggleable; it's a motion-sickness trigger for some people.",
-      teach: "Phantom Camera / Camera2D, tweens, noise-driven offset, accessibility as a default.",
-      links: [YT("Quality screen shake in Godot 4", "Quality Screen Shake in Godot 4.4"), L("Phantom Camera", "https://github.com/ramokz/phantom-camera"), WEB("Juicee plugin — read the source", "Juicee godot game feel plugin github Kelpekk")] },
-
-    { id: "A3", m: "A", t: "Hitstop", time: "20 min", mins: 20, tools: ["godot"],
-      blurb: "Freeze the game for ~80 ms on impact using a timer that ignores time_scale, then snap back.",
-      teach: "Engine.time_scale, frame-independent timers, why a pause reads as connection.",
-      links: [L("Timer — process callback & ignore_time_scale", "https://docs.godotengine.org/en/stable/classes/class_timer.html"), YT("Hit stop in Godot 4", "hitstop hit stop godot 4 tutorial")] },
-
-    { id: "A4", m: "A", t: "Squash & stretch on landing", time: "30 min", mins: 30, tools: ["godot"],
-      blurb: "Drive a sprite's scale with a small damped spring so the squash overshoots into a stretch and settles.",
-      teach: "Tweens vs springs, overshoot, Disney's first principle written as code.",
-      links: [L("Tween docs", "https://docs.godotengine.org/en/stable/classes/class_tween.html"), YT("Godot 4 Tween tutorial — Coding Quests", "Coding Quests Godot 4 Tween Tutorial")] },
-
-    { id: "A5", m: "A", t: "One satisfying particle burst", time: "30 min", mins: 30, tools: ["godot"],
-      blurb: "A self-freeing GPUParticles2D burst — dust or coin sparkle — that fires everything at once and cleans itself up.",
-      teach: "Particle systems, one-shot emission, objects that manage their own lifetime.",
-      links: [L("GPUParticles2D docs", "https://docs.godotengine.org/en/stable/classes/class_gpuparticles2d.html"), YT("Godot 4 particles one shot burst", "godot 4 GPUParticles2D one shot burst tutorial")] },
-
-    { id: "A6", m: "A", t: "Tween sampler", time: "30 min", mins: 30, tools: ["godot"],
-      blurb: "Animate one UI element five ways — position, scale, rotation, modulate, and a sub-property like modulate:a — each with a different transition and ease.",
-      teach: "The Godot 4 Tween API and an intuition for easing curves.",
-      links: [L("Tween docs", "https://docs.godotengine.org/en/stable/classes/class_tween.html"), L("Tweens tutorial (official docs)", "https://docs.godotengine.org/en/stable/tutorials/animation/index.html")] },
-
-    { id: "B1", m: "B", t: "Six-frame torch loop", time: "30–45 min", mins: 45, tools: ["aseprite"],
-      blurb: "A torch or candle flame in exactly six frames that loops seamlessly. Onion skinning on.",
-      teach: "Frame economy, looping animation, onion skinning.",
-      links: [L("Saint11 pixel-art articles", "https://saint11.art/pixel_articles/"), YT("MortMort — Aseprite guide for beginners", "MortMort Aseprite Guide for Beginners Pixel Art Tutorial")] },
-
-    { id: "B2", m: "B", t: "16-tile autotiling set", time: "60–90 min", mins: 90, tools: ["aseprite", "godot"],
-      blurb: "A 16-tile tileset (or terrain set) that autotiles correctly in Godot's TileMapLayer. The full loop, art through import.",
-      teach: "Aseprite 1.3 tileset features, Godot terrain sets and peering bits, the Aseprite→Godot tileset pipeline.",
-      links: [YT("AdamCYounis — Aseprite 1.3 tileset workflow", "AdamCYounis Revisiting my tileset workflow for Aseprite 1.3"), L("TileMapLayer docs", "https://docs.godotengine.org/en/stable/classes/class_tilemaplayer.html"), L("Better Terrain (if built-in terrains fight you)", "https://github.com/Portponky/better-terrain")] },
-
-    { id: "B3", m: "B", t: "One palette, one scene", time: "45 min", mins: 45, tools: ["aseprite"],
-      blurb: "Build and lock a 16-colour palette, then paint a small prop or character using only it. No sneaking in a 17th.",
-      teach: "Palette discipline, colour ramps, constraint as a creative tool.",
-      links: [L("Saint11 — colour theory & palette articles", "https://saint11.art/pixel_articles/"), YT("Brandon James Greer — palettes", "Brandon James Greer pixel art palette tutorial")] },
-
-    { id: "B4", m: "B", t: "Sub-pixel walk cycle", time: "60 min", mins: 60, tools: ["aseprite"],
-      blurb: "A 4–8 frame walk cycle with real attention to sub-pixel movement and anticipation.",
-      teach: "Animation principles at pixel scale — frame counts, readability, snappiness.",
-      links: [YT("AdamCYounis — pixel art animation", "AdamCYounis pixel art walk cycle animation tutorial"), L("Saint11 — animation articles", "https://saint11.art/pixel_articles/")] },
-
-    { id: "B6", m: "B", t: "The three-state character", time: "90–120 min", mins: 120, tools: ["aseprite", "godot"],
-      guide: "guides/b6-three-state-character.html", guideSteps: 9,
-      blurb: "One character with idle, walk and jump animations — drawn in Aseprite with tags, imported into Godot with Aseprite Wizard, and switching states from code. The whole pipeline, end to end.",
-      teach: "Tag discipline, frame economy across three loops, the .aseprite → SpriteFrames pipeline, driving animation from movement state.",
-      links: [L("Aseprite Wizard", "https://github.com/viniciusgerevini/godot-aseprite-wizard"), L("AnimatedSprite2D docs", "https://docs.godotengine.org/en/stable/classes/class_animatedsprite2d.html"), L("Aseprite docs — tags", "https://www.aseprite.org/docs/tags/")] },
-
-    { id: "B7", m: "B", t: "The character that reads", time: "75–100 min", mins: 100, tools: ["aseprite"],
-      guide: "guides/b7-character-that-reads.html", guideSteps: 8,
-      blurb: "One 32×32 character drawn in the order that works — silhouette, palette, flats, light, outline — then deliberately broken three ways so you can see what each rule was doing.",
-      teach: "Silhouette-first thinking, the squint test, hue-shifted ramps, one light source, and what an outline is actually for.",
-      links: [L("Saint11's pixel-art articles", "https://saint11.art/pixel_articles/"), L("Lospec palette list", "https://lospec.com/palette-list")] },
-
-    { id: "B8", m: "B", t: "A seamless tileset", time: "90–120 min", mins: 120, tools: ["aseprite"],
-      guide: "guides/b8-seamless-tileset.html", guideSteps: 8,
-      blurb: "A texture that tiles without a seam, plus the 13 edge pieces that let it end — drawn in Aseprite's tilemap mode, where editing one tile updates every placement of it.",
-      teach: "Tiled mode, tilemap layers and tilesets, counting tiles before drawing them, and testing a texture by repeating it.",
-      links: [L("Aseprite — tilemap layers", "https://www.aseprite.org/docs/tilemap/"), L("Aseprite — tiled mode", "https://www.aseprite.org/docs/tiled-mode/")] },
-
-    { id: "B5", m: "B", t: "9-slice a panel", time: "20 min", mins: 20, tools: ["aseprite", "godot"],
-      blurb: "A UI panel drawn with slices in Aseprite, imported as a 9-patch StyleBox in Godot.",
-      teach: "Slices, 9-patch, the UI asset pipeline end to end.",
-      links: [L("Aseprite docs — slices", "https://www.aseprite.org/docs/slices/"), L("NinePatchRect docs", "https://docs.godotengine.org/en/stable/classes/class_ninepatchrect.html")] },
-
-    { id: "C1", m: "C", t: "One impact from three layers", time: "30 min", mins: 30, tools: ["audacity"],
-      blurb: "One satisfying hit built from three sources — a ChipTone hit, a body thump, a transient click — then EQ'd and trimmed.",
-      teach: "Layering, transient design, the sub / body / click model.",
-      links: [L("ChipTone", "https://sfbgames.itch.io/chiptone"), YT("Marshall McGee — making a punch sound", "Marshall McGee making a powerful punch sound from scratch"), L("jsfxr", "https://sfxr.me/")] },
-
-    { id: "C2", m: "C", t: "The seamless loop trim", time: "20 min", mins: 20, tools: ["audacity", "godot"],
-      blurb: "Take a 30-second ambient bed, trim it to loop seamlessly on zero crossings (Z), export OGG, and verify the loop in Godot's import tab.",
-      teach: "Zero crossings, loop points, OGG-vs-MP3 padding, the Godot import Loop flag.",
-      links: [L("Importing audio samples (Godot docs)", "https://docs.godotengine.org/en/stable/tutorials/assets_pipeline/importing_audio_samples.html"), WEB("How to create a seamless loop", "how to create a seamless audio loop audacity zero crossing")] },
-
-    { id: "C3", m: "C", t: "Pitch a family of sounds", time: "20 min", mins: 20, tools: ["audacity", "godot"],
-      blurb: "One footstep or coin becomes five variations via small pitch and volume shifts, then goes into an AudioStreamRandomizer.",
-      teach: "Variation, AudioStreamRandomizer, escaping robotic repetition.",
-      links: [L("AudioStreamRandomizer docs", "https://docs.godotengine.org/en/stable/classes/class_audiostreamrandomizer.html"), YT("Akash Thakkar — essential sound design techniques", "Akash Thakkar video game sound design 4 essential techniques")] },
-
-    { id: "C4", m: "C", t: "Batch cleanup", time: "15 min", mins: 15, tools: ["audacity"],
-      blurb: "Grab or record five raw sounds, then build a Macro that normalises, trims silence and exports them all as WAV.",
-      teach: "Macros and batch export — the unglamorous pipeline that saves every later session.",
-      links: [L("Audacity manual — Macros", "https://manual.audacityteam.org/man/macros.html"), L("freesound.org (raw material)", "https://freesound.org/")] },
-
-    { id: "D1", m: "D", t: "30-second seamless loop", time: "45–90 min", mins: 90, tools: ["fl"],
-      blurb: "A 30-second chiptune loop in Magical 8bit Plug 2 that repeats without a seam. Export OGG, cut the remainder.",
-      teach: "Loop-based composition, seam management, chiptune voicing under channel constraints.",
-      links: [L("Magical 8bit Plug 2", "https://ymck.net/app/magical-8bit-plug-en"), WEB("Composing game music — beginner's guide", "GameMaker beginner's guide to composing game music")] },
-
-    { id: "D2", m: "D", t: "Vertical layering pair", time: "60–90 min", mins: 90, tools: ["fl", "godot"],
-      blurb: "Two stems of identical length, tempo and key — a calm 'explore' layer and a 'combat' layer — that work alone and together. Cross-fade them in Godot with two AudioStreamPlayers.",
-      teach: "Vertical layering, stem discipline, adaptive-music thinking without middleware.",
-      links: [WEB("Vertical vs horizontal adaptive music", "vertical layering vs horizontal resequencing game music"), L("AudioStreamPlayer docs", "https://docs.godotengine.org/en/stable/classes/class_audiostreamplayer.html"), WEB("A Composer's Guide to Game Music — Phillips", "Winifred Phillips A Composer's Guide to Game Music MIT Press")] },
-
-    { id: "D3", m: "D", t: "Horizontal resequence", time: "60 min", mins: 60, tools: ["fl"],
-      blurb: "Two short sections — an A 'verse' and a B 'boss' — plus a stinger that carries you from one to the other.",
-      teach: "Horizontal resequencing, transitions, what a stinger has to do in under two seconds.",
-      links: [WEB("Adaptive music in games — explainer", "adaptive music horizontal resequencing games guide")] },
-
-    { id: "D4", m: "D", t: "One-channel melody sketch", time: "20 min", mins: 20, tools: ["fl"],
-      blurb: "A memorable melody constrained to a single pulse channel, NES-style. No harmony to hide behind.",
-      teach: "Melodic economy under hard constraints.",
-      links: [L("Magical 8bit Plug 2", "https://ymck.net/app/magical-8bit-plug-en")] },
-
-    { id: "E1", m: "E", t: "Dissolve shader", time: "45 min", mins: 45, tools: ["godot", "shader"],
-      blurb: "A dissolve/burn on a sprite, driven by a noise texture and a threshold uniform you can scrub.",
-      teach: "Fragment shaders, uniforms, noise, exposing shader params to the inspector.",
-      links: [L("Godot Shaders library", "https://godotshaders.com/"), WEB("Introduction to shaders in Godot 4 — Kodeco", "Kodeco introduction to shaders in Godot 4")] },
-
-    { id: "E2", m: "E", t: "Hit flash", time: "20 min", mins: 20, tools: ["godot", "shader"],
-      blurb: "Flash a sprite white on hit by mixing toward white with a uniform. The single most-used 2D game shader there is.",
-      teach: "Driving shader uniforms from code, and how little it takes to sell an impact.",
-      links: [L("Godot Shaders library", "https://godotshaders.com/"), L("Shading reference (docs)", "https://docs.godotengine.org/en/stable/tutorials/shaders/index.html")] },
-
-    { id: "E3", m: "E", t: "Palette-cycle / scrolling water", time: "30 min", mins: 30, tools: ["godot", "shader"],
-      blurb: "Recreate an old-school colour-cycling or UV-scroll effect on a tile or sprite.",
-      teach: "UV manipulation, TIME, retro techniques that cost nothing.",
-      links: [L("The Book of Shaders, ported to Godot", "https://jayaarrgh.itch.io/book-of-shaders-godot"), L("Godot Shaders library", "https://godotshaders.com/")] },
-
-    { id: "F1", m: "F", t: "The juicy button", time: "45 min", mins: 45, tools: ["godot", "aseprite", "audacity", "shader"],
-      blurb: "A button that pops on hover, clicks with your own SFX, and flashes with your own shader. Nothing else on screen.",
-      teach: "The whole feedback loop across all four crafts, in miniature.",
-      links: [L("Tween docs", "https://docs.godotengine.org/en/stable/classes/class_tween.html"), L("jsfxr", "https://sfxr.me/")] },
-
-    { id: "F2", m: "F", t: "The satisfying pickup", time: "45 min", mins: 45, tools: ["godot", "aseprite", "audacity"],
-      blurb: "A coin: spin animation, a pickup sound that rises a semitone per grab, a sparkle burst, a floating +1.",
-      teach: "Multi-tool feedback layering — the juice thesis in one object.",
-      links: [L("AudioStreamRandomizer docs", "https://docs.godotengine.org/en/stable/classes/class_audiostreamrandomizer.html"), L("The Art of Screenshake", "https://www.youtube.com/watch?v=AJdEqssNZ-U")] },
-
-    { id: "F3", m: "F", t: "The impact", time: "60 min", mins: 60, tools: ["godot", "aseprite", "audacity", "shader"],
-      blurb: "An enemy that, when hit, does hitstop + white flash + screenshake + a three-layer impact sound + a particle burst. No health system. No game. Just the hit.",
-      teach: "Orchestrating game feel across code, art and audio — the Screenshake talk made real.",
-      links: [L("The Art of Screenshake", "https://www.youtube.com/watch?v=AJdEqssNZ-U"), YT("Juice it or lose it", "Juice it or lose it Martin Jonasson Petri Purho")] },
-
-    { id: "F4", m: "F", t: "The living torch", time: "30 min", mins: 30, tools: ["godot", "aseprite", "audacity"],
-      blurb: "Your six-frame torch (B1) + a looping crackle + a subtle light flicker. One atmospheric object, nothing around it.",
-      teach: "Sprite, audio and code atmosphere; looping across two different media at once.",
-      links: [L("PointLight2D docs", "https://docs.godotengine.org/en/stable/classes/class_pointlight2d.html"), L("freesound.org", "https://freesound.org/")] },
-
-    { id: "G1", m: "G", t: "A level from a tileset", time: "75–100 min", mins: 100, tools: ["godot"],
-      guide: "guides/g1-level-from-a-tileset.html", guideSteps: 8,
-      blurb: "A tileset PNG goes in, a level you can walk around comes out — TileMapLayer, collision that lives on the tile, terrain autotiling, and a camera that knows where the level stops.",
-      teach: "TileSet resources, physics layers, peering bits and terrain sets, layered TileMapLayers, and camera limits.",
-      links: [L("TileMapLayer docs", "https://docs.godotengine.org/en/stable/classes/class_tilemaplayer.html"), L("Using TileSets", "https://docs.godotengine.org/en/stable/tutorials/2d/using_tilesets.html")] }
-  ];
-
-  /* ── State ───────────────────────────────────────────────── */
+  /* ── Progress state ──────────────────────────────────────── */
 
   const KEY = "gamedev-sketchbook-v1";
-  const LEGACY_KEY = "gamedev-etudes-v1";
   const blank = () => ({ sketches: {}, steps: {}, updated: null });
   let state = blank();
-
-  const adopt = parsed => ({
-    sketches: parsed.sketches || parsed.etudes || {},
-    steps: parsed.steps || {},
-    updated: parsed.updated || null
-  });
-
   try {
-    const raw = localStorage.getItem(KEY) || localStorage.getItem(LEGACY_KEY);
-    if (raw) state = adopt(JSON.parse(raw));
+    const raw = localStorage.getItem(KEY);
+    if (raw) {
+      const p = JSON.parse(raw);
+      state = { sketches: p.sketches || p.etudes || {}, steps: p.steps || {}, updated: p.updated || null };
+    }
   } catch (e) { state = blank(); }
 
-  function save() {
-    state.updated = new Date().toISOString();
-    try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) { /* no-op */ }
-  }
-
-  const toolVar = t => `var(${TOOLS[t].varName})`;
+  const toolVar = t => "var(" + (TOOLS[t] ? TOOLS[t].varName : "--c-godot") + ")";
   const stemOf = g => g.replace(/^.*\//, "").replace(/\.html$/, "");
 
-  // Guide pages keep their own step progress under the same origin.
-  function stepsDone(sketch) {
+  function stepsDone(a) {
     try {
-      const raw = localStorage.getItem("gamedev-guide-" + stemOf(sketch.guide) + "-v1");
-      return raw ? JSON.parse(raw).length : 0;
+      const raw = localStorage.getItem("gamedev-guide-" + stemOf(a.guide) + "-v1");
+      return raw ? Math.min(JSON.parse(raw).length, a.steps) : 0;
     } catch (e) { return 0; }
   }
 
-  const GUIDES = SKETCHES.filter(e => e.guide);
-  const filters = { tools: new Set() };
+  /* ── Minimal markdown, enough for a design document ──────── */
 
-  /* ── Cards ───────────────────────────────────────────────── */
+  const esc = s => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
-  const guideCards = document.getElementById("guideCards");
-  const cardIndex = {};
+  function inline(s) {
+    return esc(s)
+      .replace(/`([^`]+)`/g, "<code>$1</code>")
+      .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
+      .replace(/\*([^*]+)\*/g, "<em>$1</em>")
+      .replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
+  }
 
-  GUIDES.forEach(e => {
-    const card = document.createElement("a");
-    card.className = "guide-card";
-    card.href = e.guide;
-    card.style.setProperty("--tint", toolVar(e.tools[0]));
+  function blocks(md) {
+    const out = [];
+    for (const chunk of md.split(/\n{2,}/)) {
+      const t = chunk.trim();
+      if (!t) continue;
+      if (/^>/.test(t)) {
+        out.push("<blockquote>" + inline(t.replace(/^>\s?/gm, "")).replace(/\n/g, "<br />") + "</blockquote>");
+      } else if (/^[-*]\s/m.test(t)) {
+        const items = t.split("\n").filter(l => /^[-*]\s/.test(l)).map(l => l.replace(/^[-*]\s+/, "").trim()).filter(Boolean);
+        if (items.length) out.push("<ul>" + items.map(i => "<li>" + inline(i) + "</li>").join("") + "</ul>");
+      } else {
+        out.push("<p>" + inline(t).replace(/\n/g, " ") + "</p>");
+      }
+    }
+    return out.join("");
+  }
+
+  const slug = s => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+
+  function heading(raw) {
+    const m = /\{#([a-z0-9-]+)\}\s*$/i.exec(raw);
+    const title = raw.replace(/\{#[a-z0-9-]+\}\s*$/i, "").trim();
+    return { title, id: m ? m[1] : slug(title) };
+  }
+
+  // A section counts as "described" once there is prose that isn't an italic
+  // prompt, an instruction block, or an empty bullet.
+  function described(body) {
+    return body
+      .replace(/^>.*$/gm, "")
+      .replace(/\*[^*]*\*/g, "")
+      .replace(/^[-*]\s*$/gm, "")
+      .trim().length > 0;
+  }
+
+  function parseGDD(md) {
+    const doc = { title: "Untitled Game", intro: "", areas: [] };
+    let area = null, feature = null, buf = [];
+
+    const flush = () => {
+      const text = buf.join("\n").trim();
+      buf = [];
+      if (!text) return;
+      if (feature) feature.body += (feature.body ? "\n\n" : "") + text;
+      else if (area) area.body += (area.body ? "\n\n" : "") + text;
+      else doc.intro += (doc.intro ? "\n\n" : "") + text;
+    };
+
+    for (const line of md.split("\n")) {
+      let m;
+      if ((m = /^###\s+(.*)$/.exec(line))) {
+        flush();
+        if (!area) { area = { title: "", id: "", body: "", features: [] }; doc.areas.push(area); }
+        feature = Object.assign(heading(m[1]), { body: "" });
+        area.features.push(feature);
+      } else if ((m = /^##\s+(.*)$/.exec(line))) {
+        flush(); feature = null;
+        area = Object.assign(heading(m[1]), { body: "", features: [] });
+        doc.areas.push(area);
+      } else if ((m = /^#\s+(.*)$/.exec(line))) {
+        flush(); doc.title = m[1].trim();
+      } else {
+        buf.push(line);
+      }
+    }
+    flush();
+    return doc;
+  }
+
+  /* ── Render ──────────────────────────────────────────────── */
+
+  const docEl = document.getElementById("doc");
+
+  function assignmentRow(a) {
+    const el = document.createElement("a");
+    el.className = "assign";
+    el.href = a.guide;
+    el.style.setProperty("--tint", toolVar(a.tools[0]));
 
     const mark = document.createElement("span");
-    mark.className = "gc-mark";
+    mark.className = "a-mark";
     for (let i = 0; i < 4; i++) {
-      const cell = document.createElement("i");
-      cell.style.setProperty("--px", toolVar(e.tools[i % e.tools.length]));
-      mark.appendChild(cell);
+      const c = document.createElement("i");
+      c.style.setProperty("--px", toolVar(a.tools[i % a.tools.length]));
+      mark.appendChild(c);
     }
 
-    const headline = document.createElement("span");
-    headline.className = "gc-headline";
-    headline.innerHTML = `<span class="gc-id">${e.id}</span><h3>${e.t}</h3>`;
+    const done = stepsDone(a);
+    const reps = (state.sketches[a.id] || {}).reps || 0;
 
-    const meta = document.createElement("span");
-    meta.className = "gc-meta";
-    meta.innerHTML = `${e.guideSteps || "?"} steps<br />${e.time}`;
-
-    const top = document.createElement("span");
-    top.className = "gc-top";
-    top.append(mark, headline, meta);
-
-    const teach = document.createElement("p");
-    teach.className = "teach";
-    teach.textContent = e.blurb;
-
-    const tags = document.createElement("span");
-    tags.className = "gc-tags";
-    e.tools.forEach(t => {
-      const tag = document.createElement("span");
-      tag.className = "gc-tag";
-      tag.style.setProperty("--tone", toolVar(t));
-      tag.textContent = TOOLS[t].name;
-      tags.appendChild(tag);
-    });
-
-    const foot = document.createElement("span");
-    foot.className = "gc-foot";
-    const bar = document.createElement("span");
-    bar.className = "gc-bar";
-    const fill = document.createElement("i");
+    const id = document.createElement("span"); id.className = "a-id"; id.textContent = a.id;
+    const title = document.createElement("span"); title.className = "a-title"; title.textContent = a.t;
+    const bar = document.createElement("span"); bar.className = "a-bar";
+    const fill = document.createElement("i"); fill.style.width = (a.steps ? (done / a.steps) * 100 : 0) + "%";
     bar.appendChild(fill);
-    const prog = document.createElement("span");
-    prog.className = "gc-progress";
-    const open = document.createElement("span");
-    open.className = "gc-open";
-    foot.append(bar, prog, open);
+    const prog = document.createElement("span"); prog.className = "a-prog"; prog.textContent = done + "/" + a.steps;
+    const open = document.createElement("span"); open.className = "a-open";
+    open.textContent = reps > 0 ? "×" + reps + " →" : done === 0 ? "start →" : done >= a.steps ? "finish →" : "continue →";
 
-    card.append(top, teach, tags, foot);
-    guideCards.appendChild(card);
+    el.append(mark, id, title, bar, prog, open);
+    el.title = a.blurb;
+    return el;
+  }
 
-    card._sync = () => {
-      const done = stepsDone(e);
-      const total = e.guideSteps || 0;
-      const reps = state.sketches[e.id]?.reps || 0;
-      fill.style.width = (total ? Math.min(1, done / total) * 100 : 0) + "%";
-      prog.textContent = total ? `${done}/${total} steps` : "";
-      open.textContent = reps > 0 ? `practiced ×${reps} · revisit →`
-        : done === 0 ? "Start →"
-        : done >= total ? "Finish →" : "Continue →";
-    };
-    card._sync();
-    cardIndex[e.id] = card;
-  });
+  function render(doc) {
+    docEl.innerHTML = "";
+    document.getElementById("gameTitle").textContent = doc.title;
 
-  /* ── Tool chips, once there are enough guides to warrant them ─ */
+    const used = new Set();
+    let described_n = 0, total_n = 0;
 
-  const toolChips = document.getElementById("toolChips");
-  const chipIndex = {};
-  const usedTools = Object.keys(TOOLS).filter(t => GUIDES.some(e => e.tools.includes(t)));
+    doc.areas.forEach(area => {
+      const sec = document.createElement("section");
+      sec.className = "area";
 
-  if (GUIDES.length > 4) {
-    toolChips.hidden = false;
+      const head = document.createElement("div");
+      head.className = "area-head";
+      head.innerHTML = '<h2>' + esc(area.title) + '</h2>';
+      const count = document.createElement("span");
+      count.className = "count";
+      head.appendChild(count);
+      sec.appendChild(head);
 
-    const allChip = document.createElement("button");
-    allChip.type = "button";
-    allChip.className = "chip plain";
-    allChip.style.setProperty("--tint", "var(--focus)");
-    allChip.setAttribute("aria-pressed", "true");
-    allChip.innerHTML = `<span>All tools</span><span class="ct">${GUIDES.length}</span>`;
-    allChip.addEventListener("click", () => { filters.tools.clear(); apply(); });
-    toolChips.appendChild(allChip);
-    chipIndex._all = allChip;
+      if (area.body.trim()) {
+        const intro = document.createElement("div");
+        intro.className = "prose";
+        intro.innerHTML = blocks(area.body);
+        sec.appendChild(intro);
+      }
 
-    usedTools.forEach(t => {
-      const n = GUIDES.filter(e => e.tools.includes(t)).length;
-      const chip = document.createElement("button");
-      chip.type = "button";
-      chip.className = "chip";
-      chip.style.setProperty("--tint", toolVar(t));
-      chip.setAttribute("aria-pressed", "false");
-      chip.innerHTML = `<span class="sw"></span><span>${TOOLS[t].name}</span><span class="ct">${n}</span>`;
-      chip.addEventListener("click", () => {
-        if (filters.tools.has(t)) filters.tools.delete(t); else filters.tools.add(t);
-        apply();
+      let areaAssigned = 0;
+
+      area.features.forEach(f => {
+        total_n++;
+        const isDescribed = described(f.body);
+        if (isDescribed) described_n++;
+
+        const mine = ASSIGNMENTS.filter(a => (a.gdd || []).includes(f.id));
+        mine.forEach(a => used.add(a.id));
+        if (mine.length) areaAssigned++;
+
+        const card = document.createElement("div");
+        card.className = "feature" + (isDescribed ? "" : " undescribed");
+        card.id = "s-" + f.id;
+
+        const fh = document.createElement("div");
+        fh.className = "f-head";
+        fh.innerHTML = '<h3>' + esc(f.title) + '</h3><span class="f-id">#' + esc(f.id) + '</span>';
+        const chip = document.createElement("span");
+        chip.className = "chip-state " + (!isDescribed ? "todo" : mine.length ? "ok" : "gap");
+        chip.textContent = !isDescribed ? "not described" : mine.length ? mine.length + " assignment" + (mine.length > 1 ? "s" : "") : "no assignment yet";
+        fh.appendChild(chip);
+        card.appendChild(fh);
+
+        if (f.body.trim()) {
+          const body = document.createElement("div");
+          body.className = "prose";
+          body.innerHTML = blocks(f.body);
+          card.appendChild(body);
+        }
+
+        if (mine.length) {
+          const wrap = document.createElement("div");
+          wrap.className = "assigns";
+          mine.forEach(a => wrap.appendChild(assignmentRow(a)));
+          card.appendChild(wrap);
+        } else if (isDescribed) {
+          const none = document.createElement("p");
+          none.className = "none";
+          none.innerHTML = '<b>Described, but nothing derived from it yet.</b>';
+          card.appendChild(none);
+        }
+
+        sec.appendChild(card);
       });
-      chipIndex[t] = chip;
-      toolChips.appendChild(chip);
+
+      count.textContent = area.features.length
+        ? areaAssigned + "/" + area.features.length + " covered"
+        : "";
+      docEl.appendChild(sec);
     });
-  }
 
-  /* ── Apply + stats ───────────────────────────────────────── */
+    // Anything not pointing at a section still deserves to be reachable.
+    const orphans = ASSIGNMENTS.filter(a => !used.has(a.id));
+    if (orphans.length) {
+      const sec = document.createElement("section");
+      sec.className = "area";
+      sec.innerHTML = '<div class="area-head"><h2>Not tied to the document</h2>' +
+        '<span class="count">' + orphans.length + '</span></div>';
+      const card = document.createElement("div");
+      card.className = "feature";
+      const wrap = document.createElement("div");
+      wrap.className = "assigns";
+      wrap.style.borderTop = "0";
+      wrap.style.paddingTop = "0";
+      orphans.forEach(a => wrap.appendChild(assignmentRow(a)));
+      card.appendChild(wrap);
+      sec.appendChild(card);
+      docEl.appendChild(sec);
+    }
 
-  const emptyState = document.getElementById("emptyState");
-  const guideCount = document.getElementById("guideCount");
+    // Stats
+    const totalSteps = ASSIGNMENTS.reduce((s, a) => s + a.steps, 0);
+    const doneSteps = ASSIGNMENTS.reduce((s, a) => s + stepsDone(a), 0);
+    document.getElementById("statDescribed").textContent = described_n + "/" + total_n;
+    document.getElementById("statAssign").textContent = String(ASSIGNMENTS.length);
+    document.getElementById("statSteps").textContent = doneSteps + "/" + totalSteps;
 
-  function apply() {
-    let shown = 0;
-    GUIDES.forEach(e => {
-      const ok = !filters.tools.size || e.tools.some(t => filters.tools.has(t));
-      cardIndex[e.id].hidden = !ok;
-      if (ok) shown++;
-    });
-    emptyState.hidden = shown > 0;
-    guideCount.textContent = shown === GUIDES.length
-      ? `${GUIDES.length} written · ${SKETCHES.length - GUIDES.length} more sketches waiting`
-      : `${shown} of ${GUIDES.length} shown`;
+    const pitch = doc.areas.flatMap(a => a.features).find(f => f.id === "pitch");
+    const pitchEl = document.getElementById("gamePitch");
+    if (pitch && described(pitch.body)) {
+      pitchEl.textContent = pitch.body.replace(/\*[^*]*\*/g, "").replace(/\s+/g, " ").trim();
+    } else {
+      pitchEl.textContent = "No pitch written yet — open gdd.md and describe the game, then ask for assignments.";
+    }
 
-    Object.keys(chipIndex).forEach(k => {
-      if (k === "_all") chipIndex._all.setAttribute("aria-pressed", filters.tools.size === 0 ? "true" : "false");
-      else chipIndex[k].setAttribute("aria-pressed", filters.tools.has(k) ? "true" : "false");
-    });
-    renderStats();
-  }
-
-  const statGuides = document.getElementById("statGuides");
-  const statSteps = document.getElementById("statSteps");
-  const statReps = document.getElementById("statReps");
-  const lastSession = document.getElementById("lastSession");
-
-  const fmtDate = iso => new Date(iso).toLocaleDateString(undefined, { day: "numeric", month: "short" });
-
-  function renderStats() {
-    const done = GUIDES.reduce((s, e) => s + Math.min(stepsDone(e), e.guideSteps || 0), 0);
-    const total = GUIDES.reduce((s, e) => s + (e.guideSteps || 0), 0);
-    const reps = GUIDES.reduce((s, e) => s + (state.sketches[e.id]?.reps || 0), 0);
-
-    statGuides.textContent = String(GUIDES.length);
-    statSteps.textContent = `${done}/${total}`;
-    statReps.textContent = String(reps);
-
-    const stamps = SKETCHES.map(e => state.sketches[e.id]?.last).filter(Boolean).sort();
+    const stamps = ASSIGNMENTS.map(a => (state.sketches[a.id] || {}).last).filter(Boolean).sort();
     const latest = stamps[stamps.length - 1];
-    lastSession.textContent = latest ? "Last session · " + fmtDate(latest) : "No sessions logged yet";
+    document.getElementById("lastSession").textContent = latest
+      ? "Last session · " + new Date(latest).toLocaleDateString(undefined, { day: "numeric", month: "short" })
+      : "No sessions logged yet";
   }
 
-  function syncAll() {
-    GUIDES.forEach(e => cardIndex[e.id]._sync());
-    apply();
-  }
+  /* ── Load ────────────────────────────────────────────────── */
 
-  /* ── Export / import / reset ─────────────────────────────── */
+  fetch("gdd.md", { cache: "no-cache" })
+    .then(r => { if (!r.ok) throw new Error("HTTP " + r.status); return r.text(); })
+    .then(md => render(parseGDD(md)))
+    .catch(err => {
+      docEl.innerHTML = '<p class="failed">Could not read <code>gdd.md</code> (' + esc(String(err.message)) +
+        ').<br />This page reads the document over HTTP, so it needs to be served — ' +
+        'open it from the published URL rather than as a local file.</p>';
+    });
+
+  /* ── Export / import ─────────────────────────────────────── */
 
   document.getElementById("btnExport").addEventListener("click", () => {
-    const bundle = { ...state, guides: {} };
-    GUIDES.forEach(e => {
+    const bundle = Object.assign({}, state, { guides: {} });
+    ASSIGNMENTS.forEach(a => {
       try {
-        const raw = localStorage.getItem("gamedev-guide-" + stemOf(e.guide) + "-v1");
-        if (raw) bundle.guides[stemOf(e.guide)] = JSON.parse(raw);
-      } catch (err) { /* skip */ }
+        const raw = localStorage.getItem("gamedev-guide-" + stemOf(a.guide) + "-v1");
+        if (raw) bundle.guides[stemOf(a.guide)] = JSON.parse(raw);
+      } catch (e) { /* skip */ }
     });
     const blob = new Blob([JSON.stringify(bundle, null, 2)], { type: "application/json" });
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = "gamedev-sketchbook-progress.json";
-    a.click();
-    URL.revokeObjectURL(a.href);
+    const el = document.createElement("a");
+    el.href = URL.createObjectURL(blob);
+    el.download = "gamedev-progress.json";
+    el.click();
+    URL.revokeObjectURL(el.href);
   });
 
   const fileInput = document.getElementById("fileInput");
@@ -643,13 +507,13 @@ const SKETCHES = [
     reader.onload = () => {
       try {
         const parsed = JSON.parse(reader.result);
-        state = adopt(parsed);
-        // Per-guide step progress travels in the same file.
+        state = { sketches: parsed.sketches || parsed.etudes || {}, steps: parsed.steps || {}, updated: parsed.updated || null };
         Object.entries(parsed.guides || {}).forEach(([stem, steps]) => {
           localStorage.setItem("gamedev-guide-" + stem + "-v1", JSON.stringify(steps));
         });
-        save();
-        syncAll();
+        state.updated = new Date().toISOString();
+        localStorage.setItem(KEY, JSON.stringify(state));
+        location.reload();
       } catch (e) {
         alert("That file isn't a progress export — expected JSON with a \"sketches\" key.");
       }
@@ -657,18 +521,6 @@ const SKETCHES = [
     reader.readAsText(f);
     fileInput.value = "";
   });
-
-  document.getElementById("btnReset").addEventListener("click", () => {
-    if (!confirm("Clear every logged session and all guide step progress? Export first if you want a copy.")) return;
-    GUIDES.forEach(e => {
-      try { localStorage.removeItem("gamedev-guide-" + stemOf(e.guide) + "-v1"); } catch (err) { /* no-op */ }
-    });
-    state = blank();
-    save();
-    syncAll();
-  });
-
-  syncAll();
 })();
 </script>
 </body>

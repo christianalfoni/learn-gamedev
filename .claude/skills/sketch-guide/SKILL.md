@@ -1,24 +1,55 @@
 ---
 name: sketch-guide
-description: Write a step-by-step practice guide for a Gamedev Sketchbook sketch (Godot 4, Aseprite, Audacity, FL Studio) in the learn-gamedev repo. Use this whenever Christian asks for a guide, walkthrough, tutorial or "write-up" for a sketch — by ID (A1–F4), by name ("the hitstop one"), or vaguely ("write the next couple of guides", "can you do the pixel art ones"). Also use it when editing, extending or fixing an existing file in guides/, so the house style, the verified-links rule and the validation script stay applied. If the request touches guides/ at all, read this skill first.
+description: Derive assignments from the game design document in the learn-gamedev repo, and write them up as step-by-step guides for Godot 4, Aseprite, Audacity or FL Studio. Use this whenever Christian asks to derive, generate or propose assignments from the GDD, says he has extended or changed gdd.md and wants work from it, asks what is not covered yet, or asks for a guide/walkthrough/write-up by section, by name ("the grappling one") or by assignment ID. Also use it when editing anything in guides/ or gdd.md, so the derivation rules, house style, verified-links rule and validation scripts stay applied.
 ---
 
-# Writing a sketch guide
+# Deriving and writing assignments
 
-The sketchbook at `index.html` lists 26 sketches. A **guide** turns one of them from a
-title-plus-some-links into something Christian can sit down and follow. `guides/a1-good-movement.html`
-is the reference implementation — read it before writing a new one. It is the calibration, not just
-an example.
+`gdd.md` at the repo root is the game design document, and it is the source of truth. Everything
+else exists to serve it: **assignments** are derived from what the document describes, and each one
+builds a real piece of the game. `index.html` renders the document with its assignments underneath
+each section, so a described feature with nothing built from it shows up as a visible gap.
 
-## The problem a guide solves
+`guides/a1-good-movement.html` is the reference implementation — read it before writing a new one.
+It is the calibration, not just an example.
 
-The sketchbook's original links were part docs, part YouTube search URLs. Christian's own words:
-that hands the research task back to him. A guide is the opposite — you do the finding, the
-verifying and the explaining, and he does the practice.
+## The problem an assignment solves
 
-So the bar is: **he opens the guide and starts working within a minute.** No deciding which of six
-tutorials to watch, no reconciling a Godot 3 video with a Godot 4 API, no guessing whether he's
-done with a step.
+Two things at once. It gives Christian a piece of his game he doesn't yet know how to build, and it
+does the research for him: you find the sources, verify them, and explain the thing. He builds.
+
+So the bar is: **he opens it and starts working within a minute.** No deciding which of six
+tutorials to watch, no reconciling a Godot 3 video with a Godot 4 API, no guessing whether he's done
+with a step.
+
+## Deriving assignments from the document
+
+When he asks for new assignments, don't guess at what's needed — read the document and diff it:
+
+```bash
+python3 .claude/skills/sketch-guide/scripts/gdd_coverage.py
+python3 .claude/skills/sketch-guide/scripts/gdd_coverage.py --since HEAD~1
+```
+
+The report splits every `###` section into **covered** (has assignments), **ready to derive**
+(described, nothing built from it) and **not described** (nothing to derive from yet). With
+`--since`, it also marks the sections whose prose changed in that range — after he extends the
+document, those are almost always the ones he means.
+
+Then, before writing anything:
+
+1. **Propose first, in chat.** List the assignments you'd derive, each with the section it serves and
+   one line on what it contributes. He picks. Writing three guides he didn't want is expensive for
+   both of you.
+2. **One assignment per buildable thing**, sized to a session (45–120 min). "Implement the combat
+   system" is a project; "an attack that connects — hitbox, hitstop, one impact sound" is an
+   assignment.
+3. **Derive from what the document actually says**, not from what would be generically useful. If it
+   says the character is 32px with a four-colour ramp, the art assignment uses those numbers.
+4. **Say so when a section is too vague to derive from.** "This says the core verb is grappling but
+   not what it attaches to — tell me that and I can write it" is more useful than a guess.
+5. **Reuse before inventing.** If an existing assignment already covers a section, extending it or
+   pointing at it beats writing a near-duplicate.
 
 ## Non-negotiable: every link is verified before it ships
 
@@ -149,9 +180,10 @@ This is Christian's explicit preference and it's also just better: cross-referen
 like chapter six of something, which is exactly the finish-the-course pressure this whole repo
 exists to avoid. He should be able to open any guide on any evening and start.
 
-The one thing that may point outward is the footer's **Reference** block — official docs, a tool's
-own manual, an archive worth bookmarking. Those are outside the sketchbook, so they carry no
-homework.
+Two things may point outward. The footer's **Reference** block — official docs, a tool's own manual,
+an archive worth bookmarking. And **the design document**: an assignment should open by naming what
+it contributes to the game ("this is the walk cycle §player-art calls for"), because that's the whole
+reason it exists. Referencing the document is the point; referencing a sibling assignment is not.
 
 ## Steps that produce the feeling of progress
 
@@ -215,26 +247,26 @@ say so rather than bluffing.
    `data-guide` (the filename stem) and `data-sketch` (the sketch ID, e.g. `A3`) on `<body>` —
    `assets/guide.js` uses them for progress storage and for logging the session back into the
    sketchbook.
-2. **Register** it in `index.html` — this is the step that's easiest to forget and most visible when
-   missed, because an unregistered guide is a page nobody can reach. On that sketch's object in the
-   `SKETCHES` array, add:
+2. **Register** it in the `ASSIGNMENTS` array in `index.html`. This is what places it under the right
+   section of the document — an unregistered guide is a page nobody can reach:
 
    ```js
-   guide: "guides/<file>.html", guideSteps: <number of steps>,
+   { id: "X1", t: "Short title", time: "45–90 min", tools: ["godot"],
+     gdd: ["section-id"], guide: "guides/x1-slug.html", steps: 8,
+     blurb: "One sentence on what it builds." },
    ```
 
-   Both fields matter. **The front page renders `SKETCHES.filter(e => e.guide)` and nothing else** —
-   a sketch with no guide is invisible there. So adding `guide:` is what publishes the page, and
-   forgetting it means writing something nobody can reach. `guideSteps` drives the progress readout
-   ("4/9 steps"), which the card gets by reading the guide page's own `localStorage` under the shared
-   origin. Get the count wrong and the progress bar lies.
+   - **`gdd`** is the list of `###` section ids it serves, and it is what makes the assignment appear
+     on the page at all. An assignment with an empty `gdd` falls into "Not tied to the document",
+     which is a visible smell rather than an error — use it only when something genuinely serves no
+     described feature yet.
+   - **`steps`** drives the progress readout, which is read from the guide page's own `localStorage`
+     under the shared origin. Get it wrong and the bar lies.
+   - **`id`** is a stable handle used by `data-sketch` and by the progress store. Pick the next free
+     one in its letter family and don't renumber existing ones.
 
-   The rest of the `SKETCHES` array stays in the file deliberately: it's the catalogue of what a
-   guide *could* be written for, and the front page counts it ("2 written · 25 more sketches
-   waiting"). Don't delete unguided entries to tidy up.
-
-   Tool filter chips appear on the front page automatically once there are more than four guides —
-   below that they'd be noise. Nothing to do, but don't be surprised by their absence.
+   Then confirm the wiring with `gdd_coverage.py` — it reports broken `gdd` references and exits
+   non-zero on them.
 
    **If the sketch doesn't exist yet**, add it to `SKETCHES` first — a guide is allowed to invent a
    sketch the original 26 didn't cover. B6 came about that way. Give it the next free ID in its
@@ -256,15 +288,19 @@ say so rather than bluffing.
 
 ## Things worth remembering about this repo
 
-- The practice is deliberately **not** about shipping games. Never frame a guide as a step toward
-  finishing something, add scope, or suggest combining sketches into a project.
+- **Real pieces, no deadlines.** Assignments now build usable parts of an actual game, so drop the
+  old "this artefact is disposable" framing — what he makes here is meant to be kept. What has not
+  changed: no deadlines, no milestones, no dependency chains, and every assignment stays finishable
+  and abandonable in one sitting. The skill he gains still outranks the artefact; the artefact is
+  just no longer thrown away.
 - They're called **sketches**, never "études" — he disliked the French term.
 - Guide progress and sketchbook progress share an origin, which is why the log-session button in the
   footer can write to the tracker's own `localStorage`. Keep that footer block intact when copying
   the template.
-- `index.html` is deliberately self-contained; guides and `setup.html` deliberately share
-  `assets/`. Don't "fix" either arrangement into the other.
-- The site is three things: `index.html` (guides only), `guides/` (the guides), and `setup.html`
-  (per-tool settings, teachers and practice notes — reference material, not a guide, reached from a
-  footer link). If you're adding tool-setup content rather than a sketch walkthrough, it belongs in
-  `setup.html`.
+- `index.html` is deliberately self-contained and reads `gdd.md` over `fetch` at runtime, so the
+  document stays the single source of truth with no build step. That also means the site must be
+  served over HTTP — opening `index.html` as a local file shows a clear error rather than the page.
+- The site is four things: `gdd.md` (the document), `index.html` (renders it with assignments under
+  each section), `guides/` (the assignments themselves), and `setup.html` (per-tool settings and
+  teachers — reference material, reached from a footer link). Tool-setup content belongs in
+  `setup.html`, never in an assignment.

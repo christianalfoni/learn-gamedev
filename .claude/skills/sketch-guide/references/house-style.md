@@ -61,8 +61,8 @@ he's already typing.
 
 - **Search URLs.** The whole reason guides exist.
 - **Unverified links.** See the rule in SKILL.md.
-- **Shipping talk.** No "now you could turn this into a game", no roadmaps, no scope. The sketch is
-  complete when he stops.
+- **Roadmaps and deadlines.** No milestones, no "next you'll need to…", no ordering between
+  assignments. The output is a real piece of the game, but the session is complete when he stops.
 - **References to other sketches.** No "if you did A1", no "next sketches" footer, no assumed
   earlier project. Each guide starts from an empty project and ends when it ends.
 - **"Études".** They're sketches.
