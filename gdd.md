@@ -31,43 +31,63 @@ Two health bars, damaged by two different failures: **yours**, when an enemy tou
 
 ### Ending a run {#run-end}
 
-Two independent health bars. Neither refills during a run (assumed — say if not).
+Two independent health bars, neither of which refills during a run. **Either** one hitting zero
+ends it — the player being overwhelmed, or the base being worn down by escapees.
 
-**Open:** what ends a run — player health hitting zero, base health hitting zero, or either?
-**Open:** what "as far as you can" measures. Time survived, waves cleared, or enemies killed?
-That number is the score, and it decides what the HUD shows.
+The score is **time survived**. No waves, no rounds: pressure rises continuously and the run ends
+when it beats you.
 
 ### Difficulty {#difficulty}
 
-*Not decided yet. How pressure escalates over a run — spawn rate, enemy count, enemy types.*
+Pressure rises continuously rather than in waves, since the score is time survived.
+
+*Not decided yet: which levers move — spawn rate, enemies per spawn, walk speed — and how fast.
+Worth deciding by playing rather than by planning.*
 
 ### Rogue-lite {#roguelite}
 
-*Not decided yet. Whether anything carries between runs, or whether "rogue-lite" here just means
-escalating pressure and a fresh start each time.*
+**In-run drops only.** Kills sometimes drop a temporary upgrade — faster fire, more damage, a
+health patch — and everything is lost when the run ends. Nothing persists between runs: no save
+file, no currency, no meta screens.
+
+*Not decided yet: which upgrades exist, drop rate, and whether they stack.*
 
 ## Mechanics
 
 ### Movement {#movement}
 
-Platformer movement across a multi-floor arena — run, jump, and move between floors. Needs to
-feel good enough that repositioning under pressure is the fun part rather than the friction.
+Platformer movement across a multi-floor arena — run, jump, and move between floors.
 
-**Open:** how the player changes floors — jumping up, dropping through platforms, or both.
+Because aiming is horizontal only, **movement is the core skill of this game**, not aiming. You
+have to reach an enemy's floor to kill it, so a run is a series of routing decisions under time
+pressure. Vertical traversal speed is therefore the single most important tuning value in the
+project: too slow and escapees feel unfair, too fast and the arena stops mattering.
+
+**Open:** how the player changes floors — jumping up, dropping through platforms, or both. Drop-
+through almost certainly, since the same gaps the enemies fall through are the fast way down.
 
 ### Shooting {#shooting}
 
-The player's only offensive verb. Destroys enemies before they descend.
+The player's only offensive verb, and deliberately the simple half of the game: **you shoot the
+way you face, horizontally.** No up-aim, no mouse, no 360°.
 
-**Open:** the aiming scheme. This is the single biggest open question in the document — it decides
-the movement scheme, the controls, and how the arena should be laid out.
+The consequence is the whole design. You cannot shoot down through a gap at the floor below, so
+killing something means standing on its floor — which turns every threat into a movement problem
+rather than an aiming one, and makes camping self-defeating.
+
+*Not decided yet: fire rate, whether the gun is hitscan or a visible projectile, and how many
+enemies one shot should kill.*
 
 ### Enemies {#enemies}
 
 One enemy type to start. Walks at a constant speed, turns on hitting a wall, falls off any ledge
-it reaches. No awareness of the player at all.
+it reaches. **No awareness of the player at all** — it never turns toward you, never chases,
+never shoots.
 
-**Open:** whether enemies threaten the player only by contact, or also attack.
+The only threat is **contact damage**: touching one hurts. That keeps the threat positional, which
+suits a game where position is already the main decision.
+
+*Not decided yet: how many hits an enemy takes, and whether a second type arrives later.*
 
 ### The base {#base}
 
