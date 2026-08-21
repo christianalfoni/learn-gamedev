@@ -127,4 +127,15 @@ Two health bars and the run's score, readable at a glance while everything else 
 
 ### Game feel {#game-feel}
 
-*Deferred — but a shooter lives or dies here, so it will not stay deferred long.*
+**Deliberately deferred, not forgotten.** Feel matters enormously in a shooter — the player moving
+well, and hits landing with weight, are most of what makes this fun. But it is iterated on, not
+built once, so it gets its own assignments rather than being smuggled into the base ones.
+
+Base assignments therefore build things that *work* and say plainly what they leave plain. The feel
+passes come after there is a game to feel:
+
+- **Movement feel** — acceleration and friction, jump derived from height and time, coyote time,
+  input buffering, and a tuning session against the arena's floor spacing.
+- **Impact feel** — hitstop, hit flash, screenshake, knockback, particles on a kill. What makes
+  shooting an enemy satisfying rather than merely effective.
+- **Shooting feel** — muzzle flash, recoil, fire-rate curve, the small screen kick per shot.

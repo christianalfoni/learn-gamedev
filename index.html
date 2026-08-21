@@ -189,11 +189,33 @@
   // Assignments. `gdd` lists the design-document section ids each one serves —
   // that is what places it on this page, and what makes a gap visible when a
   // section has none.
-  // Cleared on 21 Aug 2026 when the project pivoted to a specific game.
-  // The five earlier guides still exist under guides/ and in git history —
-  // A1 (platformer movement) and G1 (level from a tileset) are the two that
-  // map cleanly onto this game, and are one entry each away from returning.
+  // Assignments. `gdd` lists the design-document section ids each one serves —
+  // that is what places it on this page, and what makes a gap visible when a
+  // section has none.
   const ASSIGNMENTS = [
+    { id: "S1", t: "The arena", time: "60–90 min", tools: ["godot"],
+      gdd: ["core-loop"], guide: "guides/s1-the-arena.html", steps: 7,
+      blurb: "The fixed multi-floor level: tileset, collision, one-way floors, and gaps placed as the difficulty knob." },
+
+    { id: "S2", t: "Move and drop through", time: "45–75 min", tools: ["godot"],
+      gdd: ["movement"], guide: "guides/s2-move-and-drop.html", steps: 6,
+      blurb: "Run, jump and drop through floors — plus timing the arena, since traversal speed is what the game balances against." },
+
+    { id: "S3", t: "The gun", time: "45–75 min", tools: ["godot"],
+      gdd: ["shooting"], guide: "guides/s3-the-gun.html", steps: 6,
+      blurb: "Bullets that fly the way you face, stop at walls, damage what they hit, and free themselves." },
+
+    { id: "S4", t: "The walker", time: "45–75 min", tools: ["godot"],
+      gdd: ["enemies"], guide: "guides/s4-the-walker.html", steps: 6,
+      blurb: "The only enemy: walks, turns at walls, falls off every ledge — and deliberately has no ledge check at all." },
+
+    { id: "S5", t: "The spawner and the drain", time: "60–90 min", tools: ["godot"],
+      gdd: ["core-loop", "base"], guide: "guides/s5-spawner-and-drain.html", steps: 6,
+      blurb: "Enemies in at the top on a shrinking interval, out at the bottom taking a bite from the base. The run starts running itself." },
+
+    { id: "S6", t: "Two bars and a clock", time: "60–90 min", tools: ["godot"],
+      gdd: ["hud", "run-end"], guide: "guides/s6-two-bars-and-a-clock.html", steps: 6,
+      blurb: "Both health bars, contact damage with invulnerability frames, the survival clock, and a run that ends and restarts." }
   ];
 
   /* ── Progress state ──────────────────────────────────────── */

@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="color-scheme" content="light dark" />
+<meta name="description" content="S3 — the player shoots: a bullet scene, horizontal firing from facing, a fire-rate cooldown, and collision layers that decide what a bullet hits." />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ctext y='26' font-size='26'%3E%F0%9F%8E%9B%EF%B8%8F%3C/text%3E%3C/svg%3E" />
+<link rel="stylesheet" href="../assets/guide.css" />
+<title>S3 · The gun — The Gamedev Sketchbook</title>
+</head>
+
+<body data-guide="s3-the-gun" data-sketch="S3">
+
+<div class="rail">
+  <div class="rail-inner">
+    <a class="back" href="../">← The game</a>
+    <span class="bar"><i></i></span>
+    <span class="pct">0/6 steps</span>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <header class="head">
+    <span class="eyebrow">S3 · Godot 4 · serves §shooting</span>
+    <h1>The gun</h1>
+    <p class="standfirst">Bullets that travel the way you face, stop at walls, damage what they hit,
+      and clean themselves up. The player's only offensive verb, built as plainly as it can be —
+      which turns out to be very plainly, because horizontal-only aiming removes most of the problem.</p>
+    <div class="meta">
+      <span class="pill" style="--tone: var(--c-godot)">Godot 4.3+</span>
+      <span class="pill">45–75 min</span>
+      <span class="pill">6 steps</span>
+      <span class="pill">base game</span>
+    </div>
+
+    <div class="outcome">
+      <h2>What the game will have that it doesn't now</h2>
+      <ul>
+        <li>A <b>bullet scene</b> that flies, hits, and frees itself — with no leak when it misses.</li>
+        <li>Firing from the player's <code class="inline">facing</code>, with a <b>fire-rate cooldown</b>.</li>
+        <li>A <b>collision layer scheme</b> deciding what bullets hit, which the enemy and player
+          assignments both plug into.</li>
+        <li>A <code class="inline">take_damage()</code> convention that anything shootable can implement.</li>
+      </ul>
+    </div>
+
+    <div class="trap" style="margin-top:4px">
+      <h4>What this deliberately leaves plain</h4>
+      <p>No muzzle flash, no recoil, no screen kick, no tracer, no sound, no hitstop. A shot that
+        connects should feel like a small event, and right now it will feel like nothing at all — that's
+        the impact-feel assignment's whole job, and it needs something to add feel <em>to</em> first.</p>
+    </div>
+
+    <div class="trap" style="margin-top:4px">
+      <h4>What you need</h4>
+      <p>A player that moves and exposes a <code class="inline">facing</code> variable, and a
+        <code class="inline">fire</code> action in the input map. If you don't have either, a
+        <b>CharacterBody2D</b> that doesn't move at all is enough to build and test the gun — set
+        <code class="inline">var facing := 1</code> by hand and flip it with a key.</p>
+    </div>
+  </header>
+
+  <main class="steps">
+
+    <section class="step" id="s1">
+      <div class="step-head">
+        <button class="step-check" type="button"><i></i><i></i><i></i><i></i></button>
+        <div class="step-title"><span class="n">Step 1</span><h2>Decide the collision layers, once</h2></div>
+        <span class="step-time">8 min</span>
+      </div>
+      <div class="step-body">
+        <p>Do this before writing anything. Collision layers are the kind of decision that's five
+          minutes now and an afternoon of confusion later, and every remaining assignment plugs into it.</p>
+        <p>Open <b>Project Settings → Layer Names → 2D Physics</b> and name five layers:</p>
+
+        <div class="tablewrap">
+          <table>
+            <thead><tr><th>Layer</th><th>Name</th><th>Who is on it</th><th>Who looks for it</th></tr></thead>
+            <tbody>
+              <tr><td class="n">1</td><td><code>walls</code></td><td>Arena boundary and solid tiles</td><td>Player, enemies, bullets</td></tr>
+              <tr><td class="n">2</td><td><code>floors</code></td><td>One-way platforms</td><td>Player, enemies</td></tr>
+              <tr><td class="n">3</td><td><code>player</code></td><td>The player body</td><td>Enemies</td></tr>
+              <tr><td class="n">4</td><td><code>enemies</code></td><td>Every walker</td><td>Bullets, player</td></tr>
+              <tr><td class="n">5</td><td><code>bullets</code></td><td>Player bullets</td><td>— nothing looks for these</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p>Naming them means the inspector shows words rather than numbered checkboxes, which is the
+          difference between reading a mask at a glance and counting squares.</p>
+
+        <div class="why">
+          <h4>Layer versus mask, in one sentence</h4>
+          <p>An object's <b>layer</b> is what it <em>is</em>; its <b>mask</b> is what it <em>looks for</em>.
+            A bullet is on <code class="inline">bullets</code> and masks <code class="inline">walls</code> and
+            <code class="inline">enemies</code> — so it collides with those two and passes straight through
+            everything else, including the floors and the player who fired it.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="step" id="s2">
+      <div class="step-head">
+        <button class="step-check" type="button"><i></i><i></i><i></i><i></i></button>
+        <div class="step-title"><span class="n">Step 2</span><h2>The bullet scene</h2></div>
+        <span class="step-time">12 min</span>
+      </div>
+      <div class="step-body">
+        <ol>
+          <li><b>New Scene → Other Node → Area2D</b>, rename it <code class="inline">Bullet</code>.</li>
+          <li>Add a <b>CollisionShape2D</b> with a small <b>RectangleShape2D</b>, about
+            <code class="inline">6 × 2</code>.</li>
+          <li>Add a <b>ColorRect</b> the same size, offset so it's centred. Any bright colour.</li>
+          <li>Add a <b>VisibleOnScreenNotifier2D</b> — this is how the bullet knows it has left the
+            screen.</li>
+          <li>On the Area2D, set <b>Collision → Layer</b> to <code class="inline">bullets</code> only, and
+            <b>Mask</b> to <code class="inline">walls</code> and <code class="inline">enemies</code> only.</li>
+          <li>Save as <code class="inline">bullet.tscn</code>.</li>
+        </ol>
+
+        <div class="why">
+          <h4>Why Area2D rather than a physics body</h4>
+          <p>A bullet doesn't want physics. It shouldn't be stopped, pushed, or slid along a surface —
+            it wants to move in a straight line and be told when it overlaps something. That's exactly
+            what an Area2D is for, and it avoids a whole category of bullets-bouncing-off-corners
+            weirdness you'd get from a CharacterBody2D.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="step" id="s3">
+      <div class="step-head">
+        <button class="step-check" type="button"><i></i><i></i><i></i><i></i></button>
+        <div class="step-title"><span class="n">Step 3</span><h2>Make it fly, and make it die</h2></div>
+        <span class="step-time">12 min</span>
+      </div>
+      <div class="step-body">
+        <p>Attach a script to the Bullet root:</p>
+
+        <figure class="code">
+          <figcaption>bullet.gd<span class="sp"></span><button class="copy" type="button">copy</button></figcaption>
+          <pre><code>
+extends Area2D
+
+const SPEED := 420.0
+
+# Set by whoever fires it. 1 is right, -1 is left.
+var direction := 1
+
+
+func _ready() -&gt; void:
+	body_entered.connect(_on_body_entered)
+	$VisibleOnScreenNotifier2D.screen_exited.connect(queue_free)
+
+
+func _physics_process(delta: float) -&gt; void:
+	position.x += direction * SPEED * delta
+
+
+func _on_body_entered(body: Node2D) -&gt; void:
+	# Anything that can be shot implements take_damage. A wall does not,
+	# so the bullet simply stops there.
+	if body.has_method("take_damage"):
+		body.take_damage(1)
+	queue_free()
+</code></pre>
+        </figure>
+
+        <div class="trap">
+          <h4>A bullet that never dies is a real bug</h4>
+          <p>Miss everything, and without the screen-exited connection that bullet flies off forever,
+            still processing every frame. A few minutes of held fire and you have thousands of them. The
+            arena has walls on all sides so most bullets will hit one — but the notifier is the guarantee,
+            and it costs one line.</p>
+        </div>
+
+        <div class="why">
+          <h4>Why <code class="inline">has_method</code> rather than checking a type</h4>
+          <p>The bullet doesn't need to know what an enemy is. Anything that implements
+            <code class="inline">take_damage</code> can be shot — a walker now, a barrel or a boss later —
+            and nothing has to be rewritten to include them. It's the cheapest possible version of an
+            interface, and in a project this size it's the right amount of ceremony.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="step" id="s4">
+      <div class="step-head">
+        <button class="step-check" type="button"><i></i><i></i><i></i><i></i></button>
+        <div class="step-title"><span class="n">Step 4</span><h2>Firing</h2></div>
+        <span class="step-time">12 min</span>
+      </div>
+      <div class="step-body">
+        <p>Back on the player. Add an export for the bullet scene and a cooldown:</p>
+
+        <figure class="code">
+          <figcaption>player.gd — additions<span class="sp"></span><button class="copy" type="button">copy</button></figcaption>
+          <pre><code>
+@export var bullet_scene: PackedScene
+@export var fire_interval := 0.18
+@export var muzzle_offset := Vector2(9, 0)
+
+var _fire_cooldown := 0.0
+
+
+func _shoot(delta: float) -&gt; void:
+	_fire_cooldown -= delta
+	if _fire_cooldown &gt; 0.0 or not Input.is_action_pressed("fire"):
+		return
+
+	_fire_cooldown = fire_interval
+
+	var bullet := bullet_scene.instantiate()
+	bullet.direction = facing
+	bullet.global_position = global_position + Vector2(muzzle_offset.x * facing, muzzle_offset.y)
+
+	# Added to the scene, not to the player — a bullet parented to the
+	# player would follow him around after it left the barrel.
+	get_tree().current_scene.add_child(bullet)
+</code></pre>
+        </figure>
+
+        <p>Call <code class="inline">_shoot(delta)</code> from <code class="inline">_physics_process</code>,
+          then select the Player in the arena and drag <code class="inline">bullet.tscn</code> into its
+          <b>Bullet Scene</b> slot in the inspector.</p>
+
+        <div class="trap">
+          <h4>The empty slot</h4>
+          <p>Forget to assign the scene and firing does nothing at all, silently — no error, no bullet.
+            If your first test produces no bullets, check that slot before you check the code.</p>
+        </div>
+
+        <div class="feel">
+          <h4>Held fire, not tapped</h4>
+          <p><code class="inline">is_action_pressed</code> rather than
+            <code class="inline">just_pressed</code> means holding the button fires continuously at the
+            cooldown rate. In a game where enemies arrive in a stream, you want to hold; making the
+            player mash would be a wrist tax rather than a skill.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="step" id="s5">
+      <div class="step-head">
+        <button class="step-check" type="button"><i></i><i></i><i></i><i></i></button>
+        <div class="step-title"><span class="n">Step 5</span><h2>Something to shoot</h2></div>
+        <span class="step-time">10 min</span>
+      </div>
+      <div class="step-body">
+        <p>You need a target before you can tell whether any of this works, and a throwaway one takes
+          two minutes:</p>
+        <ol>
+          <li><b>New Scene → Other Node → StaticBody2D</b>, named <code class="inline">Target</code>.</li>
+          <li>A <b>CollisionShape2D</b> and a <b>ColorRect</b>, roughly enemy-sized.</li>
+          <li>Set its <b>Collision → Layer</b> to <code class="inline">enemies</code>, and clear its mask —
+            it doesn't need to look for anything.</li>
+          <li>Attach this script, save the scene, and place three of them around the arena.</li>
+        </ol>
+
+        <figure class="code">
+          <figcaption>target.gd — a throwaway, deleted after this assignment<span class="sp"></span><button class="copy" type="button">copy</button></figcaption>
+          <pre><code>
+extends StaticBody2D
+
+@export var health := 2
+
+
+func take_damage(amount: int) -&gt; void:
+	health -= amount
+	modulate = Color(1.0, 0.4, 0.4)
+	if health &lt;= 0:
+		queue_free()
+</code></pre>
+        </figure>
+
+        <div class="why">
+          <h4>Why bother with a fake target</h4>
+          <p>Because otherwise this assignment ends with "the code looks right", which is not the same
+            as working. Two minutes of scaffolding turns an untested system into a tested one, and the
+            <code class="inline">take_damage</code> signature you're testing against is the one the real
+            enemy will implement.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="step" id="s6">
+      <div class="step-head">
+        <button class="step-check" type="button"><i></i><i></i><i></i><i></i></button>
+        <div class="step-title"><span class="n">Step 6</span><h2>Shoot at things and find the numbers</h2></div>
+        <span class="step-time">12 min</span>
+      </div>
+      <div class="step-body">
+        <p>This is the assignment. Run it and work through the checks, then push the two numbers that
+          matter to their extremes.</p>
+
+        <div class="tablewrap">
+          <table>
+            <thead><tr><th>Check</th><th>What a failure looks like</th></tr></thead>
+            <tbody>
+              <tr><td>Bullets go the way you face</td><td>They always fly right — <code>facing</code> isn't being read, or isn't updating</td></tr>
+              <tr><td>Bullets stop at walls</td><td>They fly through — the mask is missing <code>walls</code></td></tr>
+              <tr><td>Bullets pass through floors</td><td>They vanish on the platform you're standing on — <code>floors</code> is in the mask and shouldn't be</td></tr>
+              <tr><td>Targets take two hits</td><td>One hit kills — the damage amount or the target's health is off</td></tr>
+              <tr><td>Held fire is a steady stream</td><td>A burst then nothing — cooldown isn't resetting</td></tr>
+              <tr><td>Remote tree stays clean</td><td>Bullet nodes accumulating — something isn't freeing. This is the one you'd otherwise never notice</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p>That last one is worth doing properly: run the game, switch the Scene dock to <b>Remote</b>,
+          hold fire for ten seconds and watch the node list. It should stay roughly flat. If it grows
+          without bound, you have a leak now that will become a frame-rate collapse in ten minutes of
+          play.</p>
+
+        <div class="feel">
+          <h4>Then push the two numbers</h4>
+          <p>Set <code class="inline">fire_interval</code> to 0.05 and hold — a firehose, and the game
+            becomes about nothing. Set it to 0.6 and every shot is a decision you have to be right about.
+            The interesting range is somewhere between, and where exactly depends on how many enemies
+            arrive per second, which you don't know yet. Note both extremes and leave it near 0.18.</p>
+          <p>Same with bullet <code class="inline">SPEED</code>: at 120 you lead your targets and it feels
+            like a lobbed rock; at 900 it's effectively instant. Slower bullets make positioning matter
+            more, which suits this game — worth remembering when the feel pass comes.</p>
+        </div>
+
+        <p>Delete the targets when you're done. <b>Write down the fire interval and bullet speed</b> you
+          settled on, and how they felt — the impact-feel assignment starts from those numbers.</p>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="done">
+    <h2>That's the assignment</h2>
+    <p>The game now has its verb. It doesn't feel like anything yet — that's deliberate and it's next
+      in line — but the mechanism underneath is complete, and the <code class="inline">take_damage</code>
+      convention means everything you add later is shootable for free.</p>
+
+    <p data-when-finished hidden><b>All six steps done.</b> Log the session and it'll show up on the
+      document with today's date.</p>
+
+    <div class="actions">
+      <button class="btn" type="button" id="logSession">Log this session</button>
+      <a class="btn ghost" href="../">Back to the document</a>
+      <span class="logmsg" id="logMsg"></span>
+    </div>
+
+    <div class="next" style="margin-top:6px">
+      <span class="eyebrow">Reference</span>
+      <a href="https://docs.godotengine.org/en/stable/classes/class_area2d.html" target="_blank" rel="noopener noreferrer"><span class="id">docs</span><span>Area2D class reference</span></a>
+      <a href="https://docs.godotengine.org/en/stable/tutorials/physics/using_area_2d.html" target="_blank" rel="noopener noreferrer"><span class="id">docs</span><span>Using Area2D</span></a>
+      <a href="https://docs.godotengine.org/en/stable/classes/class_visibleonscreennotifier2d.html" target="_blank" rel="noopener noreferrer"><span class="id">docs</span><span>VisibleOnScreenNotifier2D</span></a>
+      <a href="https://docs.godotengine.org/en/stable/classes/class_packedscene.html" target="_blank" rel="noopener noreferrer"><span class="id">docs</span><span>PackedScene — instantiate()</span></a>
+    </div>
+  </footer>
+
+</div>
+
+<script src="../assets/guide.js"></script>
+</body>
+</html>

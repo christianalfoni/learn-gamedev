@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="color-scheme" content="light dark" />
+<meta name="description" content="S1 — build the fixed multi-floor arena in Godot 4: tileset, collision, one-way floors, and gaps placed as the difficulty knob." />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ctext y='26' font-size='26'%3E%F0%9F%8E%9B%EF%B8%8F%3C/text%3E%3C/svg%3E" />
+<link rel="stylesheet" href="../assets/guide.css" />
+<title>S1 · The arena — The Gamedev Sketchbook</title>
+</head>
+
+<body data-guide="s1-the-arena" data-sketch="S1">
+
+<div class="rail">
+  <div class="rail-inner">
+    <a class="back" href="../">← The game</a>
+    <span class="bar"><i></i></span>
+    <span class="pct">0/7 steps</span>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <header class="head">
+    <span class="eyebrow">S1 · Godot 4 · serves §core-loop</span>
+    <h1>The arena</h1>
+    <p class="standfirst">The fixed multi-floor level everything else happens inside. Floors you can
+      drop through, gaps enemies fall through, and a shape you can re-tune later by moving tiles.
+      No enemies, no player, no shooting — just the space.</p>
+    <div class="meta">
+      <span class="pill" style="--tone: var(--c-godot)">Godot 4.3+</span>
+      <span class="pill">60–90 min</span>
+      <span class="pill">7 steps</span>
+      <span class="pill">base game</span>
+    </div>
+
+    <div class="outcome">
+      <h2>What the game will have that it doesn't now</h2>
+      <ul>
+        <li>A <b>multi-floor arena</b> with collision, built from a tileset rather than hand-placed shapes.</li>
+        <li><b>One-way floors</b> — land on them from above, pass through from below.</li>
+        <li>Gaps positioned deliberately, because <b>gap placement is this game's difficulty knob</b>
+          and you'll be moving them for the rest of the project.</li>
+        <li>Marked <b>spawn</b> and <b>drain</b> lines at the top and bottom for later assignments to hook onto.</li>
+      </ul>
+    </div>
+
+    <div class="trap" style="margin-top:4px">
+      <h4>What this deliberately leaves plain</h4>
+      <p>No background layers, no parallax, no decoration, no lighting. The arena's <em>shape</em> is a
+        mechanics decision and gets built properly here; how it <em>looks</em> is a separate job for
+        when the art sections of the document are written.</p>
+    </div>
+
+    <div class="trap" style="margin-top:4px">
+      <h4>You need a tileset PNG to start</h4>
+      <p>Any uniform grid with no padding — 16 × 16 or 32 × 32. If you don't have one, take a CC0 pack
+        from <a href="https://kenney.nl/assets/category:2D?sort=update" target="_blank" rel="noopener noreferrer">Kenney</a>.
+        Placeholder tiles are correct here: this assignment is about shape, and shape is easier to judge
+        when the art isn't distracting you.</p>
+    </div>
+  </header>
+
+  <section class="prep">
+    <div class="prep-head">
+      <h2>Prep</h2>
+      <span>Optional — the steps are self-contained.</span>
+    </div>
+
+    <a class="vid optional" href="https://www.youtube.com/watch?v=ZutpG0_CYrQ" target="_blank" rel="noopener noreferrer">
+      <span class="n">01</span>
+      <span class="t">In Depth TILEMAP Tutorial For Godot 4.3+</span>
+      <span class="len">39:13 · optional</span>
+      <span class="by">DevWorm · Aug 2024 · 138k views · Godot 4.3+</span>
+      <span class="why">Correct for the current node — built around TileMapLayer rather than the
+        deprecated TileMap, which rules out most older tutorials. Long, so use it as a reference: its
+        collision section covers step 3, which is the fiddliest part here.</span>
+    </a>
+  </section>
+
+  <main class="steps">
+
+    <section class="step" id="s1">
+      <div class="step-head">
+        <button class="step-check" type="button"><i></i><i></i><i></i><i></i></button>
+        <div class="step-title"><span class="n">Step 1</span><h2>Project and import settings</h2></div>
+        <span class="step-time">8 min</span>
+      </div>
+      <div class="step-body">
+        <p>New 2D project. Drop the tileset PNG in, select it in the FileSystem dock, open the
+          <b>Import</b> tab and turn <b>Filter</b> and <b>Mipmaps</b> off, then <b>Reimport</b>. Or set it
+          project-wide: <b>Project Settings → Rendering → Textures → Canvas Textures → Default Texture
+          Filter</b> → <b>Nearest</b>.</p>
+        <p>Then set the window to something honest — <b>Project Settings → Display → Window</b>, viewport
+          <b>480 × 270</b>, <b>Stretch Mode: canvas_items</b>, <b>Aspect: keep</b>. This game is a single
+          fixed arena, so the viewport size <em>is</em> roughly the arena size, and picking it now saves
+          you rebuilding the level later.</p>
+
+        <div class="why">
+          <h4>Why the viewport decides the arena</h4>
+          <p>Everything in this game has to be visible at once — you're making routing decisions based
+            on where enemies are, and you can't route around what you can't see. So there's no camera
+            following anything and no scrolling. At 480 × 270 with 16-pixel tiles that's a 30 × 17 tile
+            arena, which is a good size: four or five floors with room to move between them.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="step" id="s2">
+      <div class="step-head">
+        <button class="step-check" type="button"><i></i><i></i><i></i><i></i></button>
+        <div class="step-title"><span class="n">Step 2</span><h2>TileMapLayer and the TileSet</h2></div>
+        <span class="step-time">12 min</span>
+      </div>
+      <div class="step-body">
+        <p>New 2D Scene, root node <b>Node2D</b> named <code class="inline">Arena</code>, saved as
+          <code class="inline">arena.tscn</code>. Set it as the main scene when Godot offers.</p>
+        <p>Add two <b>TileMapLayer</b> children:</p>
+        <ul>
+          <li><code class="inline">Solid</code> — walls, the outer boundary, anything you can't pass through.</li>
+          <li><code class="inline">Floors</code> — the one-way platforms you land on and drop through.</li>
+        </ul>
+        <p>On <code class="inline">Solid</code>, set <b>Tile Set → New TileSet</b>, open it, and set the tile
+          size to match your PNG. In the bottom panel's <b>TileSet</b> tab, add an <b>Atlas</b> source
+          with <b>+</b>, choose your PNG, and accept the offer to create tiles automatically.</p>
+        <p>Then select <code class="inline">Floors</code> and assign it the <b>same TileSet resource</b> —
+          drag it across from Solid's inspector. One tileset, two layers.</p>
+
+        <div class="why">
+          <h4>Why two layers rather than one</h4>
+          <p>Solid tiles and one-way tiles need different collision, and collision lives on the tile in
+            the TileSet. Splitting them into two layers means you paint with intent — "this is a wall"
+            versus "this is a floor" — instead of trying to remember which tile in the atlas you gave
+            which property to. It also lets a later assignment hide or query one without the other.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="step" id="s3">
+      <div class="step-head">
+        <button class="step-check" type="button"><i></i><i></i><i></i><i></i></button>
+        <div class="step-title"><span class="n">Step 3</span><h2>Collision on the solid tiles</h2></div>
+        <span class="step-time">10 min</span>
+      </div>
+      <div class="step-body">
+        <p>In the <b>TileSet</b> tab, select the TileSet resource itself and add <b>two</b> Physics
+          Layers with <b>+</b>:</p>
+        <ul>
+          <li><b>Physics Layer 0</b> — leave its <b>Collision Layer</b> as layer <b>1</b>. This is walls.</li>
+          <li><b>Physics Layer 1</b> — set its <b>Collision Layer</b> to layer <b>2</b> only, and untick
+            layer 1. This is the one-way floors, in step 4.</li>
+        </ul>
+        <p>Now select the atlas source, switch the tile editor to <b>Select</b> mode, and drag-select
+          every tile you'll use as a wall or solid block. In the inspector you'll see
+          <b>Physics → Physics Layer 0</b> with a small polygon editor — use its reset button to fill the
+          tile with a full rectangle. One click per selection, not per tile.</p>
+
+        <div class="why">
+          <h4>Why two physics layers rather than one</h4>
+          <p>Because the player will need to <em>selectively</em> ignore the floors in order to drop
+            through them, while never being able to ignore a wall. Selective ignoring is done by
+            switching off one bit of a collision mask, so walls and floors have to be on different bits.
+            Put them both on layer 1 and the moment the player drops through a floor they'd also fall
+            straight out through the side of the arena.</p>
+        </div>
+
+        <div class="feel">
+          <h4>Why this beats hand-placed collision</h4>
+          <p>Collision now travels with the tile. Paint a wall anywhere and it's solid; move it and the
+            collision moves too. When you re-tune this arena later — and you will, repeatedly, because
+            gap placement is the difficulty — you're moving tiles rather than keeping a parallel set of
+            collision shapes in sync.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="step" id="s4">
+      <div class="step-head">
+        <button class="step-check" type="button"><i></i><i></i><i></i><i></i></button>
+        <div class="step-title"><span class="n">Step 4</span><h2>One-way floors</h2></div>
+        <span class="step-time">12 min</span>
+      </div>
+      <div class="step-body">
+        <p>Pick a distinct tile — a thin platform, a different colour, anything you can tell apart at a
+          glance. Select it, and this time fill in <b>Physics → Physics Layer 1</b> instead of layer 0,
+          using the same reset-to-rectangle button. Leave its Physics Layer 0 empty: this tile is a
+          floor, not a wall.</p>
+        <p>Then, with the tile still selected, find <b>Physics Layer 1 → One Way</b> and turn it on.</p>
+        <p>One-way collision means the shape is only solid from one direction. The default direction is
+          downward, which is what you want: things land on it from above and pass straight through from
+          below. There's a <b>One Way Margin</b> next to it, default 1.0 — leave it.</p>
+
+        <figure class="fig">
+          <svg viewBox="0 0 600 150" role="img" aria-label="A one-way floor: an object falling from above lands on it, an object moving up from below passes through.">
+            <g class="svg-line"><path d="M120,75 L480,75" stroke-width="3" /></g>
+            <g class="svg-plot">
+              <path d="M200,20 L200,62" /><path d="M194,54 l6,10 6,-10" />
+              <path d="M400,130 L400,60" stroke-dasharray="5 4" /><path d="M394,72 l6,-10 6,10" />
+            </g>
+            <text class="svg-label" x="212" y="40">falling from above</text>
+            <text class="svg-label" x="212" y="56">— lands on it</text>
+            <text class="svg-label" x="412" y="104">moving up from below</text>
+            <text class="svg-label" x="412" y="120">— passes through</text>
+            <text class="svg-label" x="120" y="66">one-way floor</text>
+          </svg>
+          <figcaption>Enemies land on these and walk along them. The player will also drop down through them — that half arrives in the movement assignment.</figcaption>
+        </figure>
+
+        <div class="trap">
+          <h4>Only the floors, never the outer walls</h4>
+          <p>It's tempting to make everything one-way and save a tile. Don't — the arena's boundary has
+            to be genuinely solid or enemies will walk out of the sides and the drain at the bottom will
+            never see them. Walls solid, floors one-way, and keep them visually distinguishable so you
+            can see at a glance which is which while painting.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="step" id="s5">
+      <div class="step-head">
+        <button class="step-check" type="button"><i></i><i></i><i></i><i></i></button>
+        <div class="step-title"><span class="n">Step 5</span><h2>Paint it — the gaps are the game</h2></div>
+        <span class="step-time">15 min</span>
+      </div>
+      <div class="step-body">
+        <p>Paint a solid boundary on <code class="inline">Solid</code> — left wall, right wall, and a
+          ceiling with an opening at the top for enemies to enter. Leave the bottom <b>open</b>; that's
+          the drain.</p>
+        <p>Then paint <b>four or five floors</b> on <code class="inline">Floors</code>, each with one or two
+          gaps in it. This is the part worth taking slowly, because those gaps are the only difficulty
+          lever you have:</p>
+
+        <figure class="fig">
+          <svg viewBox="0 0 600 200" role="img" aria-label="Two arena layouts: stacked gaps giving a fast descent, and offset gaps forcing enemies to traverse each floor.">
+            <g class="svg-line">
+              <rect x="40" y="20" width="230" height="160" />
+              <rect x="330" y="20" width="230" height="160" />
+            </g>
+            <g class="svg-plot" stroke-width="3">
+              <path d="M40,60 L150,60 M180,60 L270,60" />
+              <path d="M40,100 L150,100 M180,100 L270,100" />
+              <path d="M40,140 L150,140 M180,140 L270,140" />
+              <path d="M330,60 L420,60 M450,60 L560,60" />
+              <path d="M330,100 L470,100 M500,100 L560,100" />
+              <path d="M330,140 L360,140 M390,140 L560,140" />
+            </g>
+            <g class="svg-plot2">
+              <path d="M165,24 L165,178" />
+              <path d="M435,24 L435,80 L485,80 L485,120 L375,120 L375,178" />
+            </g>
+            <text class="svg-label" x="40" y="196">stacked gaps — a chute straight to the drain</text>
+            <text class="svg-label" x="330" y="196">offset gaps — every floor must be walked</text>
+          </svg>
+          <figcaption>The dashed line is the route an enemy takes. Offsetting the gaps is how you buy yourself time.</figcaption>
+        </figure>
+
+        <ul>
+          <li><b>Stack the gaps vertically</b> and you've built a chute — enemies drop almost straight
+            to the bottom and you have seconds to react.</li>
+          <li><b>Offset them</b> and an enemy has to walk the length of each floor to find the next hole,
+            which is slow, predictable, and gives you time to get there.</li>
+          <li><b>A floor with no gap at all</b> is a holding pen: enemies pace back and forth on it and
+            pile up until you deal with them.</li>
+        </ul>
+        <p>Start with offset gaps. It's the forgiving version, and you want the first playable build to
+          be winnable while everything else is still rough.</p>
+
+        <div class="why">
+          <h4>Why this is worth getting deliberate about</h4>
+          <p>In most platformers the level is content. Here it's the balance sheet. Because enemies have
+            no intelligence — they walk, turn at walls, and fall off whatever edge they meet — the only
+            thing deciding how fast pressure arrives at the bottom is where you cut the holes. That means
+            you can retune the entire difficulty of the game by moving four tiles, without touching a
+            line of code.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="step" id="s6">
+      <div class="step-head">
+        <button class="step-check" type="button"><i></i><i></i><i></i><i></i></button>
+        <div class="step-title"><span class="n">Step 6</span><h2>The spawn line and the drain line</h2></div>
+        <span class="step-time">8 min</span>
+      </div>
+      <div class="step-body">
+        <p>Two <b>Marker2D</b> nodes and one <b>Area2D</b>, so later assignments have somewhere to attach
+          without rummaging through the tilemap:</p>
+        <ul>
+          <li><code class="inline">SpawnLeft</code> and <code class="inline">SpawnRight</code> — Marker2Ds just
+            below the ceiling opening, a little in from each wall. Enemies will appear at one of these.</li>
+          <li><code class="inline">Drain</code> — an <b>Area2D</b> with a wide, flat
+            <b>CollisionShape2D</b> spanning the full width of the arena, positioned just <em>below</em>
+            the lowest floor, off the bottom of the visible area.</li>
+        </ul>
+        <p>Give the Drain a recognisable name and leave it at that — the logic that fires when something
+          enters it belongs to a later assignment, and putting it here would tangle two jobs.</p>
+
+        <div class="trap">
+          <h4>Put the drain below the visible area, not at the last floor</h4>
+          <p>If the drain sits level with the bottom floor, an enemy walking along that floor is already
+            inside it. Place it below everything, so the only way to touch it is to have genuinely fallen
+            out of the arena. Ten pixels of clearance is plenty.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="step" id="s7">
+      <div class="step-head">
+        <button class="step-check" type="button"><i></i><i></i><i></i><i></i></button>
+        <div class="step-title"><span class="n">Step 7</span><h2>Drop things through it</h2></div>
+        <span class="step-time">12 min</span>
+      </div>
+      <div class="step-body">
+        <p>This is the assignment. You can't test an arena by looking at it.</p>
+        <p>Add three or four <b>RigidBody2D</b> nodes near the top, each with a
+          <b>CollisionShape2D</b> roughly enemy-sized and any sprite or a plain
+          <b>ColorRect</b> so you can see them. Run the scene and watch what happens.</p>
+
+        <div class="tablewrap">
+          <table>
+            <thead><tr><th>Watch for</th><th>What it tells you</th></tr></thead>
+            <tbody>
+              <tr><td>How long to reach the bottom</td><td>Your baseline pressure. Count it out loud — that number is what later difficulty tuning moves.</td></tr>
+              <tr><td>Boxes landing on the one-way floors</td><td>Physics Layer 1 and One Way are configured correctly.</td></tr>
+              <tr><td>Anything reaching the Drain</td><td>The route from top to bottom actually exists. Nothing else in the game works if it doesn't.</td></tr>
+              <tr><td>Boxes escaping through a wall</td><td>A missing collision tile in the boundary, usually a corner.</td></tr>
+              <tr><td>A box that gets stuck forever</td><td>A pocket with no exit. Fine for a holding pen, fatal if it's the only route down.</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p>Then move the gaps and drop them again. Try the chute version — all gaps stacked — and count
+          again. Feeling the difference between three seconds and twelve is the point of this step, and
+          it's the intuition you'll be using every time you rebalance the game.</p>
+
+        <div class="trap">
+          <h4>What this test can't tell you</h4>
+          <p>Falling boxes tumble; walkers don't. A box can roll through a gap a walking enemy would
+            stride past, so treat these times as a rough floor rather than a measurement. The real
+            numbers arrive when there's something that walks — and the arena is likely to need one more
+            pass then.</p>
+        </div>
+
+        <p>Delete the boxes when you're done, and <b>write down the descent time</b> you settled on.
+          Every later balance decision is relative to it.</p>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="done">
+    <h2>That's the assignment</h2>
+    <p>The game now has the space it happens in, and — more usefully — you know that its difficulty
+      lives in tile placement rather than in code. That's a lever you can pull in thirty seconds, for
+      the rest of the project.</p>
+
+    <p data-when-finished hidden><b>All seven steps done.</b> Log the session and it'll show up on the
+      document with today's date.</p>
+
+    <div class="actions">
+      <button class="btn" type="button" id="logSession">Log this session</button>
+      <a class="btn ghost" href="../">Back to the document</a>
+      <span class="logmsg" id="logMsg"></span>
+    </div>
+
+    <div class="next" style="margin-top:6px">
+      <span class="eyebrow">Reference</span>
+      <a href="https://docs.godotengine.org/en/stable/tutorials/2d/using_tilesets.html" target="_blank" rel="noopener noreferrer"><span class="id">docs</span><span>Using TileSets</span></a>
+      <a href="https://docs.godotengine.org/en/stable/classes/class_tilemaplayer.html" target="_blank" rel="noopener noreferrer"><span class="id">docs</span><span>TileMapLayer class reference</span></a>
+      <a href="https://docs.godotengine.org/en/stable/classes/class_collisionshape2d.html" target="_blank" rel="noopener noreferrer"><span class="id">docs</span><span>CollisionShape2D — one_way_collision</span></a>
+      <a href="https://kenney.nl/assets/category:2D?sort=update" target="_blank" rel="noopener noreferrer"><span class="id">web</span><span>Kenney's CC0 2D packs</span></a>
+    </div>
+  </footer>
+
+</div>
+
+<script src="../assets/guide.js"></script>
+</body>
+</html>

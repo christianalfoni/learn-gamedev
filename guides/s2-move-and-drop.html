@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="color-scheme" content="light dark" />
+<meta name="description" content="S2 — the player moves: run, jump, drop through one-way floors, and face a direction. Functional, not tuned." />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ctext y='26' font-size='26'%3E%F0%9F%8E%9B%EF%B8%8F%3C/text%3E%3C/svg%3E" />
+<link rel="stylesheet" href="../assets/guide.css" />
+<title>S2 · Move and drop through — The Gamedev Sketchbook</title>
+</head>
+
+<body data-guide="s2-move-and-drop" data-sketch="S2">
+
+<div class="rail">
+  <div class="rail-inner">
+    <a class="back" href="../">← The game</a>
+    <span class="bar"><i></i></span>
+    <span class="pct">0/6 steps</span>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <header class="head">
+    <span class="eyebrow">S2 · Godot 4 · serves §movement</span>
+    <h1>Move and drop through</h1>
+    <p class="standfirst">Run, jump, and drop through the floors. The mechanics of getting around the
+      arena, built plainly — because in this game reaching an enemy's floor <em>is</em> the skill, and
+      you can't tune that until you can do it.</p>
+    <div class="meta">
+      <span class="pill" style="--tone: var(--c-godot)">Godot 4.3+</span>
+      <span class="pill">45–75 min</span>
+      <span class="pill">6 steps</span>
+      <span class="pill">base game</span>
+    </div>
+
+    <div class="outcome">
+      <h2>What the game will have that it doesn't now</h2>
+      <ul>
+        <li>A player that <b>runs and jumps</b> around a multi-floor arena.</li>
+        <li><b>Drop-through</b>: press down and fall through the floor you're standing on.</li>
+        <li>A <code class="inline">facing</code> value the shooting assignment will read, since you fire
+          the way you face.</li>
+        <li>A measured <b>traversal time</b> from the top floor to the bottom and back — the number the
+          whole game balances against.</li>
+      </ul>
+    </div>
+
+    <div class="trap" style="margin-top:4px">
+      <h4>What this deliberately leaves plain</h4>
+      <p>No acceleration, no friction, no coyote time, no input buffering, no jump derived from height
+        and time — just constants that work. Movement feel is the single most important thing in this
+        game and it gets a whole assignment to itself later, where it can be tuned against a real arena
+        with real pressure. Making it feel good now would mean tuning it twice.</p>
+    </div>
+
+    <div class="trap" style="margin-top:4px">
+      <h4>What you need</h4>
+      <p>An arena with walls on collision layer 1 and one-way floors on collision layer 2. If you don't
+        have one, two <b>StaticBody2D</b> platforms and a floor will do for this assignment — set the
+        platform's <b>CollisionShape2D → One Way Collision</b> on, and put it on collision layer 2 via
+        the node's <b>Collision → Layer</b> in the inspector.</p>
+    </div>
+  </header>
+
+  <main class="steps">
+
+    <section class="step" id="s1">
+      <div class="step-head">
+        <button class="step-check" type="button"><i></i><i></i><i></i><i></i></button>
+        <div class="step-title"><span class="n">Step 1</span><h2>The input map</h2></div>
+        <span class="step-time">6 min</span>
+      </div>
+      <div class="step-body">
+        <p><b>Project → Project Settings → Input Map</b>. Four actions:</p>
+        <ul>
+          <li><code class="inline">move_left</code> — <kbd>A</kbd>, <kbd>←</kbd></li>
+          <li><code class="inline">move_right</code> — <kbd>D</kbd>, <kbd>→</kbd></li>
+          <li><code class="inline">jump</code> — <kbd>Space</kbd>, <kbd>W</kbd>, <kbd>↑</kbd></li>
+          <li><code class="inline">drop</code> — <kbd>S</kbd>, <kbd>↓</kbd></li>
+        </ul>
+        <p>Add <code class="inline">fire</code> too while you're here — <kbd>J</kbd> or the left mouse
+          button — even though nothing reads it yet. It costs nothing now and saves you coming back.</p>
+
+        <div class="why">
+          <h4>Separate jump and drop, on purpose</h4>
+          <p>Plenty of platformers use down+jump together to drop through. In this game you'll be
+            dropping constantly — it's the fast route down and the fast route down is most of your
+            routing — so it deserves its own key rather than a two-key chord you have to be careful
+            with under pressure.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="step" id="s2">
+      <div class="step-head">
+        <button class="step-check" type="button"><i></i><i></i><i></i><i></i></button>
+        <div class="step-title"><span class="n">Step 2</span><h2>The player scene</h2></div>
+        <span class="step-time">10 min</span>
+      </div>
+      <div class="step-body">
+        <ol>
+          <li><b>Scene → New Scene → Other Node → CharacterBody2D</b>, rename it
+            <code class="inline">Player</code>.</li>
+          <li>Add a <b>CollisionShape2D</b> with a <b>RectangleShape2D</b>, roughly
+            <code class="inline">10 × 14</code> — narrower than a tile, so you fit through gaps without
+            catching on the edges.</li>
+          <li>Add a <b>ColorRect</b> sized to match, or any sprite. A coloured box is the right level of
+            art for this assignment.</li>
+          <li>Save as <code class="inline">player.tscn</code> and instance it into the arena near the
+            bottom.</li>
+        </ol>
+
+        <div class="trap">
+          <h4>Keep the collision box narrow</h4>
+          <p>If the player's box is as wide as a tile, dropping through a one-tile gap becomes a
+            pixel-perfect alignment puzzle. Two pixels of clearance on each side turns "aim carefully"
+            into "go down", which is what you want when the reason you're moving is that three enemies
+            are about to reach the drain.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="step" id="s3">
+      <div class="step-head">
+        <button class="step-check" type="button"><i></i><i></i><i></i><i></i></button>
+        <div class="step-title"><span class="n">Step 3</span><h2>Run and jump</h2></div>
+        <span class="step-time">12 min</span>
+      </div>
+      <div class="step-body">
+        <p>Attach a script to <code class="inline">Player</code>, save it as
+          <code class="inline">player.gd</code>, and replace everything with this:</p>
+
+        <figure class="code">
+          <figcaption>player.gd<span class="sp"></span><button class="copy" type="button">copy</button></figcaption>
+          <pre><code>
+extends CharacterBody2D
+
+# Deliberately plain. Tuning these properly is its own assignment —
+# for now they only have to be good enough to test the arena with.
+const SPEED := 170.0
+const JUMP_VELOCITY := -340.0
+const GRAVITY := 1000.0
+
+
+func _physics_process(delta: float) -&gt; void:
+	if not is_on_floor():
+		velocity.y += GRAVITY * delta
+
+	velocity.x = Input.get_axis("move_left", "move_right") * SPEED
+
+	if Input.is_action_just_pressed("jump") and is_on_floor():
+		velocity.y = JUMP_VELOCITY
+
+	move_and_slide()
+</code></pre>
+        </figure>
+
+        <div class="feel">
+          <h4>Run it, and check one thing only</h4>
+          <p>Can you jump from one floor to the one above it? If not, raise
+            <code class="inline">JUMP_VELOCITY</code> (more negative) until you can, comfortably, without
+            having to be precise. Everything else about how this feels — the instant stops, the floaty
+            arc — is a known problem with a known owner, and it isn't this assignment.</p>
+        </div>
+
+        <div class="trap">
+          <h4>Y points down</h4>
+          <p>In Godot 2D, +Y is downward, so the jump velocity is <em>negative</em> and gravity is
+            positive. If your character rockets into the floor on jump, that's the sign.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="step" id="s4">
+      <div class="step-head">
+        <button class="step-check" type="button"><i></i><i></i><i></i><i></i></button>
+        <div class="step-title"><span class="n">Step 4</span><h2>Drop through the floor</h2></div>
+        <span class="step-time">15 min</span>
+      </div>
+      <div class="step-body">
+        <p>One-way floors are solid from above and open from below. To go <em>down</em> through one, the
+          player has to stop colliding with floors for a moment — and only with floors, never with
+          walls. That's why they're on their own collision layer.</p>
+
+        <figure class="code">
+          <figcaption>player.gd — additions<span class="sp"></span><button class="copy" type="button">copy</button></figcaption>
+          <pre><code>
+# The collision layer the one-way floors are on. Layer 1 is walls, and
+# the player must never be able to ignore those.
+const FLOOR_LAYER := 2
+const DROP_TIME := 0.25
+
+var _drop_timer := 0.0
+
+
+func _drop_through(delta: float) -&gt; void:
+	if Input.is_action_just_pressed("drop") and is_on_floor():
+		_drop_timer = DROP_TIME
+		set_collision_mask_value(FLOOR_LAYER, false)
+
+	if _drop_timer &gt; 0.0:
+		_drop_timer -= delta
+		if _drop_timer &lt;= 0.0:
+			set_collision_mask_value(FLOOR_LAYER, true)
+</code></pre>
+        </figure>
+
+        <p>Call it from <code class="inline">_physics_process</code>, just before
+          <code class="inline">move_and_slide()</code>.</p>
+
+        <figure class="fig">
+          <svg viewBox="0 0 600 160" role="img" aria-label="Timeline of a drop: pressing drop switches the floor mask off for a quarter second, the player falls clear, then the mask returns.">
+            <line class="svg-line" x1="50" y1="80" x2="560" y2="80" />
+            <rect class="svg-band" x="150" y="56" width="150" height="48" />
+            <line class="svg-line" x1="150" y1="40" x2="150" y2="112" />
+            <line class="svg-line" x1="300" y1="40" x2="300" y2="112" />
+            <text class="svg-label" x="60" y="50">standing on a floor</text>
+            <text class="svg-label" x="156" y="34">press drop</text>
+            <text class="svg-label" x="156" y="126">floor mask off · 0.25 s</text>
+            <text class="svg-label" x="306" y="34">mask back on</text>
+            <text class="svg-label" x="306" y="126">falling — lands on the next floor down</text>
+          </svg>
+          <figcaption>A quarter second is long enough to clear a floor at this gravity, and short enough that you can't use it to fall through two.</figcaption>
+        </figure>
+
+        <div class="trap">
+          <h4>If the timer is too short, you snap back up</h4>
+          <p>Re-enabling the mask while the player is still overlapping a floor pushes them back out of
+            it, which reads as the drop mysteriously failing. If that happens, raise
+            <code class="inline">DROP_TIME</code> a little rather than fighting it. Too long is also a bug,
+            though a quieter one: you'll fall through two floors at once and wonder why your routing
+            feels imprecise.</p>
+        </div>
+
+        <div class="feel">
+          <h4>The thing to notice</h4>
+          <p>Drop, then drop again, then jump back up. That loop — down fast, up slow — is the shape of
+            every decision you'll make in this game. Going down is cheap and going up is expensive, so
+            being caught on the wrong floor is a real cost. That asymmetry is the game working.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="step" id="s5">
+      <div class="step-head">
+        <button class="step-check" type="button"><i></i><i></i><i></i><i></i></button>
+        <div class="step-title"><span class="n">Step 5</span><h2>Which way you're facing</h2></div>
+        <span class="step-time">8 min</span>
+      </div>
+      <div class="step-body">
+        <p>You shoot the way you face, so the shooting assignment needs to ask this object which way
+          that is. Two lines, and one rule about when <em>not</em> to change it:</p>
+
+        <figure class="code">
+          <figcaption>player.gd — additions<span class="sp"></span><button class="copy" type="button">copy</button></figcaption>
+          <pre><code>
+# Read by the gun. 1 is right, -1 is left.
+var facing := 1
+
+
+func _update_facing(direction: float) -&gt; void:
+	# Only change facing while actually moving, or letting go of the
+	# key would swing the gun back to the right at the worst moment.
+	if direction != 0.0:
+		facing = 1 if direction &gt; 0.0 else -1
+		$ColorRect.modulate = Color.WHITE if facing == 1 else Color(0.7, 0.7, 1.0)
+</code></pre>
+        </figure>
+
+        <p>Capture the axis into a variable in <code class="inline">_physics_process</code> and pass it in:</p>
+
+        <figure class="code">
+          <figcaption>player.gd — _physics_process, updated<span class="sp"></span><button class="copy" type="button">copy</button></figcaption>
+          <pre><code>
+func _physics_process(delta: float) -&gt; void:
+	if not is_on_floor():
+		velocity.y += GRAVITY * delta
+
+	var direction := Input.get_axis("move_left", "move_right")
+	velocity.x = direction * SPEED
+	_update_facing(direction)
+
+	if Input.is_action_just_pressed("jump") and is_on_floor():
+		velocity.y = JUMP_VELOCITY
+
+	_drop_through(delta)
+	move_and_slide()
+</code></pre>
+        </figure>
+
+        <p>The <code class="inline">modulate</code> line is a placeholder so you can see which way the box
+          is pointing — a sprite flip replaces it once there's art.</p>
+
+        <div class="why">
+          <h4>Why facing persists when you stop</h4>
+          <p>In a game where you shoot the way you walk, standing still has to mean "still aimed that
+            way". If facing reset to a default on release, you'd stop to line up a shot and the gun
+            would swing away from the thing you stopped for.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="step" id="s6">
+      <div class="step-head">
+        <button class="step-check" type="button"><i></i><i></i><i></i><i></i></button>
+        <div class="step-title"><span class="n">Step 6</span><h2>Time the arena</h2></div>
+        <span class="step-time">12 min</span>
+      </div>
+      <div class="step-body">
+        <p>This is the assignment. Not "does it move" — <em>how long does it take to get anywhere</em>,
+          because that number is what the whole game is balanced against.</p>
+
+        <p>Run it and time yourself, out loud or with a phone, on each of these:</p>
+
+        <div class="tablewrap">
+          <table>
+            <thead><tr><th>Route</th><th>Why it matters</th></tr></thead>
+            <tbody>
+              <tr><td>Top floor to the bottom, dropping all the way</td><td>Your best-case interception time. Nothing can escape faster than this or the game is unwinnable.</td></tr>
+              <tr><td>Bottom to the top, jumping all the way</td><td>The expensive direction. If this is more than about three times the drop, being caught low is punishing.</td></tr>
+              <tr><td>One floor down and back up</td><td>The move you'll make most. It should feel routine, not like a commitment.</td></tr>
+              <tr><td>End to end along one floor</td><td>How long a walker gets to live if you're on its floor already.</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p>Now compare the first number with the descent time you measured when you built the arena. If
+          a falling object reaches the drain faster than you can cross the arena, the game is asking
+          for something impossible — and the fix is almost always <b>the arena, not the player</b>. Move
+          a gap so the route down is less direct, rather than making the player faster.</p>
+
+        <div class="feel">
+          <h4>The one that tells you the most</h4>
+          <p>Bottom to top. It's the movement you'll resent, and how much you resent it decides whether
+            the two health bars create tension or frustration. Too slow and defending the base means
+            abandoning yourself; too fast and there's no cost to being in the wrong place, which means
+            no decision to make.</p>
+        </div>
+
+        <p><b>Write the four numbers down.</b> When the movement-feel assignment comes, these are the
+          before-and-after, and they're far more useful than remembering it "felt sluggish".</p>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="done">
+    <h2>That's the assignment</h2>
+    <p>The game now has someone in it, and you know what the arena costs to cross. That second part is
+      what makes every later balance conversation concrete rather than a matter of impressions.</p>
+
+    <p data-when-finished hidden><b>All six steps done.</b> Log the session and it'll show up on the
+      document with today's date.</p>
+
+    <div class="actions">
+      <button class="btn" type="button" id="logSession">Log this session</button>
+      <a class="btn ghost" href="../">Back to the document</a>
+      <span class="logmsg" id="logMsg"></span>
+    </div>
+
+    <div class="next" style="margin-top:6px">
+      <span class="eyebrow">Reference</span>
+      <a href="https://docs.godotengine.org/en/stable/classes/class_characterbody2d.html" target="_blank" rel="noopener noreferrer"><span class="id">docs</span><span>CharacterBody2D class reference</span></a>
+      <a href="https://docs.godotengine.org/en/stable/tutorials/physics/using_character_body_2d.html" target="_blank" rel="noopener noreferrer"><span class="id">docs</span><span>Using CharacterBody2D</span></a>
+      <a href="https://docs.godotengine.org/en/stable/classes/class_collisionshape2d.html" target="_blank" rel="noopener noreferrer"><span class="id">docs</span><span>CollisionShape2D — one_way_collision</span></a>
+    </div>
+  </footer>
+
+</div>
+
+<script src="../assets/guide.js"></script>
+</body>
+</html>

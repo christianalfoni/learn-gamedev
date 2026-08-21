@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="color-scheme" content="light dark" />
+<meta name="description" content="S5 — the heartbeat: enemies spawn at the top on a shrinking interval, and anything reaching the bottom damages the base and is removed." />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ctext y='26' font-size='26'%3E%F0%9F%8E%9B%EF%B8%8F%3C/text%3E%3C/svg%3E" />
+<link rel="stylesheet" href="../assets/guide.css" />
+<title>S5 · The spawner and the drain — The Gamedev Sketchbook</title>
+</head>
+
+<body data-guide="s5-spawner-and-drain" data-sketch="S5">
+
+<div class="rail">
+  <div class="rail-inner">
+    <a class="back" href="../">← The game</a>
+    <span class="bar"><i></i></span>
+    <span class="pct">0/6 steps</span>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <header class="head">
+    <span class="eyebrow">S5 · Godot 4 · serves §core-loop, §base</span>
+    <h1>The spawner and the drain</h1>
+    <p class="standfirst">Enemies arrive at the top on a clock that speeds up, and anything reaching
+      the bottom takes a bite out of the base and disappears. This is the assignment where the
+      collection of systems starts behaving like a game that's happening to you.</p>
+    <div class="meta">
+      <span class="pill" style="--tone: var(--c-godot)">Godot 4.3+</span>
+      <span class="pill">60–90 min</span>
+      <span class="pill">6 steps</span>
+      <span class="pill">base game</span>
+    </div>
+
+    <div class="outcome">
+      <h2>What the game will have that it doesn't now</h2>
+      <ul>
+        <li>A <b>spawner</b> dropping enemies in at the top, on an interval that shrinks as the run goes on.</li>
+        <li>A <b>drain</b> at the bottom that removes escapees and damages the base.</li>
+        <li>A <code class="inline">Game</code> autoload holding base health, so nothing has to go looking
+          for anyone else to report to.</li>
+        <li>A run that <b>runs without you</b> — you can put the controller down and watch the base die,
+          which is the first real measure of whether the difficulty is anywhere near right.</li>
+      </ul>
+    </div>
+
+    <div class="trap" style="margin-top:4px">
+      <h4>What this deliberately leaves plain</h4>
+      <p>No spawn animation, no warning telegraph, no sound when the base is hit, no screen flash. An
+        enemy reaching the bottom is currently a number changing in a corner — which is exactly the sort
+        of thing the feel passes exist to fix, and they can't fix it until it exists.</p>
+    </div>
+
+    <div class="trap" style="margin-top:4px">
+      <h4>What you need</h4>
+      <p>An arena with floors and gaps, and a walker scene — a <b>CharacterBody2D</b> with a
+        <code class="inline">direction</code> variable that walks, turns at walls and falls off ledges. If
+        you don't have one, any body that moves downward through the level will do to test the plumbing;
+        even a <b>RigidBody2D</b> box on the <code class="inline">enemies</code> collision layer works for
+        steps 4 to 6.</p>
+    </div>
+  </header>
+
+  <main class="steps">
+
+    <section class="step" id="s1">
+      <div class="step-head">
+        <button class="step-check" type="button"><i></i><i></i><i></i><i></i></button>
+        <div class="step-title"><span class="n">Step 1</span><h2>One place that knows the base's health</h2></div>
+        <span class="step-time">10 min</span>
+      </div>
+      <div class="step-body">
+        <p>The drain needs to report damage, and later the HUD needs to display it, and neither should
+          have to find the other in the scene tree. In Godot that's an <b>autoload</b>.</p>
+        <p>Create <code class="inline">game.gd</code> in the project root:</p>
+
+        <figure class="code">
+          <figcaption>game.gd<span class="sp"></span><button class="copy" type="button">copy</button></figcaption>
+          <pre><code>
+extends Node
+
+signal base_damaged(remaining: int)
+signal base_destroyed
+
+const BASE_MAX_HEALTH := 20
+
+var base_health := BASE_MAX_HEALTH
+
+
+func reset() -&gt; void:
+	base_health = BASE_MAX_HEALTH
+	base_damaged.emit(base_health)
+
+
+func damage_base(amount: int) -&gt; void:
+	if base_health &lt;= 0:
+		return
+
+	base_health = maxi(0, base_health - amount)
+	base_damaged.emit(base_health)
+
+	if base_health == 0:
+		base_destroyed.emit()
+</code></pre>
+        </figure>
+
+        <p>Register it: <b>Project Settings → Globals → Autoload</b>, path
+          <code class="inline">res://game.gd</code>, node name <code class="inline">Game</code>. It's now
+          reachable as <code class="inline">Game</code> from any script in the project.</p>
+
+        <div class="why">
+          <h4>Why a signal as well as a variable</h4>
+          <p>Anything that wants to <em>know</em> can read <code class="inline">Game.base_health</code>. But
+            a health bar shouldn't poll a number sixty times a second on the chance it changed — it should
+            be told. Emitting a signal on every change means the HUD updates exactly when there's
+            something to update, and the drain never needs to know a HUD exists.</p>
+        </div>
+
+        <div class="trap">
+          <h4>Guard the already-dead case</h4>
+          <p>Without the early return, three enemies arriving after the base has already fallen each emit
+            <code class="inline">base_destroyed</code>, and whatever ends the run gets told to end it three
+            times. That's the sort of thing that surfaces much later as a game-over screen appearing twice.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="step" id="s2">
+      <div class="step-head">
+        <button class="step-check" type="button"><i></i><i></i><i></i><i></i></button>
+        <div class="step-title"><span class="n">Step 2</span><h2>The spawner</h2></div>
+        <span class="step-time">14 min</span>
+      </div>
+      <div class="step-body">
+        <p>In the arena scene, add a <b>Node2D</b> named <code class="inline">Spawner</code> with three
+          children:</p>
+        <ul>
+          <li>Two <b>Marker2D</b> nodes near the top, one toward each side — where enemies appear.</li>
+          <li>A <b>Timer</b> with <b>One Shot</b> <em>on</em>. The script restarts it each time, which
+            makes the changing interval obvious rather than hidden in a property.</li>
+        </ul>
+
+        <figure class="code">
+          <figcaption>spawner.gd<span class="sp"></span><button class="copy" type="button">copy</button></figcaption>
+          <pre><code>
+extends Node2D
+
+@export var walker_scene: PackedScene
+@export var start_interval := 2.5
+
+var _interval := 0.0
+var _points: Array[Marker2D] = []
+
+@onready var _timer: Timer = $Timer
+
+
+func _ready() -&gt; void:
+	for child in get_children():
+		if child is Marker2D:
+			_points.append(child)
+
+	_interval = start_interval
+	_timer.timeout.connect(_spawn)
+	_timer.start(_interval)
+
+
+func _spawn() -&gt; void:
+	if walker_scene == null or _points.is_empty():
+		return
+
+	var walker := walker_scene.instantiate()
+	walker.global_position = _points.pick_random().global_position
+	walker.direction = 1 if randf() &lt; 0.5 else -1
+
+	# Added to the scene rather than to the spawner, so a walker is never
+	# dragged around by whatever spawned it.
+	get_tree().current_scene.add_child(walker)
+
+	_timer.start(_interval)
+</code></pre>
+        </figure>
+
+        <p>Assign <code class="inline">walker.tscn</code> to the spawner's <b>Walker Scene</b> slot in the
+          inspector, then run it. Enemies should start appearing and making their way down.</p>
+
+        <div class="trap">
+          <h4>Random direction matters more than it sounds</h4>
+          <p>Spawn every walker facing the same way and they all take the same route down, arriving in a
+            neat procession. Randomising it means the crowd spreads across the floor and finds different
+            gaps, which is the difference between a queue and a situation.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="step" id="s3">
+      <div class="step-head">
+        <button class="step-check" type="button"><i></i><i></i><i></i><i></i></button>
+        <div class="step-title"><span class="n">Step 3</span><h2>Rising pressure</h2></div>
+        <span class="step-time">10 min</span>
+      </div>
+      <div class="step-body">
+        <p>The score is time survived, so the run has to get harder on its own — otherwise a competent
+          player survives forever and the number stops meaning anything.</p>
+
+        <figure class="code">
+          <figcaption>spawner.gd — additions<span class="sp"></span><button class="copy" type="button">copy</button></figcaption>
+          <pre><code>
+@export var min_interval := 0.5
+@export var ramp_per_spawn := 0.03
+</code></pre>
+        </figure>
+
+        <p>Then, at the end of <code class="inline">_spawn()</code>, shave the interval before restarting
+          the timer:</p>
+
+        <figure class="code">
+          <figcaption>spawner.gd — the last two lines of _spawn()<span class="sp"></span><button class="copy" type="button">copy</button></figcaption>
+          <pre><code>
+	_interval = maxf(min_interval, _interval - ramp_per_spawn)
+	_timer.start(_interval)
+</code></pre>
+        </figure>
+
+        <figure class="fig">
+          <svg viewBox="0 0 600 180" role="img" aria-label="Spawn interval falling from 2.5 seconds toward a floor of 0.5 seconds as the run progresses.">
+            <line class="svg-line" x1="60" y1="150" x2="570" y2="150" />
+            <line class="svg-line" x1="60" y1="24" x2="60" y2="150" />
+            <line class="svg-line" x1="60" y1="128" x2="570" y2="128" stroke-dasharray="4 4" />
+            <path class="svg-plot" d="M60,36 C180,60 300,104 400,124 C460,128 520,128 570,128" />
+            <text class="svg-label" x="18" y="40">2.5 s</text>
+            <text class="svg-label" x="18" y="132">0.5 s</text>
+            <text class="svg-label" x="66" y="166">start of run</text>
+            <text class="svg-label" x="470" y="166">~70 spawns in</text>
+            <text class="svg-label" x="300" y="80">interval shrinks 0.03 s per spawn</text>
+            <text class="svg-label" x="300" y="96">until it hits the floor and stays there</text>
+          </svg>
+          <figcaption>The floor matters as much as the ramp: without it the interval reaches zero and the game spawns infinitely in one frame.</figcaption>
+        </figure>
+
+        <div class="why">
+          <h4>Per spawn, not per second</h4>
+          <p>Ramping on a clock means the pressure rises whether or not the player is coping. Ramping per
+            spawn ties difficulty to how much has actually come at you — and because faster spawning also
+            makes the ramp faster, it accelerates naturally without a curve to tune. It's one subtraction
+            and it behaves like something much more considered.</p>
+        </div>
+
+        <div class="trap">
+          <h4>Never let the interval reach zero</h4>
+          <p>Without <code class="inline">min_interval</code>, a long run eventually asks the timer to wait
+            no time at all, and you get an unbounded spawn loop that locks the frame. The floor is the
+            difference between "hard" and "the game stops responding".</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="step" id="s4">
+      <div class="step-head">
+        <button class="step-check" type="button"><i></i><i></i><i></i><i></i></button>
+        <div class="step-title"><span class="n">Step 4</span><h2>The drain</h2></div>
+        <span class="step-time">14 min</span>
+      </div>
+      <div class="step-body">
+        <p>Make the arena's <b>lowest floor solid</b> — a wall tile, not a one-way platform — so nothing
+          falls out of the world. Then add an <b>Area2D</b> named <code class="inline">Drain</code> with a
+          <b>CollisionShape2D</b> spanning the full width of the arena, sitting <em>on</em> that lowest
+          floor, about one enemy tall.</p>
+        <p>Set the Drain's <b>Collision → Layer</b> to nothing at all, and its <b>Mask</b> to
+          <code class="inline">enemies</code> only.</p>
+
+        <figure class="code">
+          <figcaption>drain.gd<span class="sp"></span><button class="copy" type="button">copy</button></figcaption>
+          <pre><code>
+extends Area2D
+
+@export var damage := 1
+
+
+func _ready() -&gt; void:
+	body_entered.connect(_on_body_entered)
+
+
+func _on_body_entered(body: Node2D) -&gt; void:
+	# The mask is enemies-only, so anything arriving here is one.
+	Game.damage_base(damage)
+	body.queue_free()
+</code></pre>
+        </figure>
+
+        <div class="why">
+          <h4>Why the mask is the guard</h4>
+          <p>There's no type check in that handler and there doesn't need to be one. The player is on a
+            different layer and simply never triggers this area — which is also why the player can stand
+            on the bottom floor to intercept without setting off the alarm. Encoding the rule in the mask
+            rather than in an <code class="inline">if</code> means it holds for everything you add later,
+            for free.</p>
+        </div>
+
+        <div class="trap">
+          <h4>If you'd rather enemies fall out of an open bottom</h4>
+          <p>That works too — leave the bottom of the arena open and place the Drain below it. But then
+            the player can fall out as well, so you'll need a solid catch floor underneath the drain, and
+            a decision about what falling out means for them. The solid-bottom version avoids the
+            question entirely, and has the side benefit that you can <em>see</em> enemies arrive rather
+            than watching them vanish off the edge.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="step" id="s5">
+      <div class="step-head">
+        <button class="step-check" type="button"><i></i><i></i><i></i><i></i></button>
+        <div class="step-title"><span class="n">Step 5</span><h2>A readout, so you can see it happening</h2></div>
+        <span class="step-time">8 min</span>
+      </div>
+      <div class="step-body">
+        <p>Base health is currently a number in memory with no way to observe it. Two minutes of
+          scaffolding fixes that — a proper HUD is its own assignment, but you can't test this one blind.</p>
+        <p>Add a <b>CanvasLayer</b> to the arena with a <b>Label</b> child, and attach:</p>
+
+        <figure class="code">
+          <figcaption>base_readout.gd — temporary, replaced by the real HUD later<span class="sp"></span><button class="copy" type="button">copy</button></figcaption>
+          <pre><code>
+extends Label
+
+
+func _ready() -&gt; void:
+	Game.base_damaged.connect(_on_base_damaged)
+	Game.base_destroyed.connect(func(): text = "BASE DOWN")
+	_on_base_damaged(Game.base_health)
+
+
+func _on_base_damaged(remaining: int) -&gt; void:
+	text = "Base %d / %d" % [remaining, Game.BASE_MAX_HEALTH]
+</code></pre>
+        </figure>
+
+        <div class="trap">
+          <h4>Call it once on ready</h4>
+          <p>Signals only fire on change, so a label that only listens starts out blank until the first
+            enemy gets through — which looks exactly like a broken connection. Calling the handler
+            directly in <code class="inline">_ready</code> gives it a correct starting value, and it's a
+            habit worth having for every signal-driven display.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="step" id="s6">
+      <div class="step-head">
+        <button class="step-check" type="button"><i></i><i></i><i></i><i></i></button>
+        <div class="step-title"><span class="n">Step 6</span><h2>Put the controller down</h2></div>
+        <span class="step-time">14 min</span>
+      </div>
+      <div class="step-body">
+        <p>This is the assignment. Run it and <b>don't play</b>. Let the spawner run, let the enemies
+          descend, and time how long the base survives with nobody defending it.</p>
+        <p>That number is the most useful thing you'll get out of this whole batch. Call it the
+          <b>undefended time</b>:</p>
+
+        <div class="tablewrap">
+          <table>
+            <thead><tr><th>Undefended time</th><th>What it means</th><th>What to change</th></tr></thead>
+            <tbody>
+              <tr><td class="n">under 30 s</td><td>Too brutal — a good player barely changes the outcome</td><td>Raise <code>start_interval</code>, or offset the arena's gaps more</td></tr>
+              <tr><td class="n">45–90 s</td><td>About right. Skill has room to matter, and the ramp still ends it</td><td>Nothing yet</td></tr>
+              <tr><td class="n">over 3 min</td><td>The ramp is too gentle; runs will overstay their welcome</td><td>Raise <code>ramp_per_spawn</code>, or lower <code>min_interval</code></td></tr>
+              <tr><td class="n">never dies</td><td><code>min_interval</code> is above your walker throughput, or enemies are stuck</td><td>Check for a floor with no reachable gap</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p>Then play it properly and time it again. The gap between the two numbers is <b>how much of
+          this game is you</b> — if defending only buys you fifteen seconds, the arena is beating the
+          player rather than challenging them.</p>
+
+        <div class="feel">
+          <h4>The moment worth waiting for</h4>
+          <p>Somewhere around the point where the interval halves, the run stops being a queue of
+            individual enemies and becomes a flow you have to manage. That transition is the game
+            arriving. If it never happens, the ramp is too slow; if it happens in the first fifteen
+            seconds, it's too fast and there's no calm to lose.</p>
+        </div>
+
+        <p><b>Write down the undefended time and the defended time.</b> Every difficulty conversation
+          from here — and there will be several — starts with those two numbers.</p>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="done">
+    <h2>That's the assignment</h2>
+    <p>The game now runs on its own and can be lost. That's a real threshold: everything before this was
+      systems, and everything after it is tuning and feel. You can also, for the first time, answer
+      "is this any good?" by playing rather than by imagining.</p>
+
+    <p data-when-finished hidden><b>All six steps done.</b> Log the session and it'll show up on the
+      document with today's date.</p>
+
+    <div class="actions">
+      <button class="btn" type="button" id="logSession">Log this session</button>
+      <a class="btn ghost" href="../">Back to the document</a>
+      <span class="logmsg" id="logMsg"></span>
+    </div>
+
+    <div class="next" style="margin-top:6px">
+      <span class="eyebrow">Reference</span>
+      <a href="https://docs.godotengine.org/en/stable/tutorials/scripting/singletons_autoload.html" target="_blank" rel="noopener noreferrer"><span class="id">docs</span><span>Singletons (autoload)</span></a>
+      <a href="https://docs.godotengine.org/en/stable/classes/class_timer.html" target="_blank" rel="noopener noreferrer"><span class="id">docs</span><span>Timer class reference</span></a>
+      <a href="https://docs.godotengine.org/en/stable/classes/class_area2d.html" target="_blank" rel="noopener noreferrer"><span class="id">docs</span><span>Area2D class reference</span></a>
+      <a href="https://docs.godotengine.org/en/stable/classes/class_packedscene.html" target="_blank" rel="noopener noreferrer"><span class="id">docs</span><span>PackedScene — instantiate()</span></a>
+    </div>
+  </footer>
+
+</div>
+
+<script src="../assets/guide.js"></script>
+</body>
+</html>

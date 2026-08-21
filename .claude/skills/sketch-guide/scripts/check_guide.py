@@ -75,8 +75,8 @@ def check_body_attrs(src, path):
 
     if not sketch:
         err('<body> is missing data-sketch — without it the "Log this session" button does nothing')
-    elif not re.fullmatch(r"[A-G][1-9]", sketch.group(1)):
-        warn(f'data-sketch="{sketch.group(1)}" does not look like a sketch ID (A1–G9)')
+    elif not re.fullmatch(r"[A-Z][1-9][0-9]?", sketch.group(1)):
+        warn(f'data-sketch="{sketch.group(1)}" does not look like an assignment ID (a letter plus a number)')
 
 
 def check_assets(src, path):

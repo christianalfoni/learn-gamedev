@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="color-scheme" content="light dark" />
+<meta name="description" content="S6 — two health bars, contact damage with invulnerability frames, a survival clock, and a run that ends and restarts." />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ctext y='26' font-size='26'%3E%F0%9F%8E%9B%EF%B8%8F%3C/text%3E%3C/svg%3E" />
+<link rel="stylesheet" href="../assets/guide.css" />
+<title>S6 · Two bars and a clock — The Gamedev Sketchbook</title>
+</head>
+
+<body data-guide="s6-two-bars-and-a-clock" data-sketch="S6">
+
+<div class="rail">
+  <div class="rail-inner">
+    <a class="back" href="../">← The game</a>
+    <span class="bar"><i></i></span>
+    <span class="pct">0/6 steps</span>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <header class="head">
+    <span class="eyebrow">S6 · Godot 4 · serves §hud, §run-end</span>
+    <h1>Two bars and a clock</h1>
+    <p class="standfirst">Your health, the base's health, and the number that says how long you lasted.
+      Either bar reaching zero ends the run. This is the assignment that turns a simulation you can
+      watch into a thing you can lose at, and then immediately try again.</p>
+    <div class="meta">
+      <span class="pill" style="--tone: var(--c-godot)">Godot 4.3+</span>
+      <span class="pill">60–90 min</span>
+      <span class="pill">6 steps</span>
+      <span class="pill">base game</span>
+    </div>
+
+    <div class="outcome">
+      <h2>What the game will have that it doesn't now</h2>
+      <ul>
+        <li><b>Two health bars</b> on screen, each fed by a signal rather than polled.</li>
+        <li><b>Contact damage</b> with invulnerability frames, so walking through a crowd costs one hit
+          rather than instant death.</li>
+        <li>A <b>survival clock</b> — the score, since the run is measured in time.</li>
+        <li>A run that <b>ends and restarts</b> in one keypress, which is what makes it testable at all.</li>
+      </ul>
+    </div>
+
+    <div class="trap" style="margin-top:4px">
+      <h4>What this deliberately leaves plain</h4>
+      <p>Bars are plain rectangles that jump instantly to their new value. No shake when you're hit, no
+        red vignette, no damage numbers, no bar that drains smoothly toward its target, no sound. All of
+        that is real and all of it is the feel pass — a bar that lerps toward its value is a five-minute
+        change that lands far better once everything else is settled.</p>
+    </div>
+
+    <div class="trap" style="margin-top:4px">
+      <h4>What you need</h4>
+      <p>A player that moves, and enemies on an <code class="inline">enemies</code> collision layer that
+        can reach it. A <code class="inline">Game</code> autoload holding base health if you already built
+        one — step 1 shows the whole file either way, so add the parts you're missing.</p>
+    </div>
+  </header>
+
+  <main class="steps">
+
+    <section class="step" id="s1">
+      <div class="step-head">
+        <button class="step-check" type="button"><i></i><i></i><i></i><i></i></button>
+        <div class="step-title"><span class="n">Step 1</span><h2>Everything the run knows about itself</h2></div>
+        <span class="step-time">12 min</span>
+      </div>
+      <div class="step-body">
+        <p>One autoload holds both bars, the clock, and whether the run is still going. Create
+          <code class="inline">game.gd</code> and register it under
+          <b>Project Settings → Globals → Autoload</b> as <code class="inline">Game</code>:</p>
+
+        <figure class="code">
+          <figcaption>game.gd<span class="sp"></span><button class="copy" type="button">copy</button></figcaption>
+          <pre><code>
+extends Node
+
+signal player_damaged(remaining: int)
+signal base_damaged(remaining: int)
+signal run_ended(seconds: float, cause: String)
+
+const PLAYER_MAX_HEALTH := 5
+const BASE_MAX_HEALTH := 20
+
+var player_health := PLAYER_MAX_HEALTH
+var base_health := BASE_MAX_HEALTH
+var elapsed := 0.0
+var running := true
+
+
+func _process(delta: float) -&gt; void:
+	if running:
+		elapsed += delta
+
+
+func reset() -&gt; void:
+	player_health = PLAYER_MAX_HEALTH
+	base_health = BASE_MAX_HEALTH
+	elapsed = 0.0
+	running = true
+
+
+func damage_player(amount: int) -&gt; void:
+	if not running:
+		return
+
+	player_health = maxi(0, player_health - amount)
+	player_damaged.emit(player_health)
+
+	if player_health == 0:
+		_end_run("overwhelmed")
+
+
+func damage_base(amount: int) -&gt; void:
+	if not running:
+		return
+
+	base_health = maxi(0, base_health - amount)
+	base_damaged.emit(base_health)
+
+	if base_health == 0:
+		_end_run("base lost")
+
+
+func _end_run(cause: String) -&gt; void:
+	running = false
+	run_ended.emit(elapsed, cause)
+</code></pre>
+        </figure>
+
+        <div class="why">
+          <h4>Why both bars live in the same object</h4>
+          <p>Because they aren't independent — either one ending the run is a rule about the pair, and a
+            rule about a pair needs somewhere that can see both. Splitting them into a player script and
+            a base script would mean a third thing watching both to decide when to stop, which is more
+            machinery for less clarity.</p>
+        </div>
+
+        <div class="trap">
+          <h4>The <code class="inline">running</code> guard is doing real work</h4>
+          <p>Enemies keep arriving for a moment after the base falls, and each of them would call
+            <code class="inline">damage_base</code> and re-emit <code class="inline">run_ended</code>. One
+            early return stops a game-over screen from firing five times and the final clock reading from
+            being wrong.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="step" id="s2">
+      <div class="step-head">
+        <button class="step-check" type="button"><i></i><i></i><i></i><i></i></button>
+        <div class="step-title"><span class="n">Step 2</span><h2>The HUD</h2></div>
+        <span class="step-time">14 min</span>
+      </div>
+      <div class="step-body">
+        <p>New scene, root <b>CanvasLayer</b> named <code class="inline">HUD</code>. A CanvasLayer draws
+          on top of everything and ignores the world's transform, so the bars stay put.</p>
+        <p>Children: two <b>ProgressBar</b> nodes named <code class="inline">PlayerBar</code> and
+          <code class="inline">BaseBar</code>, and a <b>Label</b> named <code class="inline">Clock</code>.
+          Put the player's bar top-left, the base's bar bottom-centre near the drain, and the clock
+          top-right. On both bars turn <b>Show Percentage</b> off.</p>
+
+        <figure class="code">
+          <figcaption>hud.gd<span class="sp"></span><button class="copy" type="button">copy</button></figcaption>
+          <pre><code>
+extends CanvasLayer
+
+@onready var player_bar: ProgressBar = $PlayerBar
+@onready var base_bar: ProgressBar = $BaseBar
+@onready var clock: Label = $Clock
+
+
+func _ready() -&gt; void:
+	player_bar.max_value = Game.PLAYER_MAX_HEALTH
+	base_bar.max_value = Game.BASE_MAX_HEALTH
+
+	Game.player_damaged.connect(func(v: int): player_bar.value = v)
+	Game.base_damaged.connect(func(v: int): base_bar.value = v)
+
+	# Signals only fire on change, so seed both from the current state or
+	# they sit empty until the first hit and look broken.
+	player_bar.value = Game.player_health
+	base_bar.value = Game.base_health
+
+
+func _process(_delta: float) -&gt; void:
+	clock.text = "%.1f" % Game.elapsed
+</code></pre>
+        </figure>
+
+        <p>Instance the HUD into the arena scene.</p>
+
+        <div class="why">
+          <h4>Why the base's bar goes near the drain</h4>
+          <p>Two bars in the same corner become one thing you glance at. Putting the base's health where
+            the base actually is means the bar and the threat share a location — you look down, you see
+            enemies approaching and how much the base can take, in one look. It costs nothing and it's
+            the difference between reading a number and understanding a situation.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="step" id="s3">
+      <div class="step-head">
+        <button class="step-check" type="button"><i></i><i></i><i></i><i></i></button>
+        <div class="step-title"><span class="n">Step 3</span><h2>Getting hurt</h2></div>
+        <span class="step-time">15 min</span>
+      </div>
+      <div class="step-body">
+        <p>Add an <b>Area2D</b> called <code class="inline">Hurtbox</code> as a child of the player, with a
+          <b>CollisionShape2D</b> roughly the player's size. Set its <b>Layer</b> to nothing and its
+          <b>Mask</b> to <code class="inline">enemies</code> only.</p>
+
+        <figure class="code">
+          <figcaption>player.gd — additions<span class="sp"></span><button class="copy" type="button">copy</button></figcaption>
+          <pre><code>
+@export var invuln_time := 1.0
+
+var _invuln := 0.0
+
+@onready var _hurtbox: Area2D = $Hurtbox
+
+
+func _check_contact(delta: float) -&gt; void:
+	_invuln = maxf(0.0, _invuln - delta)
+
+	# Blink while invulnerable so the state is visible.
+	modulate.a = 0.4 if int(_invuln * 10.0) % 2 == 1 else 1.0
+
+	if _invuln &gt; 0.0:
+		return
+
+	# Asking every frame, rather than reacting to body_entered, means
+	# standing inside a crowd keeps costing health once the frames run out.
+	if _hurtbox.has_overlapping_bodies():
+		_invuln = invuln_time
+		Game.damage_player(1)
+</code></pre>
+        </figure>
+
+        <p>Call <code class="inline">_check_contact(delta)</code> from
+          <code class="inline">_physics_process</code>.</p>
+
+        <div class="trap">
+          <h4>Why not <code class="inline">body_entered</code></h4>
+          <p>It fires once, on entry. Stand still inside an enemy and after your invulnerability expires
+            nothing happens — no new entry event, no damage — so the safest place in the game becomes
+            standing inside the thing trying to kill you. Polling the overlap each frame is a line
+            shorter and doesn't have that hole in it.</p>
+        </div>
+
+        <div class="why">
+          <h4>A full second of invulnerability</h4>
+          <p>It sounds generous. It isn't: enemies arrive in crowds, and without it a single walk through
+            three of them at 60 fps would take your entire health bar in a fraction of a second, with no
+            chance to react. The blink is there so you can see the state — without a visible signal,
+            players read invulnerability as the game failing to register hits.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="step" id="s4">
+      <div class="step-head">
+        <button class="step-check" type="button"><i></i><i></i><i></i><i></i></button>
+        <div class="step-title"><span class="n">Step 4</span><h2>Ending the run</h2></div>
+        <span class="step-time">10 min</span>
+      </div>
+      <div class="step-body">
+        <p>The autoload already emits <code class="inline">run_ended</code>. Something has to listen and
+          stop the world. Add a <b>Label</b> to the HUD named <code class="inline">GameOver</code>,
+          centred, hidden by default:</p>
+
+        <figure class="code">
+          <figcaption>hud.gd — additions<span class="sp"></span><button class="copy" type="button">copy</button></figcaption>
+          <pre><code>
+@onready var game_over: Label = $GameOver
+
+
+func _on_run_ended(seconds: float, cause: String) -&gt; void:
+	game_over.text = "%s\n%.1f seconds\n\nR to try again" % [cause.to_upper(), seconds]
+	game_over.show()
+	get_tree().paused = true
+</code></pre>
+        </figure>
+
+        <p>Connect it in <code class="inline">_ready</code> with
+          <code class="inline">Game.run_ended.connect(_on_run_ended)</code>, and hide the label there too.</p>
+        <p>Then set the HUD node's <b>Process Mode</b> to <b>Always</b> in the inspector, under
+          <b>Node → Process</b>. Everything else can freeze; the thing showing the result cannot.</p>
+
+        <div class="trap">
+          <h4>Pausing stops the autoload's clock too</h4>
+          <p><code class="inline">get_tree().paused = true</code> halts
+            <code class="inline">_process</code> on nodes with the default process mode, including
+            <code class="inline">Game</code> — which is fine here, because the clock should stop when the
+            run does. Worth knowing it's happening, though: it's the same mechanism that would silently
+            stop a timer you did want running.</p>
+        </div>
+
+        <div class="why">
+          <h4>Reporting the cause</h4>
+          <p>"Overwhelmed" and "base lost" are different failures and want different responses from you
+            as a player — one says stay safer, the other says stay lower. A game-over screen that only
+            shows a number makes you guess which mistake you made, and guessing is not learning.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="step" id="s5">
+      <div class="step-head">
+        <button class="step-check" type="button"><i></i><i></i><i></i><i></i></button>
+        <div class="step-title"><span class="n">Step 5</span><h2>Try again in one key</h2></div>
+        <span class="step-time">8 min</span>
+      </div>
+      <div class="step-body">
+        <p>Add a <code class="inline">restart</code> action bound to <kbd>R</kbd> in the input map, then:</p>
+
+        <figure class="code">
+          <figcaption>hud.gd — additions<span class="sp"></span><button class="copy" type="button">copy</button></figcaption>
+          <pre><code>
+func _unhandled_input(event: InputEvent) -&gt; void:
+	if Game.running or not event.is_action_pressed("restart"):
+		return
+
+	get_tree().paused = false
+	Game.reset()
+	get_tree().reload_current_scene()
+</code></pre>
+        </figure>
+
+        <div class="trap">
+          <h4>Unpause before you reload, and reset before that</h4>
+          <p>Reload while paused and the fresh scene arrives frozen. Reload without resetting and the
+            autoload keeps the dead run's health and clock, so the new run starts at zero health and ends
+            instantly. Both are one-line mistakes that look like much deeper bugs.</p>
+        </div>
+
+        <div class="feel">
+          <h4>Why one key matters more than it sounds</h4>
+          <p>You are about to play this game thirty times in a row to tune it. Every second between
+            dying and being back in is a second of that tuning you won't do. A game you can restart
+            without thinking is a game you'll actually iterate on — this is a tooling decision disguised
+            as a gameplay one.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="step" id="s6">
+      <div class="step-head">
+        <button class="step-check" type="button"><i></i><i></i><i></i><i></i></button>
+        <div class="step-title"><span class="n">Step 6</span><h2>Play ten runs</h2></div>
+        <span class="step-time">15 min</span>
+      </div>
+      <div class="step-body">
+        <p>This is the assignment, and it's the first time the whole game exists. Play ten full runs and
+          write down the time and cause of each. Ten, not two — the pattern in the causes is the finding,
+          and you can't see a pattern in two.</p>
+
+        <div class="tablewrap">
+          <table>
+            <thead><tr><th>What the ten runs show</th><th>What it means</th><th>Where to look</th></tr></thead>
+            <tbody>
+              <tr><td>Nearly all "base lost"</td><td>You can survive but can't defend — interception is too slow</td><td>Arena gaps, or the movement values</td></tr>
+              <tr><td>Nearly all "overwhelmed"</td><td>Being where you need to be is fatal</td><td>Player health, invulnerability time, walker speed</td></tr>
+              <tr><td>A mix, and it varies</td><td>Both bars are live threats — this is the target</td><td>Nothing. Note the numbers and stop.</td></tr>
+              <tr><td>Times clustered within a few seconds</td><td>The ramp dominates and skill barely registers</td><td>Lower <code>ramp_per_spawn</code></td></tr>
+              <tr><td>Times all over the place</td><td>Something random is deciding the run, not you</td><td>Spawn positions, or a gap that funnels everything</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p>Then push two values to see what they own. Set <code class="inline">invuln_time</code> to 0.2
+          and play once — the crowd becomes lethal and you'll stop defending the bottom floor at all. Set
+          it to 3.0 and you can walk through anything, which makes the player bar decorative. Somewhere
+          in between, contact damage is a real cost that you're sometimes willing to pay. That
+          willingness is the decision the whole game is made of.</p>
+
+        <div class="feel">
+          <h4>The question this batch was really asking</h4>
+          <p>Is the tension between the two bars actually interesting? You should feel yourself
+            <em>choosing</em> — go down and risk getting hit, or stay safe and let the base take one.
+            If you never feel that choice, the fix is usually the arena rather than the numbers: the
+            distance between where it's safe and where you're needed is what creates the dilemma.</p>
+        </div>
+
+        <p><b>Write down all ten times and causes.</b> That list is the baseline every feel and balance
+          assignment measures against — and it's the difference between "the game feels better now" and
+          "runs got twelve seconds longer".</p>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="done">
+    <h2>That's the assignment</h2>
+    <p>The base game is done. It has a threat, a verb, two ways to lose, a score, and a restart — which
+      means from here on you're improving a game rather than building one. That's a much better place to
+      be making decisions from, and it's why this batch was worth doing plainly.</p>
+
+    <p data-when-finished hidden><b>All six steps done.</b> Log the session and it'll show up on the
+      document with today's date.</p>
+
+    <div class="actions">
+      <button class="btn" type="button" id="logSession">Log this session</button>
+      <a class="btn ghost" href="../">Back to the document</a>
+      <span class="logmsg" id="logMsg"></span>
+    </div>
+
+    <div class="next" style="margin-top:6px">
+      <span class="eyebrow">Reference</span>
+      <a href="https://docs.godotengine.org/en/stable/classes/class_progressbar.html" target="_blank" rel="noopener noreferrer"><span class="id">docs</span><span>ProgressBar class reference</span></a>
+      <a href="https://docs.godotengine.org/en/stable/classes/class_canvaslayer.html" target="_blank" rel="noopener noreferrer"><span class="id">docs</span><span>CanvasLayer class reference</span></a>
+      <a href="https://docs.godotengine.org/en/stable/classes/class_area2d.html" target="_blank" rel="noopener noreferrer"><span class="id">docs</span><span>Area2D — has_overlapping_bodies()</span></a>
+      <a href="https://docs.godotengine.org/en/stable/tutorials/scripting/pausing_games.html" target="_blank" rel="noopener noreferrer"><span class="id">docs</span><span>Pausing games — process modes</span></a>
+    </div>
+  </footer>
+
+</div>
+
+<script src="../assets/guide.js"></script>
+</body>
+</html>
